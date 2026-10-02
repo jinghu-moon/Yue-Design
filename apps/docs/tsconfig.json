@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@snapclip/hooks": ["../../packages/hooks/src/index.ts"],
+      "@snapclip/vue": ["../../packages/vue/src/index.ts"]
+    }
+  },
+  "include": ["env.d.ts", ".vitepress/**/*.ts", ".vitepress/**/*.vue"],
+  "exclude": ["node_modules", ".vitepress/cache", ".vitepress/dist"]
+}

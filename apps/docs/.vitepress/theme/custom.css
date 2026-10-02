@@ -1,0 +1,40 @@
+/* Bind the documentation shell to design tokens instead of hard-coded values.
+ *
+ * This is the first real consumer of @snapclip/design-tokens, so it doubles as
+ * an integration check: fonts come from the package's bundled assets, and the
+ * brand colour follows the token contract in both light and dark mode (see
+ * useTokenAppearance.ts for the `html.dark` → `[data-theme]` bridge).
+ */
+:root {
+  --vp-font-family-base: var(--font-ui);
+  --vp-font-family-mono: var(--font-mono);
+
+  --vp-c-brand-1: var(--accent-text);
+  --vp-c-brand-2: var(--accent-solid);
+  --vp-c-brand-3: var(--accent-solid);
+  --vp-c-brand-soft: var(--accent-subtle);
+
+  --vp-c-text-1: var(--text-primary);
+  --vp-c-text-2: var(--text-secondary);
+  --vp-c-divider: var(--border-divider);
+}
+
+/* Token-driven status chip, used by the Token audit page. */
+.token-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-8);
+  border: var(--border-1) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.token-chip--pass {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-fg);
+}

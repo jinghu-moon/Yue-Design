@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tgz
+
+# VitePress build + dependency-optimiser caches
+.vitepress/cache/
+.vitepress/dist/
+
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

@@ -1,0 +1,36 @@
+{
+  "name": "@snapclip/design-tokens",
+  "version": "0.1.0",
+  "description": "SnapClip design tokens: pure CSS custom properties for light, dark, accent and forced-colors modes",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./src/index.css",
+  "style": "./src/index.css",
+  "exports": {
+    ".": "./src/index.css",
+    "./index.css": "./src/index.css",
+    "./components.css": "./src/components/index.css",
+    "./src/*": "./src/*",
+    "./assets/*": "./assets/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "assets",
+    "README.md"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "node -e \"console.log('@snapclip/design-tokens: pure CSS, no build step required')\"",
+    "typecheck": "node -e \"console.log('@snapclip/design-tokens: no TypeScript surface')\"",
+    "audit": "node ../../tools/audit-tokens.mjs --target ."
+  },
+  "keywords": [
+    "design-tokens",
+    "css-custom-properties",
+    "design-system",
+    "theming"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@snapclip/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SnapClip Design System documentation site",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@snapclip/design-tokens": "workspace:^",
+    "@snapclip/hooks": "workspace:^",
+    "@snapclip/vue": "workspace:^",
+    "vue": "3.5.28"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

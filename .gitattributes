@@ -1,0 +1,14 @@
+# This repository contains a frozen, byte-compared baseline:
+#   - design-tokens-generic-v4/     the pre-migration prototype (never edited)
+#   - packages/tokens/src|assets/   a byte-identical copy of it
+# Tools assert those bytes with SHA256, so line-ending conversion is disabled
+# everywhere: a fresh checkout must reproduce exactly what is on disk.
+# (The original prototype CSS uses CRLF, which is why this matters.)
+* -text
+
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.png binary
+*.jpg binary
+*.zip binary

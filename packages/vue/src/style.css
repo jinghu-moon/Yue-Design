@@ -1,0 +1,16 @@
+/* SnapClip Vue component styles — published as `@snapclip/vue/style.css`.
+ *
+ * Contract:
+ *   1. `@snapclip/design-tokens/index.css` must be loaded FIRST. It declares
+ *      `@layer primitives, semantics, components, implementations, demo`, which
+ *      is what gives this file its place in the cascade. Declaring a layer here
+ *      would risk creating `implementations` before `primitives` and silently
+ *      inverting the order.
+ *   2. Every rule written here goes inside `@layer implementations { ... }`.
+ *   3. Component CSS uses BEM class names and Component Tokens
+ *      (`--button-*`, `--input-*`, ...) rather than raw palette values, and is
+ *      global — not `scoped` — so that tokens, theming and overrides keep
+ *      working from the outside.
+ *
+ * DsButton is the first component to fill this file.
+ */

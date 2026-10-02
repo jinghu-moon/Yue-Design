@@ -1,0 +1,26 @@
+{
+  "name": "@snapclip/hooks",
+  "version": "0.1.0",
+  "description": "Vue composables shared by SnapClip components",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node -e \"console.log('@snapclip/hooks: consumed as workspace source until the first composable ships')\"",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "vue": "3.5.28"
+  }
+}
