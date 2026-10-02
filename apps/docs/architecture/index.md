@@ -3,15 +3,15 @@
 ## 包依赖图
 
 ```
-@snapclip/design-tokens   （纯 CSS，零依赖）
+@yue-ui/design-tokens   （纯 CSS，零依赖）
         │
-        ├──────────────► @snapclip/vue ──► @snapclip/docs
+        ├──────────────► @yue-ui/vue ──► @yue-ui/docs
         │                      │
-@snapclip/hooks ───────────────┘
+@yue-ui/hooks ───────────────┘
 ```
 
-- `@snapclip/design-tokens` 不依赖 Vue，也不依赖任何构建工具。
-- `@snapclip/vue` 的样式**不打包** Token 包，两者保持独立发布与独立版本。
+- `@yue-ui/design-tokens` 不依赖 Vue，也不依赖任何构建工具。
+- `@yue-ui/vue` 的样式**不打包** Token 包，两者保持独立发布与独立版本。
 - `apps/docs` 同时依赖三者，并且只引用真实包——不复制一份 CSS 进文档站。
 
 ## 级联契约
@@ -27,7 +27,7 @@ Token 包的入口声明层顺序，组件样式因此有了确定的位置：
 @import url('./components.css') layer(components);
 ```
 
-**加载顺序是契约的一部分**：Token 入口必须先于 `@snapclip/vue/style.css`。
+**加载顺序是契约的一部分**：Token 入口必须先于 `@yue-ui/vue/style.css`。
 组件样式表本身不再声明 `@layer`，否则可能在 `primitives` 之前创建
 `implementations`，把层顺序悄悄反过来。
 

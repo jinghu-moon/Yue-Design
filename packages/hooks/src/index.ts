@@ -1,14 +1,21 @@
 /**
- * @snapclip/hooks — shared Vue composables for SnapClip components.
+ * @yue-ui/hooks — the contracts and composables shared by Yue components.
  *
- * This package is intentionally empty for now. It exists in the workspace so
- * that the first composable has a home that is already wired into `typecheck`,
- * `build` and the dependency graph, rather than being retrofitted later.
+ * Architecture position: `tokens → hooks → vue → docs`. This package may not
+ * depend on `@yue-ui/vue`; components depend on it, never the other way round.
  *
- * Nothing is exported yet: inventing composables before there is a component
- * that needs them would be API design by guesswork. The first real consumer is
- * `DsButton` (loading/disabled state composition), followed by the appearance
- * synchronisation that maps VitePress' `html.dark` onto the token contract's
- * `[data-theme]`.
+ * Exports are named and explicit rather than `export *`, so the public surface is
+ * greppable and stays friendly to bundlers.
+ *
+ * Relative specifiers carry a `.js` extension: TypeScript maps it back to the
+ * `.ts` source when compiling, and the emitted ESM stays valid for a runtime that
+ * resolves modules the Node way, not just for a bundler.
  */
-export {}
+export { DEFAULT_YUE_CONFIG, YUE_NAMESPACE } from './config/types.js'
+export type { ComponentSize, Namespace, YueConfig } from './config/types.js'
+
+export { yueConfigKey } from './config/injection.js'
+
+export { installYueConfig, provideYueConfig, useConfig } from './config/useConfig.js'
+
+export { useNamespace } from './namespace/useNamespace.js'

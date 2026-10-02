@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Emit `dist/style.css` for @snapclip/vue.
+ * Emit `dist/style.css` for @yue-ui/vue.
  *
  * Why not let Vite handle it: the published contract is three explicit imports
  *
- *   import '@snapclip/design-tokens/index.css'
- *   import '@snapclip/vue'
- *   import '@snapclip/vue/style.css'
+ *   import '@yue-ui/design-tokens/index.css'
+ *   import '@yue-ui/vue'
+ *   import '@yue-ui/vue/style.css'
  *
  * which means the JS entry must stay free of CSS side effects (so the library
  * can be imported in a Node/SSR context without CSS resolution). Vite only emits
@@ -72,19 +72,40 @@ export function bundleStyle(entryFile, { read = (file) => readFileSync(file, 'ut
   return { css: walk(entryFile), files }
 }
 
-function main() {
-  const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-  const source = resolve(packageRoot, 'src/style.css')
-  const target = resolve(packageRoot, 'dist/style.css')
+/**
+ * Per-component stylesheets, published as `@yue-ui/vue/<component>.css`.
+ *
+ * Each one is bundled from the component's own source and emitted verbatim — the
+ * same shape `src/style.css` produces — so a consumer who imports `button.css`
+ * alone and one who imports `style.css` get rules with identical cascade
+ * behaviour. In particular neither is wrapped in a layer: see the contract note in
+ * `src/style.css` for why a layered component sheet loses to unlayered host CSS.
+ */
+const COMPONENT_ENTRIES = [
+  { source: 'src/components/button/style.css', target: 'dist/components/button/style.css' },
+]
 
-  const { css, files } = bundleStyle(source)
-  mkdirSync(dirname(target), { recursive: true })
-  writeFileSync(target, css, 'utf8')
+function writeEntry(packageRoot, source, target) {
+  const { css, files } = bundleStyle(resolve(packageRoot, source))
+
+  const absoluteTarget = resolve(packageRoot, target)
+  mkdirSync(dirname(absoluteTarget), { recursive: true })
+  writeFileSync(absoluteTarget, css, 'utf8')
 
   const listed = files
     .map((file) => relative(packageRoot, file).replaceAll('\\', '/'))
     .join(', ')
-  process.stdout.write(`@snapclip/vue: dist/style.css ← ${listed} (${css.length} bytes)\n`)
+  process.stdout.write(`@yue-ui/vue: ${target} ← ${listed} (${css.length} bytes)\n`)
+}
+
+function main() {
+  const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+  writeEntry(packageRoot, 'src/style.css', 'dist/style.css')
+
+  for (const entry of COMPONENT_ENTRIES) {
+    writeEntry(packageRoot, entry.source, entry.target)
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

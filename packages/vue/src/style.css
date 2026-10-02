@@ -1,16 +1,35 @@
-/* SnapClip Vue component styles — published as `@snapclip/vue/style.css`.
+/* Yue Vue component styles — published as `@yue-ui/vue/style.css`.
+ *
+ * This is an index, not a stylesheet: one `@import` per component, nothing else.
+ * `scripts/build-style.mjs` inlines the imports into `dist/style.css`, so the
+ * published artefact is a single sheet while the source stays one file per
+ * component.
  *
  * Contract:
- *   1. `@snapclip/design-tokens/index.css` must be loaded FIRST. It declares
- *      `@layer primitives, semantics, components, implementations, demo`, which
- *      is what gives this file its place in the cascade. Declaring a layer here
- *      would risk creating `implementations` before `primitives` and silently
- *      inverting the order.
- *   2. Every rule written here goes inside `@layer implementations { ... }`.
- *   3. Component CSS uses BEM class names and Component Tokens
- *      (`--button-*`, `--input-*`, ...) rather than raw palette values, and is
- *      global — not `scoped` — so that tokens, theming and overrides keep
- *      working from the outside.
  *
- * DsButton is the first component to fill this file.
+ *   1. `@yue-ui/design-tokens/index.css` must be loaded FIRST. It declares
+ *      `@layer primitives, semantics, components, implementations, demo`, and the
+ *      component tokens the rules below read live in `components`.
+ *
+ *   2. These rules are deliberately NOT placed in a cascade layer, and this file
+ *      must never declare a layer order.
+ *
+ *      Why: unlayered CSS outranks every cascade layer, whatever the specificity.
+ *      A component sheet inside `@layer implementations` therefore loses to any
+ *      unlayered host rule — and every host has some. VitePress ships
+ *      `button { background-color: transparent; color: inherit }`; Tailwind's
+ *      Preflight and normalize.css do the same kind of thing. Put the Button in a
+ *      layer and its fill silently disappears in a real application.
+ *
+ *      Staying unlayered means a host reset loses on specificity (`.yue-button--solid`
+ *      is 0,1,0 against `button`'s 0,0,1), which is what a component library has to
+ *      guarantee. The layer order still governs *tokens*, which is where layer
+ *      precedence actually buys something: a consumer re-points a Component Token in
+ *      `@layer demo` and every component reading it follows.
+ *
+ *   3. Component CSS uses BEM class names and Component Tokens (`--button-*`,
+ *      `--input-*`, ...) rather than raw palette values, and is global — never
+ *      `scoped` — so that tokens, theming and outside overrides keep working.
  */
+
+@import url('./components/button/style.css');

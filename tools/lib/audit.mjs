@@ -12,7 +12,6 @@ import {
   CONTRAST_PAIRS,
   PROBE_PROFILES,
 } from '../token-audit.pairs.mjs'
-
 function resolveLayers(resolver, profile, tokens) {
   return [].concat(tokens).map((token) => parseColor(resolver.value(token, profile)))
 }
@@ -56,15 +55,22 @@ function sweepUnresolved(resolver, profiles) {
 
 /**
  * Audit one token sheet.
+ *
+ * `pairs` defaults to the migrated contrast contract. A target may extend it with
+ * its own additional contract — the package target does, because it has grown
+ * combinations the frozen prototype never had. The prototype target must not:
+ * requiring colours the baseline does not define would be a category error, not a
+ * stricter check.
+ *
  * @returns structured result: checks, failures, unresolved references, counts.
  */
-export function auditTarget({ id, entry, profiles = AUDIT_PROFILES }) {
+export function auditTarget({ id, entry, profiles = AUDIT_PROFILES, pairs = CONTRAST_PAIRS }) {
   const sheet = loadTokenSheet({ entry })
   const resolver = createResolver(sheet)
 
   const checks = []
   for (const profile of profiles) {
-    for (const pair of CONTRAST_PAIRS) {
+    for (const pair of pairs) {
       checks.push(evaluatePair(resolver, profile, pair))
     }
   }
@@ -82,6 +88,7 @@ export function auditTarget({ id, entry, profiles = AUDIT_PROFILES }) {
       profiles.map((profile) => [profile.id, resolver.names(profile).length]),
     ),
     profiles: profiles.map((profile) => profile.id),
+    pairCount: pairs.length,
     checks,
     failed,
     unresolved,
@@ -93,13 +100,30 @@ export function auditTarget({ id, entry, profiles = AUDIT_PROFILES }) {
 }
 
 /**
- * Prove two token sheets resolve identically. This is what turns "we copied the
- * tokens across" into a verifiable claim.
+ * Prove a package token sheet still honours the prototype it was migrated from.
+ *
+ * The migration contract is asymmetric, and the asymmetry is the point:
+ *
+ *   - a token the prototype defines and the package lost (`missing-on-right`) is
+ *     always a failure — that is the migration silently dropping a value;
+ *   - a shared token that resolves differently is always a failure — that is
+ *     drift;
+ *   - a token the package adds (`missing-on-left`) is growth, not drift. It is
+ *     rejected by default, and when `allowAdditions` is set it is returned in
+ *     `addedNames` instead, so the caller has to acknowledge it explicitly rather
+ *     than let token sprawl pass unnoticed.
+ *
+ * @param {{id: string, entry: string}} left  the prototype sheet
+ * @param {{id: string, entry: string}} right the package sheet
+ * @param {{allowAdditions?: boolean}} [options]
  */
-export function compareTargets(left, right, profiles = PROBE_PROFILES) {
+export function compareTargets(left, right, options = {}) {
+  const { allowAdditions = false } = options
+  const profiles = PROBE_PROFILES
   const leftResolver = createResolver(loadTokenSheet({ entry: left.entry }))
   const rightResolver = createResolver(loadTokenSheet({ entry: right.entry }))
   const differences = []
+  const additions = []
   let compared = 0
 
   for (const profile of profiles) {
@@ -110,11 +134,15 @@ export function compareTargets(left, right, profiles = PROBE_PROFILES) {
       const inLeft = leftNames.has(name)
       const inRight = rightNames.has(name)
       if (!inLeft || !inRight) {
-        differences.push({
-          profile: profile.id,
-          name,
-          kind: inLeft ? 'missing-on-right' : 'missing-on-left',
-        })
+        if (!inLeft && allowAdditions) {
+          additions.push({ profile: profile.id, name, kind: 'added-on-right' })
+        } else {
+          differences.push({
+            profile: profile.id,
+            name,
+            kind: inLeft ? 'missing-on-right' : 'missing-on-left',
+          })
+        }
         continue
       }
       const leftValue = leftResolver.tryValue(name, profile)
@@ -150,6 +178,9 @@ export function compareTargets(left, right, profiles = PROBE_PROFILES) {
     profiles: profiles.map((profile) => profile.id),
     compared,
     differences,
+    additions,
+    /** Unique, sorted package-only token names — the growth, deduplicated. */
+    addedNames: [...new Set(additions.map((addition) => addition.name))].sort(),
     identical: differences.length === 0,
   }
 }

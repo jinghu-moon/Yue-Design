@@ -1,6 +1,6 @@
 /* Bind the documentation shell to design tokens instead of hard-coded values.
  *
- * This is the first real consumer of @snapclip/design-tokens, so it doubles as
+ * This is the first real consumer of @yue-ui/design-tokens, so it doubles as
  * an integration check: fonts come from the package's bundled assets, and the
  * brand colour follows the token contract in both light and dark mode (see
  * useTokenAppearance.ts for the `html.dark` → `[data-theme]` bridge).
@@ -37,4 +37,168 @@
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success-fg);
+}
+
+/* ---------------------------------------------------------------- preview */
+
+.preview-frame {
+  margin: var(--space-16) 0 var(--space-24);
+  border: var(--border-1) solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.preview-frame__caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border-bottom: var(--border-1) solid var(--border-divider);
+}
+
+.preview-frame__title {
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-semibold);
+}
+
+.preview-frame__description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.preview-frame__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  border-bottom: var(--border-1) solid var(--border-divider);
+  background: var(--surface-subtle);
+}
+
+.appearance-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Push the reset action to the far end so the three groups read as groups. */
+.preview-frame__reset {
+  margin-inline-start: auto;
+}
+
+/* Edge of a `text` or `link` button is still visible against the page. */
+.preview-frame__surface {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-24) var(--space-16);
+  background-color: var(--page);
+  background-image: radial-gradient(var(--border-divider) var(--border-1), transparent 0);
+  background-size: var(--space-16) var(--space-16);
+}
+
+/* The theme x variant matrix reads as rows, one per variant, so a reviewer can scan
+ * down a column (one theme, every look) or across a row. */
+.preview-frame__surface--matrix {
+  display: block;
+}
+
+.matrix-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.matrix-row + .matrix-row {
+  margin-block-start: var(--space-8);
+}
+
+.matrix-row__label {
+  /* Narrow enough that all five themes fit on one line at the docs' content width,
+   * wide enough that "outline"/"dashed" stay aligned with "text"/"link". A 192px
+   * `--width-sm` label pushed the fifth theme onto a second line, which read as a
+   * separate group rather than a wrapped row. */
+  flex: 0 0 6.5em;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* Density is a consumer override, not a token-contract axis — the token package
+ * has no density dimension. The frame re-points the Button's OWN Component
+ * Tokens on its surface, which is exactly the mechanism the docs recommend, and
+ * everything inside follows without knowing density exists. */
+.preview-frame__surface[data-density='compact'] {
+  --button-height-sm: var(--size-24);
+  --button-height-md: calc(var(--control-height-md) - var(--space-4));
+  --button-height-lg: calc(var(--control-height-lg) - var(--space-8));
+  --button-padding-inline-sm: var(--space-8);
+  --button-padding-inline-md: var(--space-8);
+  --button-padding-inline-lg: var(--space-12);
+  --button-font-size-sm: var(--font-size-sm);
+  --button-font-size-md: var(--font-size-sm);
+  --button-font-size-lg: var(--font-size-md);
+  --button-gap: var(--space-4);
+}
+
+.preview-frame__code {
+  border-top: var(--border-1) solid var(--border-divider);
+}
+
+/* Per-example layout hooks. The surface is a wrapping flex row by default, which
+ * is right for a wall of buttons; `--block` narrows it so a full-width button has
+ * something to be full width OF. */
+.preview-frame__surface--block {
+  display: block;
+  max-width: var(--width-md);
+}
+
+.preview-frame__surface--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.preview-frame__code-toggle {
+  display: block;
+  width: 100%;
+  padding: var(--space-8) var(--space-16);
+  border: var(--border-0) solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  text-align: start;
+  cursor: pointer;
+}
+
+.preview-frame__code-toggle:hover {
+  color: var(--text-primary);
+}
+
+.preview-frame__code-body {
+  padding: 0 var(--space-16) var(--space-16);
+}
+
+/* VitePress styles `div[class*='language-']`; a bare `<pre>` inside the slot has
+ * to be given the same surface or the two paths would look different. */
+.preview-frame__pre,
+.preview-frame__code-body div[class*='language-'] {
+  margin: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+}
+
+.preview-frame__pre {
+  overflow-x: auto;
+  padding: var(--space-12) var(--space-16);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-md);
+  color: var(--text-primary);
 }

@@ -2,13 +2,18 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'SnapClip Design System',
+  title: 'Yue Design',
   description: '纯 CSS Design Token、Vue 3 组件与文档站',
   appearance: true,
+
+  // A declared icon stops the browser from guessing at /favicon.ico and logging a
+  // 404 on every page. Served from `apps/docs/public/`, so it stays same-origin.
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]],
 
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/' },
+      { text: '设计', link: '/design/' },
       { text: '基础', link: '/foundation/' },
       { text: '组件', link: '/components/' },
       { text: '架构', link: '/architecture/' },
@@ -31,10 +36,29 @@ export default defineConfig({
           items: [{ text: '总览', link: '/foundation/' }],
         },
       ],
+      '/design/': [
+        {
+          text: '设计',
+          items: [
+            { text: '总览', link: '/design/' },
+            { text: '色彩', link: '/design/color' },
+            { text: '深色模式', link: '/design/dark-mode' },
+            { text: '字体', link: '/design/typography' },
+            { text: '图标', link: '/design/icon' },
+            { text: '布局', link: '/design/layout' },
+            { text: '动效', link: '/design/motion' },
+          ],
+        },
+      ],
       '/components/': [
         {
           text: '组件',
-          items: [{ text: '总览', link: '/components/' }],
+          items: [
+            { text: '总览', link: '/components/' },
+            { text: 'Button 按钮 · 示例', link: '/components/button' },
+            { text: 'Button 按钮 · API', link: '/components/button/api' },
+            { text: 'Button 按钮 · 指南', link: '/components/button/guide' },
+          ],
         },
       ],
       '/architecture/': [

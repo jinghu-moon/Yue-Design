@@ -1,6 +1,6 @@
 # 基础
 
-Token 包 `@snapclip/design-tokens` 是纯 CSS，没有构建步骤。它由三个 Token 层与一个实现层组成，共 **451 个唯一 Token 名**（568 条声明，含深色与 Accent 覆写）。
+Token 包 `@yue-ui/design-tokens` 是纯 CSS，没有构建步骤。它由三个 Token 层与一个实现层组成，共 **451 个唯一 Token 名**（568 条声明，含深色与 Accent 覆写）。
 
 ## 分层与规模
 
@@ -9,7 +9,7 @@ Token 包 `@snapclip/design-tokens` 是纯 CSS，没有构建步骤。它由三�
 | `primitives` | `src/primitives.css` | 212 | 标尺、字体、动效、原始色板 |
 | `semantics` | `src/semantics.css` | 134 | 主题与交互角色、Accent |
 | `components` | `src/components.css` | 222 | 组件几何与视觉契约 |
-| `implementations` | `src/components/*.css` | — | 原型期组件选择器（`.btn` 等），由 `@snapclip/vue` 逐步接管 |
+| `implementations` | `src/components/*.css` | — | 原型期组件选择器（`.btn` 等），由 `@yue-ui/vue` 逐步接管 |
 
 按 Token 名归类：
 
@@ -40,19 +40,22 @@ Token 包同时支持四种形态，全部通过 `data-*` 属性或媒体查询�
 
 ```css
 /* 应用入口：一次引入全部 Token */
-@import '@snapclip/design-tokens/index.css';
+@import '@yue-ui/design-tokens/index.css';
 ```
 
 ```js
 // 或者交给打包器
-import '@snapclip/design-tokens/index.css'
+import '@yue-ui/design-tokens/index.css'
 ```
 
 包导出了 `index.css`（Token 层）与 `components.css`（实现层）两个入口；层顺序由
 `index.css` 声明，因此 **Token 必须先于组件样式加载**。
 
+## 设计规范
+
+颜色、深色模式、排版、图标、布局和动效原则见[设计规范](/design/)。本页只负责
+Token 层级、加载顺序和 CSS API；设计决策不在这里维护第二份版本。
+
 ## 即将补充
 
-- 颜色规范（色板、语义映射、对比度矩阵）
-- 排版与间距标尺
 - Token 浏览器（直接读取包内 CSS，而不是维护第二份清单）

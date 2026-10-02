@@ -1,8 +1,8 @@
 {
-  "name": "@snapclip/vue",
+  "name": "@yue-ui/vue",
   "version": "0.1.0",
-  "description": "SnapClip Vue 3 component library",
-  "license": "UNLICENSED",
+  "description": "Yue Vue 3 component library: named exports, an opt-in full-install plugin, and per-component entries",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -12,7 +12,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js"
+    },
+    "./button": {
+      "types": "./dist/components/button/index.d.ts",
+      "import": "./dist/components/button/index.js"
+    },
     "./style.css": "./dist/style.css",
+    "./button.css": "./dist/components/button/style.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -24,17 +33,18 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build && vue-tsc -p tsconfig.build.json && node scripts/build-style.mjs",
+    "build": "corepack pnpm -C ../hooks build && vite build && vue-tsc -p tsconfig.build.json && node scripts/build-style.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
-  },
-  "dependencies": {
-    "@snapclip/design-tokens": "workspace:^",
-    "@snapclip/hooks": "workspace:^"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@types/node": "^24.19.1",
+    "@vue/test-utils": "^2.4.6",
+    "@yue-ui/design-tokens": "workspace:^",
+    "@yue-ui/hooks": "workspace:^",
+    "vitest": "4.0.18",
     "vue": "3.5.28"
   }
 }

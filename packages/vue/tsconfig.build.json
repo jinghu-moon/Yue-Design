@@ -5,15 +5,27 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
+    // `rootDir: src` + the mirrored entry layout is what makes dist/plugin.d.ts
+    // and dist/components/button/index.d.ts land exactly where package.json
+    // `exports` says they are.
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": ".",
+    "baseUrl": "./",
+    // Only the local alias is remapped here. `@yue-ui/hooks` deliberately is NOT
+    // mapped to its TypeScript source the way tsconfig.json maps it: a `.ts` file
+    // under packages/hooks is outside `rootDir`, which TS rejects with TS6059 for
+    // any file it would have to emit. Resolving the package normally picks up
+    // packages/hooks/dist/index.d.ts instead — a declaration file is an input
+    // only, so it is legal outside rootDir. The vue build therefore builds hooks
+    // first, and the declarations this package ships reference the types of the
+    // package it actually depends on rather than a second inlined copy.
     "paths": {
-      "@/*": ["./src/*"],
-      "@snapclip/hooks": ["../hooks/src/index.ts"],
-      "@snapclip/hooks/*": ["../hooks/src/*"]
-    }
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
-  "exclude": ["node_modules", "dist"]
+  // Tests live next to their component so they cannot go stale, but nothing about
+  // them belongs in the published artefact.
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
 }

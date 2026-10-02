@@ -1,0 +1,342 @@
+/* YueButton — Button component implementation.
+ *
+ * Contract (see packages/vue/src/style.css for the entry that aggregates this):
+ *
+ *   1. Loaded after `@yue-ui/design-tokens/index.css`, which declares
+ *      `@layer primitives, semantics, components, implementations, demo` and holds
+ *      the token values. These rules are deliberately NOT in a cascade layer:
+ *      unlayered CSS outranks every layer, so a layered component sheet would lose
+ *      to any host reset (VitePress' `button { background-color: transparent }`,
+ *      Tailwind's Preflight, normalize.css) and render unstyled.
+ *   2. Global, never `<style scoped>`. A scoped block would rewrite every
+ *      selector with a data attribute and make outside overrides — the whole
+ *      point of shipping CSS separately — impossible.
+ *   3. BEM, `.yue-button` / `.yue-button__icon` / `.yue-button--primary`.
+ *   4. Every value is a Button Component Token (`--button-*`): no raw hex, no
+ *      primitive token, no other component's namespace.
+ *
+ * A handful of `--_*` variables below are private composition slots, not design
+ * tokens. Each one is assigned from a Button Component Token in the base block,
+ * and a theme modifier only re-points it; the variant layer then decides which
+ * slot to paint. That keeps 5 themes x 5 variants expressible without 25 blocks
+ * of duplicated colour, while the *values* still come from exactly one place.
+ *
+ *   --_fill / --_fill-hover / --_fill-pressed  solid fill and its interaction states
+ *   --_on-fill                                 content colour on that fill
+ *   --_accent                                  the theme's readable-on-surface colour
+ *   --_border                                  resting border colour
+ *   --_height / --_padding-inline / --_font-size / --_icon-size   size ramp
+ */
+
+.yue-button {
+  --_fill: var(--button-default-background);
+  --_fill-hover: var(--button-default-background-hover);
+  --_fill-pressed: var(--button-default-background-pressed);
+  --_on-fill: var(--button-default-color);
+  --_accent: var(--button-default-accent);
+  --_border: var(--button-default-border-color);
+  --_height: var(--button-height-md);
+  --_padding-inline: var(--button-padding-inline-md);
+  --_font-size: var(--button-font-size-md);
+  --_icon-size: var(--button-icon-size-md);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--button-gap);
+  height: var(--_height);
+  padding: var(--button-padding-block) var(--_padding-inline);
+  border: var(--button-border-width) solid var(--_border);
+  border-radius: var(--button-border-radius);
+  font-family: inherit;
+  font-size: var(--_font-size);
+  font-weight: var(--button-font-weight);
+  line-height: var(--button-line-height);
+  text-align: center;
+  text-decoration: none;
+  /* Sits correctly when a button is placed inside a line of text or a table cell. */
+  vertical-align: middle;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  /* Removes the ~300ms double-tap-zoom delay on touch, without disabling pinch
+   * zoom — `none` would be the wrong trade. */
+  touch-action: manipulation;
+  /* The positioning context for in-button layers. The spinner and icons are in
+   * flow today, so this costs nothing; without it any future absolutely positioned
+   * layer (a badge, an in-place overlay) would escape to an unrelated ancestor. */
+  position: relative;
+  transition:
+    background-color var(--button-duration) var(--button-ease),
+    border-color var(--button-duration) var(--button-ease),
+    color var(--button-duration) var(--button-ease);
+}
+
+/* ---------------------------------------------------------------- size ramp */
+
+.yue-button--sm {
+  --_height: var(--button-height-sm);
+  --_padding-inline: var(--button-padding-inline-sm);
+  --_font-size: var(--button-font-size-sm);
+  --_icon-size: var(--button-icon-size-sm);
+}
+
+.yue-button--lg {
+  --_height: var(--button-height-lg);
+  --_padding-inline: var(--button-padding-inline-lg);
+  --_font-size: var(--button-font-size-lg);
+  --_icon-size: var(--button-icon-size-lg);
+}
+
+/* ------------------------------------------------------------------ themes */
+
+.yue-button--primary {
+  --_fill: var(--button-primary-background);
+  --_fill-hover: var(--button-primary-background-hover);
+  --_fill-pressed: var(--button-primary-background-pressed);
+  --_on-fill: var(--button-primary-color);
+  --_accent: var(--button-primary-accent);
+  --_border: var(--button-primary-border-color);
+}
+
+.yue-button--danger {
+  --_fill: var(--button-danger-background);
+  --_fill-hover: var(--button-danger-background-hover);
+  --_fill-pressed: var(--button-danger-background-pressed);
+  --_on-fill: var(--button-danger-color);
+  --_accent: var(--button-danger-accent);
+  --_border: var(--button-danger-border-color);
+}
+
+.yue-button--warning {
+  --_fill: var(--button-warning-background);
+  --_fill-hover: var(--button-warning-background-hover);
+  --_fill-pressed: var(--button-warning-background-pressed);
+  --_on-fill: var(--button-warning-color);
+  --_accent: var(--button-warning-accent);
+  --_border: var(--button-warning-border-color);
+}
+
+.yue-button--success {
+  --_fill: var(--button-success-background);
+  --_fill-hover: var(--button-success-background-hover);
+  --_fill-pressed: var(--button-success-background-pressed);
+  --_on-fill: var(--button-success-color);
+  --_accent: var(--button-success-accent);
+  --_border: var(--button-success-border-color);
+}
+
+/* ---------------------------------------------------------------- variants
+ *
+ * Two properties make the matrix readable:
+ *
+ *   - hover and focus-visible share one colour state, so a keyboard user sees the
+ *     same "this is the one you are on" cue a pointer user does. The focus *ring*
+ *     below stays separate and is never replaced by the fill — removing it to copy
+ *     another library's reset would delete the only affordance a keyboard user has.
+ *   - `:not(.is-disabled):not(.is-loading)` guards the interaction states, so the
+ *     hover of a disabled button is not a thing that exists.
+ */
+
+.yue-button--solid {
+  background-color: var(--_fill);
+  color: var(--_on-fill);
+}
+
+.yue-button--solid:hover:not(.is-disabled):not(.is-loading),
+.yue-button--solid:focus-visible:not(.is-disabled):not(.is-loading) {
+  background-color: var(--_fill-hover);
+}
+
+.yue-button--solid:active:not(.is-disabled):not(.is-loading) {
+  background-color: var(--_fill-pressed);
+}
+
+/* `outline` and `dashed` are one look with one difference, so they share every
+ * declaration and the border style is the only thing that separates them. Keeping
+ * them in one rule list means they cannot drift apart. */
+.yue-button--outline,
+.yue-button--dashed {
+  background-color: var(--button-outline-background);
+  border-color: var(--_accent);
+  color: var(--_accent);
+}
+
+.yue-button--dashed {
+  border-style: var(--button-dashed-border-style);
+}
+
+/* The shared overlay is `currentColor`-based, so it tracks whichever accent the
+ * active theme selected instead of needing one token per theme. */
+.yue-button--outline:hover:not(.is-disabled):not(.is-loading),
+.yue-button--outline:focus-visible:not(.is-disabled):not(.is-loading),
+.yue-button--dashed:hover:not(.is-disabled):not(.is-loading),
+.yue-button--dashed:focus-visible:not(.is-disabled):not(.is-loading),
+.yue-button--text:hover:not(.is-disabled):not(.is-loading),
+.yue-button--text:focus-visible:not(.is-disabled):not(.is-loading) {
+  background-color: var(--button-subtle-background-hover);
+}
+
+.yue-button--outline:active:not(.is-disabled):not(.is-loading),
+.yue-button--dashed:active:not(.is-disabled):not(.is-loading),
+.yue-button--text:active:not(.is-disabled):not(.is-loading) {
+  background-color: var(--button-subtle-background-pressed);
+}
+
+/* The quiet button: the full control box — same height and inset as every other
+ * variant, so its hit area is identical — with no fill and no border until
+ * interaction. The `--button-ghost-*` family below is the migrated name for this
+ * "unfilled" contract, which is why a `text` button reads those tokens. */
+.yue-button--text {
+  background-color: var(--button-subtle-background);
+  border-color: var(--button-ghost-border-color);
+  color: var(--_accent);
+}
+
+/* A link is not a quieter `text`: it is an inline action, so it drops the control
+ * box entirely — no fixed height, no inline inset, no border — and reads the link
+ * colour instead of the theme accent. Use `text` inside a toolbar, `link` inside a
+ * sentence. */
+.yue-button--link {
+  height: auto;
+  padding: var(--button-padding-block) var(--button-padding-inline-flush);
+  background-color: var(--button-subtle-background);
+  border-color: var(--button-ghost-border-color);
+  color: var(--button-link-color);
+  text-decoration: var(--button-link-decoration);
+  text-underline-offset: var(--button-border-width);
+}
+
+.yue-button--link:hover:not(.is-disabled):not(.is-loading),
+.yue-button--link:focus-visible:not(.is-disabled):not(.is-loading) {
+  text-decoration: var(--button-link-decoration-hover);
+}
+
+.yue-button--link:active:not(.is-disabled):not(.is-loading) {
+  color: var(--button-link-color);
+}
+
+/* ------------------------------------------------------------------ shapes */
+
+.yue-button--round {
+  border-radius: var(--button-border-radius-full);
+}
+
+/* Icon-only: the inline inset goes to zero and the box is kept square, which is
+ * what makes the round corner read as a circle. */
+.yue-button--circle {
+  width: var(--_height);
+  padding-inline: var(--button-padding-inline-flush);
+  border-radius: var(--button-border-radius-full);
+}
+
+/* ------------------------------------------------------------------ states */
+
+.yue-button.is-block {
+  display: flex;
+  width: 100%;
+}
+
+.yue-button.is-loading {
+  cursor: progress;
+}
+
+.yue-button.is-disabled {
+  cursor: not-allowed;
+  color: var(--button-disabled-color);
+}
+
+/* Only the variants that paint a box hand their fill back to the disabled
+ * container; `dashed` keeps its dashed border so the "add something new" affordance
+ * survives being switched off. */
+.yue-button--solid.is-disabled,
+.yue-button--outline.is-disabled,
+.yue-button--dashed.is-disabled {
+  background-color: var(--button-disabled-background);
+  border-color: var(--button-disabled-border-color);
+}
+
+.yue-button--dashed.is-disabled {
+  border-style: var(--button-dashed-border-style);
+}
+
+.yue-button--text.is-disabled,
+.yue-button--link.is-disabled {
+  background-color: var(--button-subtle-background);
+  border-color: var(--button-ghost-border-color);
+  text-decoration: var(--button-link-decoration);
+}
+
+/* ------------------------------------------------------------------- focus */
+
+.yue-button:focus-visible {
+  outline: var(--button-focus-ring-width) solid var(--button-focus-ring-color);
+  outline-offset: var(--button-focus-ring-offset);
+}
+
+/* ---------------------------------------------------------------- elements */
+
+.yue-button__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.yue-button__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+}
+
+.yue-button__icon > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.yue-button__spinner {
+  flex: none;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  border: var(--button-spinner-border-width) solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--button-border-radius-full);
+  animation: yue-button-spin var(--button-spinner-duration) linear infinite;
+}
+
+@keyframes yue-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------- honors user prefs */
+
+@media (prefers-reduced-motion: reduce) {
+  .yue-button {
+    transition: none;
+  }
+
+  /* Keep a visible "still working" cue without making motion mandatory. */
+  .yue-button__spinner {
+    animation: none;
+    border-top-color: currentColor;
+  }
+}
+
+@media (forced-colors: active) {
+  .yue-button {
+    border-color: ButtonBorder;
+  }
+
+  .yue-button.is-disabled {
+    color: GrayText;
+  }
+
+  .yue-button__spinner {
+    border-color: CanvasText;
+    border-top-color: transparent;
+  }
+}

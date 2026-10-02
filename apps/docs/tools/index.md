@@ -27,7 +27,7 @@ corepack pnpm audit:tokens
 ## 输出示例
 
 ```text
-SnapClip Design System · Token Audit
+Yue Design · Token Audit
 ──────────────────────────────────────────────────────────────────────────────
 contract: 32 contrast pairs × 2 profiles = 64 gating checks per target
 gating profiles: light/azure, dark/azure

@@ -1,28 +1,28 @@
-# @snapclip/design-tokens
+# @yue-ui/design-tokens
 
-SnapClip 的设计 Token，纯 CSS 自定义属性。不依赖 Vue，不依赖任何框架，没有构建步骤。
+Yue 的设计 Token，纯 CSS 自定义属性。不依赖 Vue，不依赖任何框架，没有构建步骤。
 
 ## 安装与引用
 
 ```bash
-pnpm add @snapclip/design-tokens
+pnpm add @yue-ui/design-tokens
 ```
 
 ```js
-import '@snapclip/design-tokens/index.css'
+import '@yue-ui/design-tokens/index.css'
 ```
 
 ```css
 /* 或者从 CSS 引用 */
-@import '@snapclip/design-tokens/index.css';
+@import '@yue-ui/design-tokens/index.css';
 ```
 
 ## 两个入口
 
 | 入口 | 文件 | 内容 |
 | --- | --- | --- |
-| `@snapclip/design-tokens`（即 `./index.css`） | `src/index.css` | 层顺序声明 + `primitives` + `semantics` + `components` 三个 Token 层 |
-| `@snapclip/design-tokens/components.css` | `src/components/index.css` | `implementations` 层，原型期的 `.btn` 等选择器 |
+| `@yue-ui/design-tokens`（即 `./index.css`） | `src/index.css` | 层顺序声明 + `primitives` + `semantics` + `components` 三个 Token 层 |
+| `@yue-ui/design-tokens/components.css` | `src/components/index.css` | `implementations` 层，原型期的 `.btn` 等选择器 |
 
 **加载顺序是契约的一部分。** `index.css` 声明了
 
@@ -30,7 +30,7 @@ import '@snapclip/design-tokens/index.css'
 @layer primitives, semantics, components, implementations, demo;
 ```
 
-所以它必须先于任何组件样式加载。`components.css`（以及 `@snapclip/vue/style.css`）
+所以它必须先于任何组件样式加载。`components.css`（以及 `@yue-ui/vue/style.css`）
 自身不再声明层顺序，否则可能在 `primitives` 之前创建 `implementations`，
 把级联顺序反过来。
 

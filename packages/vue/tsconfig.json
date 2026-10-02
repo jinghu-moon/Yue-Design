@@ -1,12 +1,22 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
-      "@snapclip/hooks": ["../hooks/src/index.ts"],
-      "@snapclip/hooks/*": ["../hooks/src/*"]
-    }
+      "@yue-ui/hooks": ["../hooks/src/index.ts"],
+      "@yue-ui/hooks/*": ["../hooks/src/*"]
+    },
+    // `import.meta.env.DEV` guards the development-only `circle` accessibility
+    // warning. Vite statically replaces it in the build, so rollup removes the
+    // branch from `dist`; these types are what make it expressible at all.
+    //
+    // `node` is here for the colocated tests only: the Button's contract test reads
+    // the stylesheet from disk to prove the emitted class names are the ones the
+    // stylesheet styles. `tsconfig.build.json` — the config that produces the
+    // shipped declarations — deliberately omits it, so the published type surface
+    // stays browser-only.
+    "types": ["vite/client", "node"]
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
   "exclude": ["node_modules", "dist"]

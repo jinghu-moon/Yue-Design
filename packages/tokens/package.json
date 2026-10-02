@@ -1,8 +1,8 @@
 {
-  "name": "@snapclip/design-tokens",
+  "name": "@yue-ui/design-tokens",
   "version": "0.1.0",
-  "description": "SnapClip design tokens: pure CSS custom properties for light, dark, accent and forced-colors modes",
-  "license": "UNLICENSED",
+  "description": "Yue design tokens: pure CSS custom properties for light, dark, accent and forced-colors modes",
+  "license": "MIT",
   "type": "module",
   "main": "./src/index.css",
   "style": "./src/index.css",
@@ -23,8 +23,8 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "node -e \"console.log('@snapclip/design-tokens: pure CSS, no build step required')\"",
-    "typecheck": "node -e \"console.log('@snapclip/design-tokens: no TypeScript surface')\"",
+    "build": "node -e \"console.log('@yue-ui/design-tokens: pure CSS, no build step required')\"",
+    "typecheck": "node -e \"console.log('@yue-ui/design-tokens: no TypeScript surface')\"",
     "audit": "node ../../tools/audit-tokens.mjs --target ."
   },
   "keywords": [

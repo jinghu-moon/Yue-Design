@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SnapClip token audit — the release gate for @snapclip/design-tokens.
+ * Yue token audit — the release gate for @yue-ui/design-tokens.
  *
  *   node tools/audit-tokens.mjs [--target <dir|file>]... [--json] [--quiet] [--no-diagnostics]
  *
@@ -22,6 +22,7 @@ import {
   CONTRAST_PAIRS,
   DEFAULT_TARGETS,
   DIAGNOSTIC_PROFILES,
+  PACKAGE_PAIRS,
 } from './token-audit.pairs.mjs'
 
 const REPO_ROOT = resolvePath(dirname(fileURLToPath(import.meta.url)), '..')
@@ -182,7 +183,7 @@ function renderTarget(result, { quiet }) {
   lines.push('')
   lines.push(
     `  → ${result.passed}/${result.total} ${result.ok ? 'PASS' : 'FAIL'} ` +
-      `(${CONTRAST_PAIRS.length} pairs × ${result.profiles.length} profiles)`,
+      `(${result.pairCount} pairs × ${result.profiles.length} profiles)`,
   )
   return lines
 }
@@ -205,7 +206,15 @@ function renderParity(parity) {
       lines.push(`    … ${parity.differences.length - 25} more`)
     }
   }
-  lines.push(`  → ${parity.identical ? 'IDENTICAL' : 'DIVERGED'}`)
+  // Additions are reported, never silent: the prototype is a byte-frozen
+  // baseline, so every package-only token is a deliberate extension and should be
+  // visible in the release log rather than quietly widening the contract.
+  const added = parity.addedNames ?? []
+  lines.push(`  additions (package-only): ${added.length}`)
+  for (const name of added) lines.push(`    + ${name}`)
+  lines.push(
+    `  → ${parity.identical ? (added.length > 0 ? 'SUPERSET — no drift, no loss' : 'IDENTICAL') : 'DIVERGED'}`,
+  )
   return lines
 }
 
@@ -225,10 +234,20 @@ function main() {
   const specs = options.targets.length > 0 ? options.targets : DEFAULT_TARGETS
   const targets = specs.map((spec) => normalizeTarget(spec))
 
-  const results = targets.map((target) => auditTarget({ id: target.id, entry: target.entry }))
+  // The migrated prototype is held to the migrated contract, verbatim. Everything
+  // else — the package, and any ad-hoc `--target` — is held to that contract *plus*
+  // the package's own additions, because only the package defines them.
+  const pairsFor = (id) => (id === 'prototype' ? CONTRAST_PAIRS : PACKAGE_PAIRS)
+
+  const results = targets.map((target) =>
+    auditTarget({ id: target.id, entry: target.entry, pairs: pairsFor(target.id) }),
+  )
+  // Superset mode: the package started as a byte-identical copy of the frozen
+  // prototype and is now allowed to grow. Dropped tokens and value drift still
+  // fail; additions are surfaced by renderParity and pinned by the test suite.
   const parity =
     results.length > 1
-      ? compareTargets(targets[0], targets[1])
+      ? compareTargets(targets[0], targets[1], { allowAdditions: true })
       : null
 
   const diagnostics = options.diagnostics
@@ -237,6 +256,7 @@ function main() {
           id: result.id,
           entry: result.entry,
           profiles: DIAGNOSTIC_PROFILES,
+          pairs: pairsFor(result.id),
         }),
       )
     : []
@@ -262,11 +282,11 @@ function main() {
   }
 
   const out = []
-  out.push('SnapClip Design System · Token Audit')
+  out.push('Yue Design · Token Audit')
   out.push(RULE)
   out.push(
-    `contract: ${CONTRAST_PAIRS.length} contrast pairs × ${AUDIT_PROFILES.length} profiles = ` +
-      `${CONTRAST_PAIRS.length * AUDIT_PROFILES.length} gating checks per target`,
+    `contract: ${CONTRAST_PAIRS.length} migrated pairs (+${PACKAGE_PAIRS.length - CONTRAST_PAIRS.length} ` +
+      `package-only) × ${AUDIT_PROFILES.length} profiles`,
   )
   out.push(`gating profiles: ${AUDIT_PROFILES.map((profile) => profile.id).join(', ')}`)
   out.push('')

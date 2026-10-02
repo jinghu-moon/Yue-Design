@@ -1,11 +1,51 @@
+# Dependencies and package-manager state
 node_modules/
-dist/
-*.tgz
+.pnpm-store/
+.npm/
 
-# VitePress build + dependency-optimiser caches
+# Build output
+dist/
+coverage/
+.vite/
 .vitepress/cache/
 .vitepress/dist/
-
+**/.vitepress/cache/
+**/.vitepress/dist/
 *.tsbuildinfo
+
+# Generated test consumers and temporary verification output
+tests/tree-shaking/dist/
+*.tgz
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and tool caches
+*.log
+*.log.*
+.eslintcache
+.stylelintcache
+
+# Local agent plans and workspace metadata
+.zcf/
+
+# Third-party reference snapshots are local research material. They retain their
+# own upstream licenses and are not part of the Yue source distribution.
+refer/
+
+# Editor and OS files
+.idea/
+.vscode/
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

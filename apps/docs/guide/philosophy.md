@@ -13,7 +13,7 @@ primitives < semantics < components < implementations < demo
 - **primitives** — 稳定的标尺与原始色板（`--space-*`、`--neutral-*`、`--azure-*`、字体、动效）
 - **semantics** — 主题与交互角色（`--surface`、`--text-primary`、`--border-control`、Accent）
 - **components** — 组件几何与视觉契约（`--button-height-md`、`--input-border-color`）
-- **implementations** — 具体的组件选择器（`.btn`），发布在 `@snapclip/vue/style.css`
+- **implementations** — 具体的组件选择器（`.btn`），发布在 `@yue-ui/vue/style.css`
 
 组件只消费语义与组件角色，不直接读取原始色板。因此换一套 Accent，不需要动任何组件选择器。
 
@@ -56,11 +56,23 @@ primitives < semantics < components < implementations < demo
 
 ## 6. 图标不进 Token 包
 
+完整的尺寸、插槽、`currentColor` 和无障碍规则见[设计 / 图标](/design/icon)。
+
 Tabler 图标字体只出现在原型里，从未被 `tokens/` 或 `components/*.css` 引用。组件通过插槽接收图标，不绑定任何图标库：
 
 ```vue
-<DsButton>
+<YueButton>
   <template #leading><IconSearch /></template>
   搜索
-</DsButton>
+</YueButton>
 ```
+
+## 7. 组件规则不进层
+
+Token 的层顺序（`primitives < semantics < components < implementations < demo`）解决的是
+Token 之间的优先级，所以 Token 值写在层里。
+
+组件规则则相反：无层样式优先于所有层，组件规则一旦放进 `@layer`，宿主的无层重置
+（VitePress 的 `button` 重置、Tailwind Preflight、normalize.css）就会赢过它 ——
+按钮的填充色会在真实项目里悄悄消失。所以 `@yue-ui/vue/style.css` 是**无层**的，
+覆写走重指 Component Token 这条路。

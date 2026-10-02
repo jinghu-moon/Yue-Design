@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    // The declaration emit is mirrored 1:1 from src/ to dist/ so the `exports`
+    // map and the files on disk can never drift.
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  // Tests live next to their source so they cannot go stale, but nothing about
+  // them belongs in the published artefact.
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

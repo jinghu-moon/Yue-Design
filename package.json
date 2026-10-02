@@ -1,9 +1,9 @@
 {
-  "name": "snapclip-design-system",
+  "name": "yue-design",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SnapClip Design System monorepo: pure-CSS tokens, Vue 3 components, VitePress documentation",
+  "description": "Yue Design monorepo: pure-CSS tokens, Vue 3 components, VitePress documentation",
   "packageManager": "pnpm@10.30.1",
   "engines": {
     "node": ">=20.19.0",
@@ -22,12 +22,19 @@
     "test:watch": "vitest",
     "audit:tokens": "node tools/audit-tokens.mjs",
     "verify:dist": "node tools/verify-dist.mjs",
+    "verify:treeshaking": "node tests/tree-shaking/verify.mjs",
+    "verify:visual": "node tests/visual/verify.mjs",
+    "verify:tarball": "node tools/verify-tarball.mjs",
     "verify": "corepack pnpm typecheck && corepack pnpm build && corepack pnpm test && corepack pnpm audit:tokens && corepack pnpm verify:dist",
-    "clean": "corepack pnpm -r exec rimraf dist && rimraf apps/docs/.vitepress/dist apps/docs/.vitepress/cache"
+    "verify:all": "corepack pnpm verify && corepack pnpm verify:treeshaking && corepack pnpm verify:visual && corepack pnpm verify:tarball",
+    "clean": "corepack pnpm -r exec rimraf dist && rimraf apps/docs/.vitepress/dist apps/docs/.vitepress/cache tests/tree-shaking/dist"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.2.4",
+    "@vue/test-utils": "^2.4.6",
+    "@yue-ui/vue": "workspace:^",
     "happy-dom": "14.12.3",
+    "playwright-core": "^1.63.0",
     "rimraf": "6.1.3",
     "typescript": "5.9.3",
     "vite": "6.4.1",

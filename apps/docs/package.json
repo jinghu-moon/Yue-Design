@@ -1,9 +1,9 @@
 {
-  "name": "@snapclip/docs",
+  "name": "@yue-ui/docs",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SnapClip Design System documentation site",
+  "description": "Yue Design documentation site",
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
@@ -11,9 +11,9 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@snapclip/design-tokens": "workspace:^",
-    "@snapclip/hooks": "workspace:^",
-    "@snapclip/vue": "workspace:^",
+    "@yue-ui/design-tokens": "workspace:^",
+    "@yue-ui/hooks": "workspace:^",
+    "@yue-ui/vue": "workspace:^",
     "vue": "3.5.28"
   },
   "devDependencies": {

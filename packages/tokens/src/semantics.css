@@ -1,4 +1,4 @@
-/* SnapClip Semantic Tokens
+/* Yue Semantic Tokens
  * Theme and interaction roles. Components consume these roles instead of raw palette values.
  * Layer source for prototypes/design-tokens-generic-v4.html.
  */
@@ -20,9 +20,10 @@
    * must stay distinguishable from Level 2 even with elevation disabled. */
   --surface-level-2-border: var(--border-divider);
   --surface-level-3-border: var(--border-default);
-  --text-primary         : var(--neutral-900);
-  --text-secondary       : var(--neutral-700);
-  --text-placeholder     : var(--neutral-600);
+   --text-primary         : var(--neutral-900);
+   --text-secondary       : var(--neutral-700);
+   --text-placeholder     : var(--neutral-600);
+   --text-disabled        : color-mix(in srgb, var(--text-primary) calc(var(--opacity-disabled-content)*100%), transparent);
   --text-inverse         : var(--neutral-0);
   --border-divider       : var(--neutral-200);
   --border-default       : var(--neutral-300);
@@ -31,6 +32,8 @@
   --focus-ring           : var(--accent-border);
   --action-primary       : var(--neutral-900);
   --action-on-primary    : var(--neutral-0);
+  --action-warning       : var(--amber-700);
+  --action-on-warning    : var(--neutral-0);
   --action-danger        : var(--red-700);
   --action-on-danger     : var(--neutral-0);
   --selection-bg         : var(--accent-solid);
@@ -94,15 +97,18 @@
   --surface-level-3   : #2b2b2b;
   --surface-level-2-border: var(--border-divider);
   --surface-level-3-border: var(--border-default);
-  --text-primary      : #f5f5f5;
-  --text-secondary    : #b8b8b8;
-  --text-placeholder  : #858585;
+   --text-primary      : #f5f5f5;
+   --text-secondary    : #b8b8b8;
+   --text-placeholder  : #858585;
+   --text-disabled     : #707070;
   --text-inverse      : var(--neutral-950);
   --border-divider    : #2b2b2b;
   --border-default    : #383838;
   --border-control    : #7a7a7a;
   --action-primary    : var(--neutral-100);
   --action-on-primary : var(--neutral-950);
+  --action-warning    : var(--warning);
+  --action-on-warning : var(--neutral-950);
   --action-danger     : var(--error);
   --action-on-danger  : var(--neutral-950);
   --scrim             : rgb(0 0 0/.64);

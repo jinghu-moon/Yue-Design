@@ -57,11 +57,11 @@ describe('style bundle', () => {
         normalise({
           [ENTRY]: "@import './components/index.css';\n",
           [at('components/index.css')]: "@import './button.css';\n",
-          [at('components/button.css')]: '.ds-button { height: 32px }\n',
+          [at('components/button.css')]: '.yue-button { height: 32px }\n',
         }),
       ),
     )
-    expect(css).toBe('.ds-button { height: 32px }\n\n\n')
+    expect(css).toBe('.yue-button { height: 32px }\n\n\n')
   })
 
   it('inlines a file only once', () => {
@@ -74,7 +74,7 @@ describe('style bundle', () => {
   })
 
   it('keeps non-import CSS untouched, including @layer blocks', () => {
-    const source = '@layer implementations {\n.ds-button { height: var(--button-height-md) }\n}\n'
+    const source = '@layer implementations {\n.yue-button { height: var(--button-height-md) }\n}\n'
     const { css } = bundleStyle(ENTRY, fakeFs(normalise({ [ENTRY]: source })))
     expect(css).toBe(source)
   })
@@ -95,17 +95,28 @@ describe('style bundle', () => {
 
 describe('the real component stylesheet entry', () => {
   const entry = fileURLToPath(new URL('../packages/vue/src/style.css', import.meta.url))
+  const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
-  it('bundles without pulling in anything unexpected', () => {
+  it('pulls in one stylesheet per component, and nothing else', () => {
     const { files } = bundleStyle(entry)
-    expect(files).toHaveLength(1)
+    const names = files.map((file) => file.split(/[\\/]/).slice(-2).join('/'))
+    expect(names).toEqual(['src/style.css', 'button/style.css'])
   })
 
-  it('never declares @layer outside of comments', () => {
-    // Declaring a layer here could create `implementations` before `primitives`
-    // and invert the cascade; the token package owns the layer order.
+  it('never declares @layer, so a host reset cannot outrank the components', () => {
+    // Unlayered CSS outranks every cascade layer regardless of specificity.
+    // VitePress ships `button { background-color: transparent }`; if these rules
+    // were in `@layer implementations` that reset would win and the Button would
+    // render with no fill in the docs — which is exactly how this was found.
+    // Declaring a layer *order* here would be worse still: it could create
+    // `implementations` before `primitives` and invert the token cascade.
     const { css } = bundleStyle(entry)
-    const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
-    expect(withoutComments).not.toMatch(/@layer/i)
+    expect(stripComments(css)).not.toMatch(/@layer/i)
+  })
+
+  it('still emits the component rules themselves', () => {
+    const { css } = bundleStyle(entry)
+    expect(css).toContain('.yue-button')
+    expect(css).toContain('.yue-button--solid')
   })
 })

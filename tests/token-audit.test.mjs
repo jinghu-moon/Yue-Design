@@ -8,12 +8,33 @@ import {
   CONTRAST_PAIRS,
   DEFAULT_TARGETS,
   DIAGNOSTIC_PROFILES,
+  PACKAGE_CONTRAST_PAIRS,
+  PACKAGE_ONLY_TOKENS,
+  PACKAGE_PAIRS,
   PROTOTYPE_HTML,
 } from '../tools/token-audit.pairs.mjs'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const absolute = (entry) => resolve(REPO_ROOT, entry)
 const target = (spec) => ({ id: spec.id, entry: absolute(spec.entry) })
+
+/**
+ * Which contract a target must satisfy.
+ *
+ * The prototype is held to the migrated table and nothing more; everything else is
+ * held to that table plus the package's own additions, because only the package
+ * defines them. Same rule the CLI uses.
+ */
+const pairsFor = (id) => (id === 'prototype' ? CONTRAST_PAIRS : PACKAGE_PAIRS)
+
+const parseable = (pairs, label) => {
+  for (const pair of pairs) {
+    expect(pair, label).toHaveLength(4)
+    expect(pair[1], label).toMatch(/^--/)
+    expect([].concat(pair[2]).every((token) => /^--/.test(token)), label).toBe(true)
+    expect(pair[3], label).toBeGreaterThanOrEqual(3)
+  }
+}
 
 const TEMP_DIR = resolve(REPO_ROOT, 'node_modules/.tmp/token-audit')
 afterAll(() => {
@@ -24,12 +45,12 @@ describe('contrast contract', () => {
   it('covers every pair in both gating profiles', () => {
     expect(CONTRAST_PAIRS).toHaveLength(32)
     expect(AUDIT_PROFILES.map((entry) => entry.id)).toEqual(['light/azure', 'dark/azure'])
-    for (const pair of CONTRAST_PAIRS) {
-      expect(pair).toHaveLength(4)
-      expect(pair[1]).toMatch(/^--/)
-      expect([].concat(pair[2]).every((token) => /^--/.test(token))).toBe(true)
-      expect([3, 4.5]).toContain(pair[3])
-    }
+    parseable(CONTRAST_PAIRS, 'migrated')
+  })
+
+  it('keeps the package-only additions well formed', () => {
+    expect(PACKAGE_CONTRAST_PAIRS.length).toBeGreaterThan(0)
+    parseable(PACKAGE_CONTRAST_PAIRS, 'package-only')
   })
 
   it('is a faithful transcription of the browser prototype, not a hand-copied list', (context) => {
@@ -55,10 +76,12 @@ describe('contrast contract', () => {
 })
 
 describe.each(DEFAULT_TARGETS)('$id target', (spec) => {
-  const result = auditTarget(target(spec))
+  const pairs = pairsFor(spec.id)
+  const result = auditTarget({ ...target(spec), pairs })
 
   it('passes every gating check', () => {
-    expect(result.total).toBe(CONTRAST_PAIRS.length * AUDIT_PROFILES.length)
+    expect(result.pairCount).toBe(pairs.length)
+    expect(result.total).toBe(pairs.length * AUDIT_PROFILES.length)
     expect(result.failed.map((failure) => `${failure.profile} ${failure.label}`)).toEqual([])
     expect(result.passed).toBe(result.total)
     expect(result.ok).toBe(true)
@@ -88,14 +111,81 @@ describe.each(DEFAULT_TARGETS)('$id target', (spec) => {
   })
 })
 
-describe('prototype ↔ package parity', () => {
-  const parity = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]))
+describe('the package-only contrast contract', () => {
+  it('extends the migrated table rather than replacing it', () => {
+    expect(PACKAGE_PAIRS).toEqual([...CONTRAST_PAIRS, ...PACKAGE_CONTRAST_PAIRS])
+    expect(PACKAGE_PAIRS.length).toBe(CONTRAST_PAIRS.length + PACKAGE_CONTRAST_PAIRS.length)
+    // No pair may appear twice, or the audit would double-count a gating check.
+    expect(new Set(PACKAGE_PAIRS.map((pair) => pair[0])).size).toBe(PACKAGE_PAIRS.length)
+  })
 
-  it('resolves every token to the identical value in every scope', () => {
+  it('only names tokens the package adds, so it is not a second copy of the table', () => {
+    const additions = new Set(PACKAGE_ONLY_TOKENS)
+    for (const [, foreground, background] of PACKAGE_CONTRAST_PAIRS) {
+      const mentioned = [foreground, ...[].concat(background)]
+      expect(
+        mentioned.some((token) => additions.has(token)),
+        `${foreground} on ${[].concat(background).join(' + ')} names no post-migration token`,
+      ).toBe(true)
+    }
+  })
+
+  it('would fail on the frozen prototype, which is why it is not applied there', () => {
+    // The reason the contract is per-target rather than global: the prototype has no
+    // `--button-warning-*` or `--button-*-accent` at all, so asking it to clear these
+    // pairs would report "unresolved reference" for colours it was never meant to
+    // define — a category error dressed up as a stricter gate.
+    const prototype = auditTarget({ ...target(DEFAULT_TARGETS[0]), pairs: PACKAGE_PAIRS })
+    expect(prototype.ok).toBe(false)
+    expect(prototype.failed.length).toBeGreaterThan(0)
+    expect(prototype.failed.every((failure) => typeof failure.error === 'string')).toBe(true)
+  })
+
+  it('gates the combinations the migration never had', () => {
+    const labels = PACKAGE_CONTRAST_PAIRS.map((pair) => pair[0])
+    for (const expected of ['成功按钮', '警告按钮']) {
+      expect(labels).toContain(expected)
+    }
+    for (const theme of ['默认', '主要', '危险', '警告', '成功']) {
+      expect(labels).toContain(`描边按钮文字 ${theme}`)
+    }
+  })
+})
+
+describe('prototype ↔ package parity', () => {
+  // Superset mode. The prototype is a byte-frozen visual regression baseline, so
+  // the package is expected to have grown; what may never happen is a dropped
+  // token or a shared token resolving differently.
+  const parity = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]), {
+    allowAdditions: true,
+  })
+
+  it('resolves every shared token to the identical value in every scope', () => {
     expect(parity.differences).toEqual([])
     expect(parity.identical).toBe(true)
     expect(parity.compared).toBeGreaterThan(1000)
     expect(parity.profiles).toHaveLength(4)
+  })
+
+  it('grows only by the pinned package-only tokens', () => {
+    // Any new package-only token must be added to PACKAGE_ONLY_TOKENS by hand,
+    // which is what keeps "the package may grow" from becoming a loophole.
+    expect(parity.addedNames).toEqual(PACKAGE_ONLY_TOKENS)
+  })
+
+  it('still fails closed when additions are not explicitly allowed', () => {
+    const strict = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]))
+    expect(strict.addedNames).toEqual([])
+    // Strict mode must report the additions as differences, and only as
+    // package-side additions — never as something the prototype lost. One record
+    // is emitted per probed profile, so the names are deduplicated here.
+    expect([...new Set(strict.differences.map((difference) => difference.name))].sort()).toEqual(
+      PACKAGE_ONLY_TOKENS,
+    )
+    expect(strict.differences.every((difference) => difference.kind === 'missing-on-left')).toBe(
+      true,
+    )
+    expect(strict.identical).toBe(false)
   })
 })
 

@@ -2,10 +2,22 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    // Mapped to workspace source, not to `dist`. The runtime resolves the real
+    // package entry points through `exports` (that is the point of §10), but
+    // type-checking must not depend on `pnpm build` having run first, or a clean
+    // checkout could not be type-checked at all.
     "paths": {
-      "@snapclip/hooks": ["../../packages/hooks/src/index.ts"],
-      "@snapclip/vue": ["../../packages/vue/src/index.ts"]
-    }
+      "@yue-ui/hooks": ["../../packages/hooks/src/index.ts"],
+      "@yue-ui/vue": ["../../packages/vue/src/index.ts"],
+      "@yue-ui/vue/plugin": ["../../packages/vue/src/plugin.ts"],
+      "@yue-ui/vue/button": ["../../packages/vue/src/components/button/index.ts"]
+    },
+    // Mapping `@yue-ui/vue` to source pulls the components' `.vue` files into this
+    // program, so the docs type-check needs the same environment typing the
+    // library itself uses — `import.meta.env` in the dev-only accessibility guard.
+    // `vite/client` also declares the `*.css` modules, which is why `env.d.ts` no
+    // longer has to.
+    "types": ["vite/client"]
   },
   "include": ["env.d.ts", ".vitepress/**/*.ts", ".vitepress/**/*.vue"],
   "exclude": ["node_modules", ".vitepress/cache", ".vitepress/dist"]
