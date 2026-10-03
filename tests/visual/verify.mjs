@@ -1928,96 +1928,134 @@ async function checkTokenDrivenStates(page, origin) {
 
 
 /**
- * A checked CheckTag must keep its selected background on hover.
+ * Checked tags: hover must emphasise the tag's own background, and the selected palette must follow the theme.
  *
- * The reported defect: hovering a checked tag replaced its fill with the unselected tint while the text kept
- * the selected colour, so the label vanished — hover *swapped* the variant instead of adjusting the existing
- * background. The assertions encode that definition: the fill reacts, the text colour does not move, and the
- * fill keeps its contrast with the text in both states.
+ * Two defects are pinned here. The first: `hover` swapped in the unselected variant's fill while the selected
+ * text colour stayed, so a checked tag turned near-white and its label vanished — hover must adjust the
+ * background, never replace it. The second: the selected state ignored `theme`, so every theme rendered
+ * primary; honouring it also exposed filled palettes whose label sat dark-on-dark.
+ *
+ * Both modes are checked. A light-only run would leave "the dark labels are readable" as an inference from how
+ * the fills flip, and the palettes really do flip: the same token names resolve to a deep green in light and a
+ * light green in dark.
  */
 async function checkCheckedTagHover(page, origin) {
-  await page.goto(`${origin}/components/tag`, { waitUntil: 'load' })
-  await page.waitForSelector('.yue-tag--check', { state: 'visible', timeout: 15_000 })
-  const selector = '.yue-tag--check.is-checked'
-  if ((await page.locator(selector).count()) === 0) {
-    fail('checked tag: the Tag page renders no checked CheckTag, so this check would prove nothing')
-    return
-  }
+  for (const mode of ['light', 'dark']) {
+    await page.emulateMedia({ colorScheme: mode })
+    await page.goto(`${origin}/components/tag`, { waitUntil: 'load' })
+    if (mode === 'dark') {
+      // VitePress marks dark with a class; the package's own dark values key off `[data-theme=dark]`.
+      await page.evaluate(() => {
+        document.documentElement.classList.add('dark')
+        document.documentElement.setAttribute('data-theme', 'dark')
+      })
+    }
+    const label = (text) => `${mode}: ${text}`
 
-  const read = () =>
-    page.evaluate((target) => {
-      const element = document.querySelector(target)
-      const style = getComputedStyle(element)
-      const root = getComputedStyle(document.documentElement)
-      return {
-        text: element.textContent?.trim().slice(0, 20) ?? '',
-        fill: style.backgroundColor,
-        color: style.color,
-        fillToken: style.getPropertyValue('--_fill').trim(),
-        colorToken: style.getPropertyValue('--_color').trim(),
-        page: root.getPropertyValue('--page').trim() || getComputedStyle(document.body).backgroundColor,
-      }
-    }, selector)
+    const sample = (target) =>
+      page.evaluate((selector) => {
+        const element = document.querySelector(selector)
+        if (element === null) return null
+        const style = getComputedStyle(element)
+        const root = getComputedStyle(document.documentElement)
+        return {
+          text: element.textContent?.trim().slice(0, 20) ?? '',
+          fill: style.backgroundColor,
+          color: style.color,
+          page: root.getPropertyValue('--page').trim() || getComputedStyle(document.body).backgroundColor,
+        }
+      }, target)
 
-  await page.mouse.move(0, 0)
-  await page.waitForTimeout(220)
-  const resting = await read()
-  await page.hover(selector)
-  await page.waitForTimeout(320)
-  const hovered = await read()
-  await page.mouse.move(0, 0)
+    const contrastOf = (reading) =>
+      contrastRatio(
+        parseColor(reading.color),
+        // bottom-up: the page first, the fill on top of it
+        flatten([parseColor(reading.page), parseColor(reading.fill)]),
+      )
 
-  if (hovered.color !== resting.color) {
-    fail(`checked tag: hover changed the text colour (${resting.color} → ${hovered.color}) — hover must adjust the background, not the state`)
-  }
-  if (hovered.fill === resting.fill) {
-    fail('checked tag: hover produced no visible change, so the tag gives no feedback')
-  }
-  for (const [state, reading] of [['resting', resting], ['hover', hovered]]) {
-    const ratio = contrastRatio(
-      parseColor(reading.color),
-      // bottom-up: the page first, the fill on top of it
-      flatten([parseColor(reading.page), parseColor(reading.fill)]),
-    )
-    if (ratio < 4.5) {
+    // ── the hover rule on a checked tag ─────────────────────────────────────────
+    const selector = '.yue-tag--check.is-checked'
+    if ((await page.locator(selector).count()) === 0) {
+      fail(label('the Tag page renders no checked CheckTag, so this check would prove nothing'))
+      continue
+    }
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(220)
+    const resting = await sample(selector)
+    await page.hover(selector)
+    await page.waitForTimeout(320)
+    const hovered = await sample(selector)
+    await page.mouse.move(0, 0)
+
+    if (hovered.color !== resting.color) {
       fail(
-        `checked tag: the label "${reading.text}" has ${ratio.toFixed(2)}:1 contrast in the ${state} state ` +
-          `(fill ${reading.fill} / ${reading.fillToken}, colour ${reading.color} / ${reading.colorToken}, ` +
-          `page ${reading.page})`,
+        label(
+          `hover changed the text colour (${resting.color} → ${hovered.color}) — hover must adjust the ` +
+            'background, not the state',
+        ),
       )
     }
-  }
-  notes.push(
-    `checked tag: hover adjusts the fill and keeps the label legible ` +
-      `(${resting.fill} → ${hovered.fill}, text ${hovered.color})`,
-  )
-
-  // The theme must select with its own palette: a checked tag that ignores `theme` renders one colour for
-  // every theme, which is the defect this asserts against.
-  const themed = await page.$$eval('[data-probe="check-theme"]', (elements) =>
-    elements.map((element) => {
-      const style = getComputedStyle(element)
-      return { theme: element.className, fill: style.backgroundColor, color: style.color }
-    }),
-  )
-  if (themed.length < 4) {
-    fail(`checked tag: expected the four themed examples, found ${themed.length}`)
-    return
-  }
-  const fills = new Set(themed.map((entry) => entry.fill))
-  if (fills.size !== themed.length) {
-    fail(
-      `checked tag: ${themed.length} themes render ${fills.size} distinct selected fills ` +
-        `(${themed.map((entry) => entry.fill).join(', ')}) — the selected state is ignoring theme`,
+    if (hovered.fill === resting.fill) {
+      fail(label('hover produced no visible change, so the tag gives no feedback'))
+    }
+    for (const [state, reading] of [['resting', resting], ['hover', hovered]]) {
+      const ratio = contrastOf(reading)
+      if (ratio < 4.5) {
+        fail(
+          label(
+            `the label "${reading.text}" has ${ratio.toFixed(2)}:1 contrast in the ${state} state ` +
+              `(fill ${reading.fill}, colour ${reading.color}, page ${reading.page})`,
+          ),
+        )
+      }
+    }
+    notes.push(
+      label(`hover adjusts the checked fill and keeps the label legible (${resting.fill} → ${hovered.fill})`),
     )
-  }
-  for (const entry of themed) {
-    const ratio = contrastRatio(parseColor(entry.color), parseColor(entry.fill))
-    if (ratio < 4.5) {
-      fail(`checked tag: theme ${entry.theme} labels at ${ratio.toFixed(2)}:1`)
+
+    // ── the themed palettes: the selected surface and the ordinary filled one ───
+    for (const [probe, surface] of [
+      ['check-theme', 'selected check tag'],
+      ['filled-theme', 'filled tag'],
+    ]) {
+      const readings = await page.evaluate(
+        (attribute) =>
+          [...document.querySelectorAll(`[data-probe="${attribute}"]`)].map((element) => {
+            const style = getComputedStyle(element)
+            const root = getComputedStyle(document.documentElement)
+            return {
+              className: element.className,
+              fill: style.backgroundColor,
+              color: style.color,
+              page: root.getPropertyValue('--page').trim() || getComputedStyle(document.body).backgroundColor,
+            }
+          }),
+        probe,
+      )
+      if (readings.length < 4) {
+        fail(label(`expected four ${surface} examples, found ${readings.length}`))
+        continue
+      }
+      const fills = new Set(readings.map((entry) => entry.fill))
+      if (fills.size !== readings.length) {
+        fail(
+          label(
+            `${readings.length} ${surface} themes render ${fills.size} distinct fills ` +
+              `(${[...fills].join(', ')}) — the theme is being ignored`,
+          ),
+        )
+      }
+      for (const reading of readings) {
+        const ratio = contrastOf(reading)
+        if (ratio < 4.5) {
+          fail(label(`${surface} ${reading.className} labels at ${ratio.toFixed(2)}:1`))
+        }
+      }
+      notes.push(label(`${fills.size} ${surface} themes each paint their own palette at >= 4.5:1`))
     }
   }
-  notes.push(`checked tag: ${fills.size} themes each select with their own palette`)
+  // Leave the media emulation as the rest of the run expects to find it.
+  await page.emulateMedia({ colorScheme: 'light' })
 }
 
 async function main() {

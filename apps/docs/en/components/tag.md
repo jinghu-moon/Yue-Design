@@ -268,3 +268,12 @@ Unselected it is a neutral chip; selected it uses the palette named by `theme` (
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--success" data-probe="check-theme">success</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>
+
+### Filled variants per theme (live)
+
+The same palettes on ordinary filled tags, verifying that each theme reaches 4.5:1 in light and dark.
+
+<span class="yue-tag yue-tag--md yue-tag--primary" data-probe="filled-theme">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--success" data-probe="filled-theme">success</span>
+<span class="yue-tag yue-tag--md yue-tag--warning" data-probe="filled-theme">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--danger" data-probe="filled-theme">danger</span>

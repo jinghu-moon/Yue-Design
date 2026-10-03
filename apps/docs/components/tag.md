@@ -268,3 +268,12 @@ const checkTags = ref([
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--success" data-probe="check-theme">success</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>
+
+### 填充变体的主题（可交互）
+
+同一组配色的常规填充标签，用于验证每个主题的底色与文字在浅色和深色下都达到 4.5:1。
+
+<span class="yue-tag yue-tag--md yue-tag--primary" data-probe="filled-theme">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--success" data-probe="filled-theme">success</span>
+<span class="yue-tag yue-tag--md yue-tag--warning" data-probe="filled-theme">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--danger" data-probe="filled-theme">danger</span>
