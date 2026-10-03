@@ -51,8 +51,8 @@ function resolveAll(srcDir) {
   const resolver = createResolver(loadTokenSheet({ entry }))
   const values = new Map()
   for (const profile of AUDIT_PROFILES) {
-    for (const name of resolver.names(profile.id)) {
-      const outcome = resolver.tryValue(name, profile.id)
+    for (const name of resolver.names(profile)) {
+      const outcome = resolver.tryValue(name, profile)
       values.set(`${profile.id} ${name}`, outcome.ok ? outcome.value : `error: ${outcome.error}`)
     }
   }

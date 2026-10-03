@@ -175,50 +175,73 @@ catalogue 18 → 17 组；公共图文件 4 → 37
 - 改动前入口：`.git\yue-before\packages\tokens\src\index.css`（13 个 CSS 文件）
 - 改动后入口：`packages\tokens\src\index.css`（45 个 CSS 文件）
 - 参与比较的 `profile × token`：1182
-- 新增名字：140；消失名字：0；解析值变化：20
+- 新增名字：140；消失名字：0；解析值变化：43
 
 | 变化 | profile × token | 改动前 | 改动后 |
 | --- | --- | --- | --- |
 | 新增 | `dark/azure --tag-border-radius-round` | — | 999px |
 | 新增 | `dark/azure --tag-close-icon-size` | — | 12px |
-| 新增 | `dark/azure --tag-danger-filled-background` | — | #c75146 |
+| 新增 | `dark/azure --tag-danger-filled-background` | — | #f5aaa3 |
 | 新增 | `dark/azure --tag-danger-filled-border-color` | — | transparent |
-| 新增 | `dark/azure --tag-danger-filled-color` | — | #6d342f |
+| 新增 | `dark/azure --tag-danger-filled-color` | — | #fee8e6 |
 | 新增 | `dark/azure --tag-danger-outline-background` | — | transparent |
-| 新增 | `dark/azure --tag-danger-outline-border-color` | — | #feb3ab |
-| 新增 | `dark/azure --tag-danger-outline-color` | — | #c75146 |
-| 新增 | `dark/azure --tag-danger-tint-background` | — | #ffecea |
+| 新增 | `dark/azure --tag-danger-outline-border-color` | — | #7c322c |
+| 新增 | `dark/azure --tag-danger-outline-color` | — | #f5aaa3 |
+| 新增 | `dark/azure --tag-danger-tint-background` | — | #391512 |
 | 新增 | `dark/azure --tag-danger-tint-border-color` | — | transparent |
-| 新增 | `dark/azure --tag-danger-tint-color` | — | #6d342f |
-| 新增 | `dark/azure --tag-danger-tint-outline-background` | — | #ffecea |
-| 新增 | `dark/azure --tag-danger-tint-outline-border-color` | — | #feb3ab |
-| 新增 | `dark/azure --tag-danger-tint-outline-color` | — | #6d342f |
-| 新增 | `dark/azure --tag-default-filled-background` | — | #eee |
+| 新增 | `dark/azure --tag-danger-tint-color` | — | #fee8e6 |
+| 新增 | `dark/azure --tag-danger-tint-outline-background` | — | #391512 |
+| 新增 | `dark/azure --tag-danger-tint-outline-border-color` | — | #7c322c |
+| 新增 | `dark/azure --tag-danger-tint-outline-color` | — | #fee8e6 |
+| 新增 | `dark/azure --tag-default-filled-background` | — | #2b2b2b |
 | 新增 | `dark/azure --tag-default-filled-border-color` | — | transparent |
-| 新增 | `dark/azure --tag-default-filled-color` | — | #1f1f1f |
+| 新增 | `dark/azure --tag-default-filled-color` | — | #f5f5f5 |
 | 新增 | `dark/azure --tag-default-outline-background` | — | transparent |
-| 新增 | `dark/azure --tag-default-outline-border-color` | — | #e0e0e0 |
-| 新增 | `dark/azure --tag-default-outline-color` | — | #525252 |
-| 新增 | `dark/azure --tag-default-tint-background` | — | #fafafa |
+| 新增 | `dark/azure --tag-default-outline-border-color` | — | #383838 |
+| 新增 | `dark/azure --tag-default-outline-color` | — | #b8b8b8 |
+| 新增 | `dark/azure --tag-default-tint-background` | — | #202020 |
 | 新增 | `dark/azure --tag-default-tint-border-color` | — | transparent |
-| 新增 | `dark/azure --tag-default-tint-color` | — | #525252 |
-| 新增 | `dark/azure --tag-default-tint-outline-background` | — | #fafafa |
-| 新增 | `dark/azure --tag-default-tint-outline-border-color` | — | #e0e0e0 |
-| 新增 | `dark/azure --tag-default-tint-outline-color` | — | #525252 |
+| 新增 | `dark/azure --tag-default-tint-color` | — | #b8b8b8 |
+| 新增 | `dark/azure --tag-default-tint-outline-background` | — | #202020 |
+| 新增 | `dark/azure --tag-default-tint-outline-border-color` | — | #383838 |
+| 新增 | `dark/azure --tag-default-tint-outline-color` | — | #b8b8b8 |
 | 新增 | `dark/azure --tag-duration` | — | 100ms |
 | 新增 | `dark/azure --tag-ease` | — | cubic-bezier(.2, 0, .38, .9) |
-| 新增 | `dark/azure --tag-focus-ring-color` | — | #1f75db |
+| 新增 | `dark/azure --tag-focus-ring-color` | — | #93c1ff |
 | 新增 | `dark/azure --tag-focus-ring-offset` | — | 2px |
 | 新增 | `dark/azure --tag-focus-ring-width` | — | 2px |
 | 新增 | `dark/azure --tag-font-weight` | — | 500 |
 | 新增 | `dark/azure --tag-line-height` | — | 1 |
 | 新增 | `dark/azure --tag-opacity-disabled` | — | .38 |
-| 新增 | `dark/azure --tag-primary-filled-background` | — | #1f75db |
+| 新增 | `dark/azure --tag-primary-filled-background` | — | #1d67c1 |
 | 新增 | `dark/azure --tag-primary-filled-border-color` | — | transparent |
 | 新增 | `dark/azure --tag-primary-filled-color` | — | #fff |
 | 新增 | `dark/azure --tag-primary-outline-background` | — | transparent |
-| 新增 | `dark/azure --tag-primary-outline-border-color` | — | #1f75db |
-| 新增 | `dark/azure --tag-primary-outline-color` | — | #125fb8 |
+| 新增 | `dark/azure --tag-primary-outline-border-color` | — | #93c1ff |
+| 新增 | `dark/azure --tag-primary-outline-color` | — | #93c1ff |
+| 值变化 | `dark/azure --button-danger-background-hover` | color-mix(in srgb, #121212 calc(.08*100%), #f5aaa3) | color-mix(in srgb, #121212 calc(.12*100%), #f5aaa3) |
+| 值变化 | `dark/azure --button-danger-background-pressed` | color-mix(in srgb, #121212 calc(.10*100%), #f5aaa3) | color-mix(in srgb, #121212 calc(.18*100%), #f5aaa3) |
+| 值变化 | `dark/azure --button-default-background-hover` | color-mix(in srgb, #f5f5f5 calc(.08*100%), #2b2b2b) | color-mix(in srgb, #f5f5f5 calc(.12*100%), #2b2b2b) |
+| 值变化 | `dark/azure --button-default-background-pressed` | color-mix(in srgb, #f5f5f5 calc(.10*100%), #2b2b2b) | color-mix(in srgb, #f5f5f5 calc(.18*100%), #2b2b2b) |
+| 值变化 | `dark/azure --button-ghost-background-hover` | color-mix(in srgb, #f5f5f5 calc(.08*100%), transparent) | color-mix(in srgb, #f5f5f5 calc(.12*100%), transparent) |
+| 值变化 | `dark/azure --button-ghost-background-pressed` | color-mix(in srgb, #f5f5f5 calc(.10*100%), transparent) | color-mix(in srgb, #f5f5f5 calc(.18*100%), transparent) |
+| 值变化 | `dark/azure --button-primary-background-hover` | color-mix(in srgb, #121212 calc(.08*100%), #f5f5f5) | color-mix(in srgb, #121212 calc(.12*100%), #f5f5f5) |
+| 值变化 | `dark/azure --button-primary-background-pressed` | color-mix(in srgb, #121212 calc(.10*100%), #f5f5f5) | color-mix(in srgb, #121212 calc(.18*100%), #f5f5f5) |
+| 值变化 | `dark/azure --button-secondary-background-hover` | color-mix(in srgb, #f5f5f5 calc(.08*100%), #181818) | color-mix(in srgb, #f5f5f5 calc(.12*100%), #181818) |
+| 值变化 | `dark/azure --button-secondary-background-pressed` | color-mix(in srgb, #f5f5f5 calc(.10*100%), #181818) | color-mix(in srgb, #f5f5f5 calc(.18*100%), #181818) |
+| 值变化 | `dark/azure --button-selected-background-hover` | color-mix(in srgb, #bed9fe calc(.08*100%), #0f2644) | color-mix(in srgb, #bed9fe calc(.12*100%), #0f2644) |
+| 值变化 | `dark/azure --button-selected-background-pressed` | color-mix(in srgb, #bed9fe calc(.10*100%), #0f2644) | color-mix(in srgb, #bed9fe calc(.18*100%), #0f2644) |
+| 值变化 | `dark/azure --button-subtle-background-hover` | color-mix(in srgb, currentColor calc(.08*100%), transparent) | color-mix(in srgb, currentColor calc(.12*100%), transparent) |
+| 值变化 | `dark/azure --button-subtle-background-pressed` | color-mix(in srgb, currentColor calc(.10*100%), transparent) | color-mix(in srgb, currentColor calc(.18*100%), transparent) |
+| 值变化 | `dark/azure --button-success-background-hover` | color-mix(in srgb, #121212 calc(.08*100%), #64ae82) | color-mix(in srgb, #121212 calc(.12*100%), #64ae82) |
+| 值变化 | `dark/azure --button-success-background-pressed` | color-mix(in srgb, #121212 calc(.10*100%), #64ae82) | color-mix(in srgb, #121212 calc(.18*100%), #64ae82) |
+| 值变化 | `dark/azure --button-warning-background-hover` | color-mix(in srgb, #121212 calc(.08*100%), #f7c44d) | color-mix(in srgb, #121212 calc(.12*100%), #f7c44d) |
+| 值变化 | `dark/azure --button-warning-background-pressed` | color-mix(in srgb, #121212 calc(.10*100%), #f7c44d) | color-mix(in srgb, #121212 calc(.18*100%), #f7c44d) |
+| 值变化 | `dark/azure --list-row-background-hover` | color-mix(in srgb, #f5f5f5 calc(.08*100%), transparent) | color-mix(in srgb, #f5f5f5 calc(.12*100%), transparent) |
+| 值变化 | `dark/azure --menu-item-background-hover` | color-mix(in srgb, #f5f5f5 calc(.08*100%), transparent) | color-mix(in srgb, #f5f5f5 calc(.12*100%), transparent) |
+| 值变化 | `dark/azure --opacity-hover` | .08 | .12 |
+| 值变化 | `dark/azure --opacity-pressed` | .10 | .18 |
+| 值变化 | `dark/azure --tag-background-hover` | color-mix(in srgb, #b8b8b8 calc(.08*100%), #181818) | color-mix(in srgb, #b8b8b8 calc(.12*100%), #181818) |
 | 值变化 | `dark/azure --tag-border-radius` | 9999px | calc(8px/2) |
 | 值变化 | `dark/azure --tag-font-size-lg` | 16px | 13px |
 | 值变化 | `dark/azure --tag-font-size-md` | 14px | 12px |
@@ -240,7 +263,7 @@ catalogue 18 → 17 组；公共图文件 4 → 37
 | 值变化 | `light/azure --tag-padding-inline-md` | 12px | 8px |
 | 值变化 | `light/azure --tag-padding-inline-sm` | 8px | 6px |
 
-（表格已截断：新增 140、消失 0、值变化 20）
+（表格已截断：新增 140、消失 0、值变化 43）
 
 <!-- END ISOLATED TOKEN DIFF -->
 
@@ -262,18 +285,38 @@ Phase 0 的基线有一个真实弱点：它取自一个**同时含 71 项无关
 - **新增名字 140** —— 这些 Token 在改动前的**公共入口图里根本不可达**：旧 `./components.css` 指向的是
   原型实现层入口，组件 Token 因此不在公共链路上。这 140 个名字是「原本声明了但用户拿不到」的部分，
   现在可达——即 `breaking-changes.md` 里那条导出名实背离的修复，在解析层面得到确认；
-- **解析值变化 20** —— 恰好是已登记的 10 个 Tag 分歧 × 2 个门禁 profile（高度 28/32/40 → 20/24/30、
-  内边距、字号、圆角 9999px → `calc(8px/2)`）。相对**提交** 2939417 它们确实是变化；Phase 0 的
+- **解析值变化 43** —— 其中 20 条是已登记的 10 个 Tag 分歧 × 2 个门禁 profile（高度 28/32/40 → 20/24/30、
+  内边距、字号、圆角 9999px → `calc(8px/2)`），其余是 dark 透明度变化及其派生 token。相对**提交** 2939417 它们确实是变化（第一版对比只报出这 20 条，原因见下）；Phase 0 的
   `inventory-phase0.json` 之所以看不到这些差异，是因为那份基线取自含并行改动的工作树（Tag 的紧凑
   尺度当时尚未提交）——这正是本节要修掉的混淆。
 
-### 未解释清楚的一点（不主张结论）
+### 上一版遗留疑问：已定位为解析器 API 的静默陷阱
 
-**dark 的 `--opacity-hover` / `--opacity-pressed` 没有出现在"值变化"里**，但改动后它们在
-`[data-theme=dark]` 下确实是 `.12` / `.18`（浏览器实测与 `verify:dark-opacity` 都能读到，且
-`audit:tokens` 的 dark 列数值随之变化、并已登记 27 条分歧）。改动前提交里它们是 `.08` / `.10`，
-按道理应当落在这 20 条之外的第 21、22 条。
+第一版隔离对比报告"dark 的 `--opacity-hover` / `--opacity-pressed` 没有出现在值变化里"，并把它列为未解释项。
+现已查清，**根因不在 Token，而在解析器的调用方式**：
 
-我没有为此编造解释：两种可能（该解析器在"逐 profile 取值"的路径上没有应用 `[data-theme=dark]` 对
-primitives 的覆盖，或者比较键的构造漏掉了它们）都还没有证据。**在查清之前，本节不宣称隔离对比已经
-覆盖了全部值变化**；上面 140 与 20 的结论不受影响（它们来自直接比较），但"值变化总数"这一项存疑。
+```text
+inventory.json（工具传 profile 对象）：  --opacity-hover → dark/azure .12   ✓
+baseline-diff（我传 profile.id 字符串）： 改动前 .08 / 改动后 .08          ✗ 两侧都错
+```
+
+解析器从 **profile 对象**上读模式（`{ id, dark }`）；只传 id 字符串时 `dark` 为 `undefined`，
+于是**静默按浅色解析**——不报错、不警告，两侧都拿到浅色值，因此那次对比只看得见在浅色下也不同的
+20 条 Tag 分歧，而 dark 的透明度变化整体隐形。
+
+处置（两处，都在代码里而不是笔记里）：
+
+1. `tools/lib/css-tokens.mjs`：`names` / `value` / `tryValue` 现在**拒绝字符串 profile**并直接抛错，
+   说明"传对象而不是 id；只传 id 会静默按浅色解析"。门禁里的静默错误答案比崩溃更坏。
+2. `tools/baseline-diff.mjs`：改为传 profile 对象。
+
+修正后的隔离对比结果（下方生成块为原始输出）：
+
+- **消失 0**；
+- **新增 140** —— 改动前公共入口不可达的 Token（旧 `./components.css` 指向原型实现层入口），
+  即导出名实背离修复的解析层证据；
+- **解析值变化 43** —— 20 条为 10 个 Tag 分歧 × 2 个门禁 profile，其余为 dark 透明度变化本身及其
+  派生 token（`--opacity-hover`/`--opacity-pressed` 与从它们 `color-mix` 出来的按钮、列表、菜单悬停/按下底色）。
+
+也就是说：**值变化总数此前被低估，现在已覆盖完整**；而新登记的分歧数量（27 条）与本对比中的 43 条
+不是同一口径——前者按"名字"登记，后者按"profile × 名字"计数。

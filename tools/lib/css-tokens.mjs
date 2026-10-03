@@ -478,21 +478,36 @@ export function createResolver(sheet) {
     return substituteVariables(declaration.value, lookup)
   }
 
+  // The profile is an object that carries the mode (`{ id, dark }`), and every method reads it. Passing the
+  // *id string* instead used to answer with the light value and no complaint: `tool.baseline-diff.mjs`
+  // compared `profile.id` and therefore reported that the dark `--opacity-hover` change did not exist, while
+  // the inventory (which passes the object) reported it correctly. A silent wrong answer in a gate is worse
+  // than a crash, so the string form is rejected outright.
+  const requireProfile = (profile, method) => {
+    if (typeof profile === 'string') {
+      throw new Error(
+        `resolver.${method}: pass the profile object, not its id ("${profile}") — the id alone silently ` +
+          'resolves as light, which is how a dark-value comparison returned identical numbers for both sides',
+      )
+    }
+    return profile
+  }
+
   return {
     sheet,
     declarationsFor,
     /** Every token name visible in this profile, in declaration order. */
     names(profile) {
-      return [...declarationsFor(profile).keys()]
+      return [...declarationsFor(requireProfile(profile, 'names')).keys()]
     },
     /** Fully substituted value string. Throws on unknown/circular references. */
     value(name, profile) {
-      return resolve(name, profile, [])
+      return resolve(name, requireProfile(profile, 'value'), [])
     },
     /** Non-throwing variant used for exhaustive sweeps. */
     tryValue(name, profile) {
       try {
-        return { ok: true, value: resolve(name, profile, []) }
+        return { ok: true, value: resolve(name, requireProfile(profile, 'tryValue'), []) }
       } catch (error) {
         return { ok: false, error: error.message }
       }
