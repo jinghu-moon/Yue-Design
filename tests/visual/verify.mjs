@@ -1991,6 +1991,33 @@ async function checkCheckedTagHover(page, origin) {
     `checked tag: hover adjusts the fill and keeps the label legible ` +
       `(${resting.fill} → ${hovered.fill}, text ${hovered.color})`,
   )
+
+  // The theme must select with its own palette: a checked tag that ignores `theme` renders one colour for
+  // every theme, which is the defect this asserts against.
+  const themed = await page.$$eval('[data-probe="check-theme"]', (elements) =>
+    elements.map((element) => {
+      const style = getComputedStyle(element)
+      return { theme: element.className, fill: style.backgroundColor, color: style.color }
+    }),
+  )
+  if (themed.length < 4) {
+    fail(`checked tag: expected the four themed examples, found ${themed.length}`)
+    return
+  }
+  const fills = new Set(themed.map((entry) => entry.fill))
+  if (fills.size !== themed.length) {
+    fail(
+      `checked tag: ${themed.length} themes render ${fills.size} distinct selected fills ` +
+        `(${themed.map((entry) => entry.fill).join(', ')}) — the selected state is ignoring theme`,
+    )
+  }
+  for (const entry of themed) {
+    const ratio = contrastRatio(parseColor(entry.color), parseColor(entry.fill))
+    if (ratio < 4.5) {
+      fail(`checked tag: theme ${entry.theme} labels at ${ratio.toFixed(2)}:1`)
+    }
+  }
+  notes.push(`checked tag: ${fills.size} themes each select with their own palette`)
 }
 
 async function main() {

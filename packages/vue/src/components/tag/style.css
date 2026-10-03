@@ -260,17 +260,48 @@
 
 .yue-tag--check.is-checked:hover:not(.is-disabled) {
   /* Emphasis of the existing background, not a different background. The mix moves the fill toward the
-     accent's *readable* step, which lies on the opposite side of the label colour in both themes: toward the
+     theme's *readable* step, which lies on the opposite side of the label colour in both themes: toward the
      label instead (`--_color`) lightened a white-on-blue label from 4.6:1 to 3.98:1. `--_color` and
      `--_border` stay untouched, so the label and the shape cannot drift apart from the fill. */
-  --_fill: color-mix(in srgb, var(--accent-text) calc(var(--opacity-hover) * 100%), var(--tag-primary-filled-background));
+  --_fill: color-mix(in srgb, var(--_hover-mix) calc(var(--opacity-hover) * 100%), var(--_fill-selected));
 }
 
+/* Selected state: the theme's filled palette, so `theme="danger"` selects as a danger tag.
+ *
+ * The unselected state stays neutral on purpose: the theme says what the choice *means*, and a neutral chip
+ * only starts meaning something once it is taken. `default` and the absence of a theme class keep
+ * primary/filled, which is what every consumer rendered before the theme prop existed.
+ *
+ * `--_fill-selected` is a separate name from `--_fill` so the hover rule can ease away from the selected
+ * fill: a declaration that mentions its own custom property is invalid at computed-value time, and the first
+ * attempt at this fix rendered the hover fill transparent for exactly that reason. */
 .yue-tag--check.is-checked {
-  /* Selected state: primary/filled */
-  --_fill:   var(--tag-primary-filled-background);
-  --_color:  var(--tag-primary-filled-color);
-  --_border: var(--tag-primary-filled-border-color);
+  --_fill-selected: var(--tag-primary-filled-background);
+  --_hover-mix:     var(--accent-text);
+  --_fill:          var(--_fill-selected);
+  --_color:         var(--tag-primary-filled-color);
+  --_border:        var(--tag-primary-filled-border-color);
+}
+
+.yue-tag--check.is-checked.yue-tag--success {
+  --_fill-selected: var(--tag-success-filled-background);
+  --_hover-mix:     var(--success-foreground);
+  --_color:         var(--tag-success-filled-color);
+  --_border:        var(--tag-success-filled-border-color);
+}
+
+.yue-tag--check.is-checked.yue-tag--warning {
+  --_fill-selected: var(--tag-warning-filled-background);
+  --_hover-mix:     var(--warning-foreground);
+  --_color:         var(--tag-warning-filled-color);
+  --_border:        var(--tag-warning-filled-border-color);
+}
+
+.yue-tag--check.is-checked.yue-tag--danger {
+  --_fill-selected: var(--tag-danger-filled-background);
+  --_hover-mix:     var(--error-foreground);
+  --_color:         var(--tag-danger-filled-color);
+  --_border:        var(--tag-danger-filled-border-color);
 }
 
 .yue-tag--check:focus-visible {

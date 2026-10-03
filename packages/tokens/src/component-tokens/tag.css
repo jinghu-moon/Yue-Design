@@ -152,7 +152,7 @@
   /* ── success ──────────────────────────────────────────────────── */
   --tag-success-filled-background:    var(--success);
 
-  --tag-success-filled-color:         var(--success-foreground);
+  --tag-success-filled-color:         var(--neutral-0);
 
   --tag-success-filled-border-color:  transparent;
 
@@ -177,7 +177,7 @@
   /* ── warning ──────────────────────────────────────────────────── */
   --tag-warning-filled-background:    var(--warning);
 
-  --tag-warning-filled-color:         var(--warning-foreground);
+  --tag-warning-filled-color:         var(--neutral-950);
 
   --tag-warning-filled-border-color:  transparent;
 
@@ -200,9 +200,9 @@
   --tag-warning-tint-outline-border-color: var(--warning-border);
 
   /* ── danger ───────────────────────────────────────────────────── */
-  --tag-danger-filled-background:    var(--error);
+  --tag-danger-filled-background:    var(--red-700);
 
-  --tag-danger-filled-color:         var(--error-foreground);
+  --tag-danger-filled-color:          var(--neutral-0);
 
   --tag-danger-filled-border-color:  transparent;
 
@@ -223,4 +223,11 @@
   --tag-danger-tint-outline-color:        var(--error-foreground);
 
   --tag-danger-tint-outline-border-color: var(--error-border);
+}
+
+/* On a solid fill the label sits on the *solid*, not on the family's tint: in light mode success is a deep
+ * green (white label) while warning and danger are mid-tones (dark label), and in dark mode all three fills
+ * are light, so success flips to a dark label too. The browser gate asserts every theme at >= 4.5:1. */
+[data-theme=dark] {
+  --tag-success-filled-color: var(--neutral-950);
 }

@@ -259,3 +259,12 @@ const checkTags = ref([
   background: var(--vp-c-bg-soft);
 }
 </style>
+
+## 选中态与主题
+
+未选中时是中性 chip；选中后使用 `theme` 指定的配色（默认 `primary`）。下面四个是真实渲染的标签，用于验证选中配色随主题变化、hover 只强调已有背景。
+
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--primary" data-probe="check-theme">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--success" data-probe="check-theme">success</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>

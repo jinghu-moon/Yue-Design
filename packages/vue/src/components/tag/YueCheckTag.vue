@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<YueCheckTagProps>(), {
   disabled:       false,
   defaultChecked: false,
   modelValue:     undefined,
+  theme:          'primary',
 })
 
 const emit  = defineEmits<YueCheckTagEmits>()
@@ -45,6 +46,9 @@ const rootClass = computed(() => [
   ns.b(),
   ns.m(resolvedSize.value),
   ns.m('check'),
+  // Carries the theme so the stylesheet can resolve the selected palette; 'default' keeps the neutral
+  // chip and selects with the primary palette.
+  ns.m(props.theme),
   {
     [ns.is('checked')]:  checked.value,
     [ns.is('disabled')]: props.disabled,

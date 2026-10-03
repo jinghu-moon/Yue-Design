@@ -147,6 +147,15 @@ export interface YueCheckTagProps {
   value?: YueCheckTagValue
   /** Control size; falls back to the application-level `size` from `YueConfig`. */
   size?: YueTagSize
+  /**
+   * Selected colour. Default: `'primary'`.
+   *
+   * Only the *selected* state is themed: an unselected check tag is a neutral chip
+   * (`default`/`outline`), so the theme reads as "what this choice means once taken".
+   * `'default'` selects with the primary palette, which is what every consumer saw
+   * before this prop existed.
+   */
+  theme?: YueTagTheme
   /** Disables toggling. Default: `false`. */
   disabled?: boolean
 }

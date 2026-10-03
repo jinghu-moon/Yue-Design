@@ -222,3 +222,23 @@ describe('YueCheckTag', () => {
     })
   })
 })
+
+describe('YueCheckTag theme contract', () => {
+  // The stylesheet selects the checked palette from the theme class, so the class has to be there. The
+  // rendered colours themselves are asserted in the browser gate (`tests/visual/verify.mjs`), which is the
+  // only place a CSS cascade can be observed.
+  it('carries the theme to the stylesheet as a class', () => {
+    const wrapper = mount(YueCheckTag, { props: { theme: 'danger' } })
+    expect(wrapper.classes()).toContain('yue-tag--danger')
+  })
+
+  it('defaults to the primary palette', () => {
+    const wrapper = mount(YueCheckTag)
+    expect(wrapper.classes()).toContain('yue-tag--primary')
+  })
+
+  it('keeps the checked class independent of the theme', () => {
+    const wrapper = mount(YueCheckTag, { props: { theme: 'success', modelValue: true } })
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['yue-tag--success', 'is-checked']))
+  })
+})

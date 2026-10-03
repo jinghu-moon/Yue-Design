@@ -259,3 +259,12 @@ Pass any valid CSS color. The component derives text and background from the lum
   background: var(--vp-c-bg-soft);
 }
 </style>
+
+## Selected state and theme
+
+Unselected it is a neutral chip; selected it uses the palette named by `theme` (default `primary`). The four below are really rendered, and verify that the selected palette follows the theme and that hover only emphasises the existing background.
+
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--primary" data-probe="check-theme">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--success" data-probe="check-theme">success</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>
