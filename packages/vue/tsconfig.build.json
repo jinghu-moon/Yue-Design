@@ -10,7 +10,6 @@
     // `exports` says they are.
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": "./",
     // Only the local alias is remapped here. `@yue-ui/hooks` deliberately is NOT
     // mapped to its TypeScript source the way tsconfig.json maps it: a `.ts` file
     // under packages/hooks is outside `rootDir`, which TS rejects with TS6059 for
@@ -19,9 +18,6 @@
     // only, so it is legal outside rootDir. The vue build therefore builds hooks
     // first, and the declarations this package ships reference the types of the
     // package it actually depends on rather than a second inlined copy.
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "types": ["vite/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],

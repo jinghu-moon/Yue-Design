@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
@@ -7,11 +8,12 @@ const src = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 /**
  * Library build for @yue-ui/vue.
  *
- * Three entries, matching the three public import paths exactly:
+ * Four entries, matching the four public import paths exactly:
  *
  *   src/index.ts                    → dist/index.js                    @yue-ui/vue
  *   src/plugin.ts                   → dist/plugin.js                   @yue-ui/vue/plugin
  *   src/components/button/index.ts  → dist/components/button/index.js  @yue-ui/vue/button
+ *   src/components/input/index.ts   → dist/components/input/index.js   @yue-ui/vue/input
  *
  * Multi-entry rather than one bundle plus re-exports, because the entry points
  * *are* the tree-shaking boundary: a consumer importing `@yue-ui/vue/button` gets
@@ -33,7 +35,20 @@ const src = (path: string) => fileURLToPath(new URL(path, import.meta.url))
  * must stay free of CSS side effects.
  */
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      script: {
+        // Vue 3.5 resolves imported SFC prop types during compileScript. Vite 8's
+        // non-Node plugin path no longer supplies this implicitly, so make the
+        // build boundary explicit without depending on TypeScript's private fs API.
+        fs: {
+          fileExists: existsSync,
+          readFile: (file) => readFileSync(file, 'utf8'),
+          realpath: realpathSync,
+        },
+      },
+    }),
+  ],
   build: {
     target: 'es2022',
     sourcemap: true,
@@ -44,6 +59,13 @@ export default defineConfig({
         index: src('./src/index.ts'),
         plugin: src('./src/plugin.ts'),
         'components/button/index': src('./src/components/button/index.ts'),
+        'components/input/index': src('./src/components/input/index.ts'),
+        // Locale: one entry for the facade and one per language pack. Separate entries are
+        // the whole point — an application that never shows Chinese must not download it,
+        // and that is a property of the bundle graph, not of a runtime check.
+        'locale/index': src('./src/locale/index.ts'),
+        'locale/en-US': src('./src/locale/en-US.ts'),
+        'locale/zh-CN': src('./src/locale/zh-CN.ts'),
       },
       formats: ['es'],
     },

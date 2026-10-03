@@ -134,25 +134,178 @@ function writeConsumer(consumer) {
     'entry.ts',
     `import { createApp, h, resolveComponent } from 'vue'
 import YueButton from '@yue-ui/vue/button'
+import YueInput from '@yue-ui/vue/input'
 import YueUI from '@yue-ui/vue/plugin'
+// Imported from the *hooks* tarball, not from @yue-ui/vue, on purpose: this is the
+// cross-package path. @yue-ui/vue compiles hooks into its bundle, so the locale injection
+// key exists twice in this install, and it only works if both copies ask the global symbol
+// registry for it. With a private Symbol() the key would differ, inject() would find nothing,
+// and this subtree would quietly render the default language instead.
+import { provideLocale } from '@yue-ui/hooks'
+// A language pack is its own entry: importing it is the only way it reaches the bundle.
+import ZhCN from '@yue-ui/vue/locale/zh-CN'
+// The engine Yue does *not* depend on. It is installed here because the adapter contract is a
+// published promise: an application's own translation system must be able to own Yue's text.
+import { createI18n } from 'vue-i18n'
 import '@yue-ui/design-tokens/index.css'
 import '@yue-ui/vue/button.css'
+import '@yue-ui/vue/input.css'
 import './consumer.css'
+
+/**
+ * The vue-i18n adapter, inline.
+ *
+ * Byte-for-byte the shape the documentation shows: "current" is the engine's own ref, "t"
+ * forwards the Yue key unchanged, and "n"/"d" are omitted so Yue keeps its own Intl formatting.
+ * It lives here rather than in a published package because phase 5 of the I18N roadmap says to
+ * prove the contract with a real consumer before adding an entry point and a peer dependency.
+ */
+function vueI18nAdapter(composer) {
+  return {
+    current: composer.locale,
+    t: (key, params) => (params === undefined ? composer.t(key) : composer.t(key, params)),
+  }
+}
+
+const engine = createI18n({
+  legacy: false,
+  locale: 'en-US',
+  fallbackLocale: 'en-US',
+  messages: {
+    'en-US': { input: { clear: 'Clear' } },
+    'zh-CN': { input: { clear: '清空' } },
+  },
+})
+
+// The browser check drives the *engine's* language, not Yue's, to prove the two share one ref.
+globalThis.__setEngineLocale = (locale) => {
+  engine.global.locale.value = locale
+}
+
+/** A subtree whose locale comes from the application's engine rather than from Yue's packs. */
+const EngineScoped = {
+  setup(_, { slots }) {
+    provideLocale({ adapter: vueI18nAdapter(engine.global) })
+    return () => slots.default?.()
+  },
+}
+
+/**
+ * A wrapper that scopes a language through the separately-installed hooks package.
+ *
+ * Deliberately a component rather than a top-level call, so it exercises provide/inject
+ * across the package boundary the way a consumer's locale wrapper would. It overrides one
+ * string *and* keeps the application's language, which is the inheritance rule.
+ */
+const Scoped = {
+  setup(_, { slots }) {
+    provideLocale({ messages: { input: { clear: 'Effacer' } } })
+    return () => slots.default?.()
+  },
+}
+
+/**
+ * A subtree in another language, through the vue facade rather than the hooks package.
+ *
+ * Both paths are exercised because they are different entry points of the same contract:
+ * the plugin installs one at the app level, a provider scopes another.
+ */
+const Chinese = {
+  setup(_, { slots }) {
+    provideLocale({ locale: 'zh-CN', packs: { 'zh-CN': ZhCN } })
+    return () => slots.default?.()
+  },
+}
+
+globalThis.__imeEmits = []
+globalThis.__imeInputs = []
 
 const app = createApp({
   render() {
     // Resolved at render time: this is what proves the plugin actually registered
     // the component globally.
     const RegisteredButton = resolveComponent('YueButton')
+    const RegisteredInput = resolveComponent('YueInput')
     return h('div', [
       h(YueButton, { theme: 'primary' }, { default: () => '保存' }),
       h(RegisteredButton, { size: 'sm', 'data-probe': 'plugin' }, { default: () => '取消' }),
+      // From the single-component entry, with an id so the attribute-routing contract
+      // is observable: the id must land on the native control, not on the wrapper.
+      h(YueInput, {
+        id: 'tarball-input',
+        modelValue: 'installed from a tarball',
+        clearable: true,
+        'data-probe': 'input',
+      }),
+      // Through the plugin, to prove it registers both components.
+      h(RegisteredInput, { 'data-probe': 'input-plugin', placeholder: 'plugin input' }),
+      // Inside a subtree whose locale came from the hooks package.
+      h(Scoped, null, {
+        default: () =>
+          h(YueInput, {
+            modelValue: 'scoped config',
+            clearable: true,
+            'data-probe': 'input-scoped',
+          }),
+      }),
+      // Inside a subtree that installed the Chinese pack from its own entry.
+      h(Chinese, null, {
+        default: () =>
+          h(YueInput, {
+            modelValue: 'chinese pack',
+            clearable: true,
+            'data-probe': 'input-chinese',
+          }),
+      }),
+      // Inside a subtree whose text comes from the application's own translation engine.
+      h(EngineScoped, null, {
+        default: () =>
+          h(YueInput, {
+            modelValue: 'engine',
+            clearable: true,
+            'data-probe': 'input-engine',
+          }),
+      }),
+      // Records every published value and every input payload so the IME check can verify
+      // both the count and the shape. Driven by a real composition through CDP, not by
+      // hand-dispatched events, so the event order is the browser's rather than the test's.
+      h(YueInput, {
+        modelValue: '',
+        'data-probe': 'ime',
+        'onUpdate:modelValue': (value) => {
+          globalThis.__imeEmits.push(value)
+        },
+        onInput: (event) => {
+          globalThis.__imeInputs.push({
+            type: event.type,
+            value: event.target?.value ?? null,
+            // Only present on a real InputEvent, so this is what distinguishes the browser's
+            // event from a bare Event standing in for one.
+            inputType: event.inputType ?? null,
+            // What a stale payload gets wrong: reusing the last mid-composition event reports
+            // the intermediate text here instead of the final text.
+            data: event.data ?? null,
+            // A hand-built-but-never-dispatched event has neither of these.
+            targetTag: event.target?.tagName ?? null,
+            targetValue: event.target?.value ?? null,
+          })
+        },
+      }),
     ])
   },
 })
 
-// Registers YueButton globally and applies the documented option.
-app.use(YueUI, { size: 'md' })
+// Registers every component globally, applies the documented options, and scopes languages.
+// The locale contract is part of the published surface, so it is exercised here and not only
+// in the workspace.
+//
+// The app-level size is 'lg' rather than the default on purpose: it gives the subtree below
+// something *observable* to inherit. A subtree that merged onto the defaults instead of onto
+// what it already saw would drop back to 'md', and the class assertion catches exactly that.
+// The app-level locale is en-US (the default), so the two subtrees demonstrate both routes:
+// one overrides a single string through the hooks package, the other switches language
+// through a pack imported from its own subpath.
+app.use(YueUI, { size: 'lg', locale: 'en-US' })
 app.mount('#app')
 `,
   )
@@ -161,16 +314,42 @@ app.mount('#app')
   write(
     'types.ts',
     `import YueButton from '@yue-ui/vue/button'
-import { YueButton as Named } from '@yue-ui/vue'
-import type { YueButtonProps, YueButtonTheme } from '@yue-ui/vue'
+import YueInput from '@yue-ui/vue/input'
+import { YueButton as Named, YueInput as NamedInput, useLocale } from '@yue-ui/vue'
+import type {
+  ComponentSize,
+  YueButtonProps,
+  YueButtonTheme,
+  YueInputProps,
+  YueInputType,
+  YueLocale,
+  YueMessageKey,
+} from '@yue-ui/vue'
+import { createYueLocale } from '@yue-ui/vue/locale'
+import ZhCN from '@yue-ui/vue/locale/zh-CN'
 import YueUI from '@yue-ui/vue/plugin'
 
 const theme: YueButtonTheme = 'primary'
 const props: YueButtonProps = { theme, variant: 'outline', size: 'lg', loading: false }
 
+// The shared size contract is one type, so a variable of it satisfies both components.
+const size: ComponentSize = 'md'
+const inputProps: YueInputProps = { size, clearable: true, invalid: false, readonly: false }
+const inputType: YueInputType = 'search'
+
+// The locale surface, typed: the key union comes from the shipped catalog, so a key that does
+// not exist is a compile error rather than a string that renders itself.
+const key: YueMessageKey = 'input.clear'
+const locale: YueLocale = createYueLocale({ locale: 'zh-CN', packs: { 'zh-CN': ZhCN } })
+const translated: string = locale.t(key)
+const fromComponent: YueLocale = useLocale()
+
 export const same: typeof YueButton = Named
+export const sameInput: typeof YueInput = NamedInput
 export const plugin = YueUI
 export const used = props
+export const usedInput = { inputProps, inputType }
+export const usedLocale = { locale, translated, fromComponent }
 `,
   )
 
@@ -191,16 +370,32 @@ export const used = props
     'node-check.mjs',
     `import { fileURLToPath } from 'node:url'
 import YueButton from '@yue-ui/vue/button'
-import { YueButton as NamedButton } from '@yue-ui/vue'
+import YueInput from '@yue-ui/vue/input'
+import { YueButton as NamedButton, YueInput as NamedInput } from '@yue-ui/vue'
 import YueUI from '@yue-ui/vue/plugin'
-import { DEFAULT_YUE_CONFIG, YUE_NAMESPACE, useConfig, useNamespace } from '@yue-ui/hooks'
+import { createYueLocale } from '@yue-ui/vue/locale'
+import EnUS from '@yue-ui/vue/locale/en-US'
+import ZhCN from '@yue-ui/vue/locale/zh-CN'
+import {
+  DEFAULT_YUE_CONFIG,
+  YUE_NAMESPACE,
+  consumeLocaleDiagnostics,
+  useConfig,
+  useNamespace,
+} from '@yue-ui/hooks'
 
 const specifiers = {
   root: '@yue-ui/vue',
   button: '@yue-ui/vue/button',
+  input: '@yue-ui/vue/input',
   plugin: '@yue-ui/vue/plugin',
+  locale: '@yue-ui/vue/locale',
+  localeEnUS: '@yue-ui/vue/locale/en-US',
+  localeZhCN: '@yue-ui/vue/locale/zh-CN',
+  engine: 'vue-i18n',
   style: '@yue-ui/vue/style.css',
   buttonCss: '@yue-ui/vue/button.css',
+  inputCss: '@yue-ui/vue/input.css',
   hooks: '@yue-ui/hooks',
   hooksPackageJson: '@yue-ui/hooks/package.json',
   tokens: '@yue-ui/design-tokens/index.css',
@@ -220,12 +415,40 @@ for (const [key, specifier] of Object.entries(specifiers)) {
 // throws before this runs.
 const ns = useNamespace('button')
 
+// Exercise the locale contract with no DOM at all. This is the SSR claim, checked against the
+// published artefact rather than the workspace: a module that touched \`window\` would throw
+// here, and nothing in this file defines one.
+const zhLocale = createYueLocale({ locale: 'zh-Hans-CN', packs: { 'zh-CN': ZhCN, 'en-US': EnUS } })
+const explicit = createYueLocale({ messages: { input: { clear: 'Effacer' } } })
+const translator = createYueLocale({ locale: 'fr-FR', packs: { 'en-US': EnUS } })
+const missing = translator.t('input.missing')
+
 process.stdout.write(
   'NODE-CHECK ' +
     JSON.stringify({
       same: YueButton === NamedButton,
+      sameInput: YueInput === NamedInput,
       name: YueButton?.name ?? null,
+      inputName: YueInput?.name ?? null,
+      block: useNamespace('input').b(),
       hasInstall: typeof YueUI?.install === 'function',
+      hasBrowserGlobals: typeof window !== 'undefined' || typeof document !== 'undefined',
+      locale: {
+        defaultPack: EnUS.input.clear,
+        chinesePack: ZhCN.input.clear,
+        // \`zh-Hans-CN\` must resolve through the chain to the \`zh-CN\` pack.
+        chained: zhLocale.t('input.clear'),
+        current: zhLocale.current.value,
+        // A one-string override keeps the surrounding language.
+        overridden: explicit.t('input.clear'),
+        overrideKeepsDefaultLanguage: explicit.current.value,
+        // A language with no pack falls back rather than blanking the label.
+        fallback: translator.t('input.clear'),
+        // A key nobody has renders as the key, and is diagnosable.
+        missing,
+        diagnostics: consumeLocaleDiagnostics().map((entry) => entry.reason),
+        number: translator.n(1234.5),
+      },
       hooks: {
         namespace: YUE_NAMESPACE,
         block: ns.b(),
@@ -268,7 +491,10 @@ function install(consumer, tarballs) {
       tarballs.vue,
       tarballs['design-tokens'],
       tarballs.hooks,
-      'vue@3.5.28',
+      'vue@3.5.43',
+      // The application's engine, installed by the *consumer*: Yue's core has no dependency on it,
+      // and this is what proves the adapter boundary is real rather than aspirational.
+      'vue-i18n@11',
     ],
     { cwd: consumer },
   )
@@ -361,6 +587,47 @@ async function renderBuiltConsumer(dist) {
       // The button registered by the plugin, with a `size` prop, in a real browser.
       const pluginButton = document.querySelector('[data-probe="plugin"]')
 
+      // The input, from a tarball, in a real browser — including the attribute-routing
+      // contract, which is the part a tarball can plausibly break (a wrong `exports`
+      // entry would give a component whose `id` landed on the wrapper, and `label for`
+      // would silently stop working).
+      const input = document.querySelector('[data-probe="input"]')
+      const inputProbe = input
+        ? (() => {
+            const control = input.querySelector('input')
+            const ruler = document.createElement('div')
+            ruler.style.backgroundColor = 'var(--input-background)'
+            document.body.appendChild(ruler)
+            const expectedBackground = getComputedStyle(ruler).backgroundColor
+            ruler.remove()
+            return {
+              className: input.className,
+              height: getComputedStyle(input).height,
+              // The app-level size is `lg` in this consumer, so this doubles as the check
+              // that the height really came from configuration and not from a coincidence.
+              expectedHeight: resolveLength('--input-height-lg'),
+              background: getComputedStyle(input).backgroundColor,
+              expectedBackground,
+              styled: styledBy(input),
+              controlTag: control?.tagName ?? null,
+              controlId: control?.id ?? null,
+              wrapperId: input.getAttribute('id'),
+              controlValue: control?.value ?? null,
+              clearRendered: input.querySelectorAll('.yue-input__clear').length,
+              clearIsButton: input.querySelector('.yue-input__clear')?.tagName ?? null,
+              clearLabel: input.querySelector('.yue-input__clear')?.getAttribute('aria-label') ?? null,
+              nativeClasses: control?.className ?? null,
+            }
+          })()
+        : null
+
+      const pluginInput = document.querySelector('[data-probe="input-plugin"]')
+
+      // The field inside a subtree configured through the separately-installed hooks
+      // package. `aria-label` is the observable: it can only be 'Effacer' if the injection
+      // key in @yue-ui/vue's bundle is the same symbol as the one in @yue-ui/hooks.
+      const scopedInput = document.querySelector('[data-probe="input-scoped"]')
+
       // The token sheet only *declares* `--font-ui`; the host applies it. Waiting
       // for the font set proves the `@font-face` sources inside the tarball
       // resolve — a relative `../assets/*.woff2` path is exactly the kind of thing
@@ -380,6 +647,49 @@ async function renderBuiltConsumer(dist) {
         totalFaces: harmonyFaces.length,
         height: Math.round(element.getBoundingClientRect().height),
         styled: styledBy(element),
+        input: inputProbe,
+        pluginInput: pluginInput
+          ? {
+              className: pluginInput.className,
+              controlTag: pluginInput.querySelector('input')?.tagName ?? null,
+              styled: styledBy(pluginInput),
+            }
+          : null,
+        scopedInput: scopedInput
+          ? {
+              className: scopedInput.className,
+              clearLabel:
+                scopedInput.querySelector('.yue-input__clear')?.getAttribute('aria-label') ?? null,
+              styled: styledBy(scopedInput),
+            }
+          : null,
+        // The field inside a subtree that switched language with the pack from its own
+        // subpath entry. Its label is the observable: it can only be Chinese if the pack
+        // travelled from `@yue-ui/vue/locale/zh-CN` into the bundle.
+        chineseInput: (() => {
+          const chinese = document.querySelector('[data-probe="input-chinese"]')
+          if (!chinese) return null
+          return {
+            className: chinese.className,
+            clearLabel:
+              chinese.querySelector('.yue-input__clear')?.getAttribute('aria-label') ?? null,
+            styled: styledBy(chinese),
+          }
+        })(),
+        // The field whose text comes from the application's own engine. `vue-i18n` owns the
+        // language here, so both directions are observable: Yue's string is the engine's, and
+        // switching the engine updates an already-mounted component.
+        engineInput: await (async () => {
+          const input = document.querySelector('[data-probe="input-engine"]')
+          if (!input) return null
+          const read = () =>
+            input.querySelector('.yue-input__clear')?.getAttribute('aria-label') ?? null
+          const before = read()
+          globalThis.__setEngineLocale?.('zh-CN')
+          // Two frames: one for the ref write, one for the re-render to reach the DOM.
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+          return { before, after: read(), styled: styledBy(input) }
+        })(),
         plugin: pluginButton
           ? {
               className: pluginButton.className,
@@ -393,7 +703,45 @@ async function renderBuiltConsumer(dist) {
     })
 
     if (consoleErrors.length > 0) fail(`consumer console errors: ${consoleErrors.join(' | ')}`)
-    return rendered
+
+    // A real IME composition, driven through CDP so the event order is Chromium's own rather
+    // than one the test chose.
+    //
+    // This matters because CDP's emulation (like Firefox, and unlike the trailing-`input`
+    // behaviour some Chromium builds show with a real IME) delivers the final value *before*
+    // `compositionend`, with `isComposing: true`, and never fires an `input` afterwards. An
+    // implementation that waited for that trailing event would publish nothing at all here,
+    // and one that published on both paths would publish twice.
+    const ime = { supported: true, emits: [], inputs: [], value: null }
+    try {
+      // `browser.newPage()` below makes its own context, so ask the page for it rather than
+      // assuming one is in scope.
+      const cdp = await page.context().newCDPSession(page)
+      await page.focus('[data-probe="ime"] input')
+      await cdp.send('Input.imeSetComposition', {
+        text: 'zhong',
+        selectionStart: 5,
+        selectionEnd: 5,
+      })
+      await page.waitForTimeout(60)
+      await cdp.send('Input.imeSetComposition', { text: '中文', selectionStart: 2, selectionEnd: 2 })
+      await page.waitForTimeout(60)
+      await cdp.send('Input.insertText', { text: '中文' })
+      await page.waitForTimeout(150)
+      const observed = await page.evaluate(() => ({
+        emits: globalThis.__imeEmits ?? [],
+        inputs: globalThis.__imeInputs ?? [],
+        value: document.querySelector('[data-probe="ime"] input')?.value ?? null,
+      }))
+      ime.emits = observed.emits
+      ime.inputs = observed.inputs
+      ime.value = observed.value
+    } catch (error) {
+      ime.supported = false
+      ime.error = error.message.split('\n')[0]
+    }
+
+    return { ...rendered, ime }
   } finally {
     if (browser) await browser.close()
     await new Promise((resolve) => server.close(resolve))
@@ -432,8 +780,15 @@ async function main() {
         }
       }
       if (!report.same) fail('`@yue-ui/vue/button` default and `@yue-ui/vue` named export differ')
+      if (!report.sameInput) fail('`@yue-ui/vue/input` default and `@yue-ui/vue` named export differ')
       if (report.name !== 'YueButton') {
         fail(`component name is "${report.name}", expected "YueButton"`)
+      }
+      if (report.inputName !== 'YueInput') {
+        fail(`component name is "${report.inputName}", expected "YueInput"`)
+      }
+      if (report.block !== 'yue-input') {
+        fail(`@yue-ui/hooks namespaced the input as "${report.block}"`)
       }
       if (!report.hasInstall) fail('`@yue-ui/vue/plugin` has no install function')
 
@@ -446,6 +801,10 @@ async function main() {
         modifier: 'yue-button--primary',
         state: 'is-loading',
         defaultSize: 'md',
+        // `size` is the *whole* configuration surface now: text moved to the locale instance,
+        // and a `messages` key reappearing here would mean the two mechanisms were merged
+        // again. Asserted as a literal rather than imported, so this tool does not depend on
+        // the workspace build it is checking.
         configKeys: ['size'],
       }
       for (const [key, expected] of Object.entries(expectedHooks)) {
@@ -460,6 +819,41 @@ async function main() {
       notes.push(
         `@yue-ui/hooks loaded natively by Node: ${report.hooks?.block}, ` +
           `${report.hooks?.modifier}, config keys [${report.hooks?.configKeys?.join(', ')}]`,
+      )
+
+      /* The locale contract, against the installed artefacts and with no DOM. */
+      const expectedLocale = {
+        // The published packs, read from their own entries.
+        defaultPack: 'Clear',
+        chinesePack: '清空',
+        // `zh-Hans-CN` resolves to the `zh-CN` pack through the documented chain.
+        chained: '清空',
+        current: 'zh-Hans-CN',
+        // A one-string override wins for its key and leaves the language alone.
+        overridden: 'Effacer',
+        overrideKeepsDefaultLanguage: 'en-US',
+        // French has no pack here: the fallback chain answers instead of blanking the UI.
+        fallback: 'Clear',
+        // A key nobody has renders as the key, and is reported.
+        missing: 'input.missing',
+        diagnostics: ['missing-key'],
+        // `n()` must be the platform formatter for the *active* locale, not English.
+        number: new Intl.NumberFormat('fr-FR').format(1234.5),
+      }
+      for (const [key, expected] of Object.entries(expectedLocale)) {
+        const actual = report.locale?.[key]
+        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+          fail(
+            `locale ${key}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+          )
+        }
+      }
+      if (report.hasBrowserGlobals) {
+        fail('the locale check ran with browser globals present, so it proves nothing about SSR')
+      }
+      notes.push(
+        `locale loaded by Node with no DOM: ${report.locale?.chained} from the chain, ` +
+          `${report.locale?.diagnostics?.length} diagnostic(s) for a missing key`,
       )
 
       notes.push(`node resolved ${Object.keys(report.paths).length} subpaths inside the consumer`)
@@ -491,6 +885,10 @@ async function main() {
       [
         '@yue-ui/vue/button.css',
         join(consumer, 'node_modules/@yue-ui/vue/dist/components/button/style.css'),
+      ],
+      [
+        '@yue-ui/vue/input.css',
+        join(consumer, 'node_modules/@yue-ui/vue/dist/components/input/style.css'),
       ],
       [
         '@yue-ui/design-tokens/index.css',
@@ -525,7 +923,14 @@ async function main() {
     if (cssFiles.length === 0) fail('the consumer build emitted no CSS')
     else {
       const css = cssFiles.map((file) => readFileSync(join(assets, file), 'utf8')).join('\n')
-      for (const marker of ['.yue-button', 'yue-button--primary', '--button-primary-background']) {
+      for (const marker of [
+        '.yue-button',
+        'yue-button--primary',
+        '--button-primary-background',
+        '.yue-input',
+        'yue-input__native',
+        '--input-border-radius',
+      ]) {
         if (!css.includes(marker)) fail(`consumer CSS is missing "${marker}"`)
       }
       if (/https?:\/\//.test(css.replace(/\/\*[\s\S]*?\*\//g, ''))) {
@@ -587,6 +992,60 @@ async function main() {
       }
       if (rendered.plugin.text !== '取消') fail(`plugin button label is "${rendered.plugin.text}"`)
     }
+    // 8 — a real IME composition publishes the final value exactly once.
+    if (!rendered.ime?.supported) {
+      notes.push(
+        `real IME check skipped: CDP input emulation unavailable ` +
+          `(${rendered.ime?.error ?? 'unknown reason'})`,
+      )
+    } else {
+      const { emits, inputs, value } = rendered.ime
+      if (emits.length !== 1) {
+        fail(
+          `a real IME composition published ${emits.length} value(s) ` +
+            `(${JSON.stringify(emits)}); exactly one is correct — twice means the trailing ` +
+            'event was not de-duplicated, zero means the composition end was ignored',
+        )
+      } else if (emits[0] !== '中文') {
+        fail(`a real IME composition published "${emits[0]}", expected "中文"`)
+      } else if (value !== '中文') {
+        fail(`the field holds "${value}" after composing, expected "中文"`)
+      } else if (inputs.length !== 1) {
+        fail(`a real IME composition emitted ${inputs.length} input event(s), expected 1`)
+      } else if (inputs[0].type !== 'input') {
+        // The payload contract: an `@input` handler must never receive a `compositionend`.
+        fail(
+          `the emitted input event has type "${inputs[0].type}", so the payload is the ` +
+            'composition event rather than an input event',
+        )
+      } else if (inputs[0].inputType === null) {
+        // A real InputEvent carries `inputType`; the synthesised fallback deliberately does
+        // not. Getting here means the browser's own event was not the one forwarded.
+        fail('the emitted input event is not an InputEvent (no inputType), so the payload was fabricated')
+      } else if (inputs[0].targetTag !== 'INPUT') {
+        fail(
+          `the emitted input event has no usable target (${inputs[0].targetTag}), so the ` +
+            'documented `event.target.value` would throw for a consumer',
+        )
+      } else if (inputs[0].targetValue !== '中文') {
+        fail(`the emitted input event's target holds "${inputs[0].targetValue}", expected "中文"`)
+      } else if (inputs[0].data !== '中文') {
+        // The stale-payload check. CDP delivers the final value *before* `compositionend`, so
+        // the browser's own event for it exists and must be the one forwarded; a cached
+        // earlier event would report the intermediate text here instead.
+        fail(
+          `the emitted input event carries data "${inputs[0].data}", expected "中文" — the ` +
+            'payload describes an earlier value than the one published',
+        )
+      } else {
+        notes.push(
+          `real IME: composed "中文", published once as an InputEvent ` +
+            `(inputType "${inputs[0].inputType}", data "${inputs[0].data}", ` +
+            `target <${String(inputs[0].targetTag).toLowerCase()}> holds "${inputs[0].targetValue}")`,
+        )
+      }
+    }
+
     notes.push(
       `rendered in a browser: ${rendered.className}, fill ${rendered.backgroundColor}, ` +
         `height ${rendered.height}px, ${rendered.loadedFaces}/${rendered.totalFaces} token fonts loaded`,
@@ -595,6 +1054,147 @@ async function main() {
       `plugin-registered button: ${rendered.plugin?.className ?? 'missing'} ` +
         `(height ${rendered.plugin?.height ?? '?'} vs token ${rendered.plugin?.expectedSmHeight ?? '?'})`,
     )
+
+    // 7 — the Input, from its own tarball subpaths, in the same consumer.
+    if (!rendered.input) {
+      fail('the single-component Input was not rendered from the tarball')
+    } else {
+      const input = rendered.input
+      if (!input.className.includes('yue-input')) {
+        fail(`rendered Input class contract is wrong: ${input.className}`)
+      }
+      // The attribute-routing contract, checked on the shipped artefact: the id has to
+      // be on the native control or `label for` silently stops working.
+      if (input.controlTag !== 'INPUT') {
+        fail(`the Input rendered no native control (saw ${input.controlTag})`)
+      }
+      if (input.controlId !== 'tarball-input') {
+        fail(
+          `the id landed on "${input.controlId === null ? 'the wrapper' : input.controlId}" ` +
+            'instead of the native control',
+        )
+      }
+      if (input.wrapperId !== null) {
+        fail('the wrapper carries the id as well, so label association is ambiguous')
+      }
+      if (input.controlValue !== 'installed from a tarball') {
+        fail(`the Input value did not render: "${input.controlValue}"`)
+      }
+      if (input.height !== input.expectedHeight) {
+        fail(
+          `Input height ${input.height} does not match --input-height-lg (the app-level ` +
+            `configuration) = ${input.expectedHeight}`,
+        )
+      }
+      if (!input.className.includes('yue-input--lg')) {
+        fail(`the Input did not take the app-level size: ${input.className}`)
+      }
+      if (input.background !== input.expectedBackground) {
+        fail(
+          `Input fill ${input.background} does not match --input-background ` +
+            `${input.expectedBackground} — the tarball CSS is not taking effect`,
+        )
+      }
+      if (!input.styled) {
+        fail(
+          `no loaded stylesheet rule matches .${input.className.split(' ')[0]} — the ` +
+            'Input class namespace and the shipped stylesheet disagree',
+        )
+      }
+      if (input.clearRendered !== 1) {
+        fail(`expected exactly one clear control, saw ${input.clearRendered}`)
+      }
+      if (input.clearIsButton !== 'BUTTON') {
+        fail(`the clear control is a <${input.clearIsButton}>, not a <button>`)
+      }
+      if (!input.clearLabel) fail('the clear control has no accessible name')
+      else if (input.clearLabel !== 'Clear') {
+        // Proves the *default* language pack travelled through the published tarball and
+        // reached the component: this consumer installed `en-US` (the app-level locale) and
+        // never imported the Chinese pack for this subtree.
+        fail(
+          `the clear control reads "${input.clearLabel}", but the app-level locale is ` +
+            '`en-US`, whose `input.clear` is "Clear" — the default pack did not reach the ' +
+            'component',
+        )
+      }
+      if (!rendered.pluginInput || rendered.pluginInput.controlTag !== 'INPUT') {
+        fail('the plugin-registered Input was not rendered')
+      } else if (!rendered.pluginInput.styled) {
+        fail('the plugin-registered Input is not matched by any loaded stylesheet rule')
+      }
+      notes.push(
+        `Input from a tarball: ${input.className}, id on <${input.controlTag.toLowerCase()}>, ` +
+          `height ${input.height} vs token ${input.expectedHeight}, clear <${String(input.clearIsButton).toLowerCase()}>`,
+      )
+
+      // The cross-package locale path, proved end to end. This is the assertion that a
+      // private `Symbol('yue:locale')` would fail: `provideLocale` came from the hooks
+      // tarball and the component came from the vue tarball.
+      if (!rendered.scopedInput) {
+        fail('the subtree wrapped with provideLocale() from @yue-ui/hooks did not render')
+      } else if (rendered.scopedInput.clearLabel !== 'Effacer') {
+        fail(
+          `a subtree scoped through @yue-ui/hooks reads ` +
+            `"${rendered.scopedInput.clearLabel}" instead of "Effacer" — the locale ` +
+            'injection key differs between @yue-ui/vue and @yue-ui/hooks',
+        )
+      } else if (!rendered.scopedInput.className.includes('yue-input--lg')) {
+        // The subtree named only a string, so the app-level size has to survive. A provider
+        // that merged onto the *defaults* would have dropped it back to `md`.
+        fail(
+          `the scoped Input lost the inherited app-level size: ` +
+            `"${rendered.scopedInput.className}" does not carry yue-input--lg`,
+        )
+      } else if (!rendered.scopedInput.styled) {
+        fail('the scoped Input is not matched by any loaded stylesheet rule')
+      } else {
+        notes.push(
+          'cross-package locale: provideLocale() from @yue-ui/hooks reached a @yue-ui/vue ' +
+            'component (clear label "Effacer") and kept the inherited size (lg)',
+        )
+      }
+
+      // The language-pack subpath, proved end to end: a subtree that installed the pack it
+      // imported must read that pack's string, while the rest of the page stays in en-US.
+      if (!rendered.chineseInput) {
+        fail('the subtree that installed @yue-ui/vue/locale/zh-CN did not render')
+      } else if (rendered.chineseInput.clearLabel !== '清空') {
+        fail(
+          `a subtree speaking zh-CN reads "${rendered.chineseInput.clearLabel}" instead of ` +
+            '"清空" — the language pack subpath did not travel with the tarball',
+        )
+      } else if (rendered.chineseInput.clearLabel === input.clearLabel) {
+        fail('the Chinese subtree and the English page read the same label, so nothing switched')
+      } else {
+        notes.push(
+          'language pack: @yue-ui/vue/locale/zh-CN reached a component (' +
+            `"${rendered.chineseInput.clearLabel}") while the page stayed "${input.clearLabel}"`,
+        )
+      }
+
+      // The adapter contract, proved against the *installed* engine rather than a mock: the
+      // application's own `vue-i18n` supplies Yue's text, and switching the engine re-renders a
+      // component that is already mounted.
+      if (!rendered.engineInput) {
+        fail('the subtree driven by vue-i18n did not render')
+      } else if (rendered.engineInput.before !== 'Clear') {
+        fail(
+          `the vue-i18n-driven field read "${rendered.engineInput.before}" instead of the ` +
+            'engine\'s own "Clear"',
+        )
+      } else if (rendered.engineInput.after !== '清空') {
+        fail(
+          `after switching the vue-i18n locale the field read "${rendered.engineInput.after}" ` +
+            'instead of "清空" — the adapter is not sharing the engine\'s locale ref',
+        )
+      } else {
+        notes.push(
+          'vue-i18n adapter: an installed engine supplied a component\'s text ' +
+            `("${rendered.engineInput.before}" → "${rendered.engineInput.after}" without remounting)`,
+        )
+      }
+    }
   } finally {
     if (KEEP) process.stdout.write(`kept: ${workDir}\n`)
     else rmSync(workDir, { recursive: true, force: true })

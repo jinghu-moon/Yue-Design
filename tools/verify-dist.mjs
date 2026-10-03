@@ -23,16 +23,27 @@ import { fileURLToPath } from 'node:url'
 const REPO_ROOT = resolvePath(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_DIST = 'apps/docs/.vitepress/dist'
 
+/**
+ * Every page the site must render, in both locales.
+ *
+ * Written out rather than globbed: a page that stops being built is a failure here instead of a
+ * quietly shorter list. The English tree is listed in full because "the English site exists" is
+ * a claim about *all* of these, not about a landing page.
+ */
 const EXPECTED_PAGES = [
   'index.html',
   '404.html',
   'guide/index.html',
   'guide/philosophy.html',
+  'guide/i18n.html',
   'foundation/index.html',
   'components/index.html',
   'components/button.html',
   'components/button/api.html',
   'components/button/guide.html',
+  'components/input.html',
+  'components/input/api.html',
+  'components/input/guide.html',
   'design/index.html',
   'design/color.html',
   'design/dark-mode.html',
@@ -42,6 +53,27 @@ const EXPECTED_PAGES = [
   'design/motion.html',
   'architecture/index.html',
   'tools/index.html',
+  'en/index.html',
+  'en/guide/index.html',
+  'en/guide/philosophy.html',
+  'en/guide/i18n.html',
+  'en/foundation/index.html',
+  'en/components/index.html',
+  'en/components/button.html',
+  'en/components/button/api.html',
+  'en/components/button/guide.html',
+  'en/components/input.html',
+  'en/components/input/api.html',
+  'en/components/input/guide.html',
+  'en/design/index.html',
+  'en/design/color.html',
+  'en/design/dark-mode.html',
+  'en/design/typography.html',
+  'en/design/icon.html',
+  'en/design/layout.html',
+  'en/design/motion.html',
+  'en/architecture/index.html',
+  'en/tools/index.html',
 ]
 
 /**
@@ -56,19 +88,90 @@ const COMPONENT_PAGES = [
   {
     page: 'components/button.html',
     label: 'Button page renders real YueButton markup',
-    mustContain: ['yue-button yue-button--', 'yue-button__label', 'yue-button__spinner'],
+    mustContain: [
+      'yue-button yue-button--',
+      'yue-button__label',
+      'yue-button__spinner',
+      // The loader layer and the custom loader slot: proof that the loading examples are
+      // rendered rather than described.
+      'yue-button__loader',
+      // The group and toggle: proof the page uses the family's other three components.
+      'yue-button-group',
+      'aria-pressed="true"',
+      // The anatomy figure, which names six parts and labels them.
+      'button-anatomy__parts',
+    ],
   },
   {
     page: 'components/button/api.html',
     label: 'Button API page contains the public contract',
-    mustContain: ['Props', 'YueButton', 'aria-busy'],
+    mustContain: ['Props', 'YueButton', 'aria-busy', 'YueButtonToggleItem'],
   },
   {
     page: 'components/button/guide.html',
     label: 'Button guide page contains usage guidance',
     mustContain: ['主次关系', '图标和标签', '自查清单'],
   },
+  {
+    page: 'components/input.html',
+    label: 'Input page renders real YueInput markup',
+    mustContain: [
+      'yue-input yue-input--',
+      'yue-input__native',
+      'yue-input__clear',
+      // `is-invalid` and `is-readonly` only appear when the props are set, so their
+      // presence proves the state examples actually rendered rather than being prose.
+      'is-invalid',
+      'is-readonly',
+      'is-disabled',
+    ],
+  },
+  {
+    page: 'components/input/api.html',
+    label: 'Input API page contains the public contract',
+    // `input.clear` rather than `clearLabel`: the accessible name is a locale key, not a
+    // per-component prop, and this list is what keeps the published documentation honest
+    // about which of the two it is.
+    mustContain: ['Props', 'YueInput', 'aria-invalid', 'input.clear', 'update:modelValue'],
+  },
+  {
+    page: 'components/input/guide.html',
+    label: 'Input guide page contains usage guidance',
+    mustContain: ['YueInput', 'readonly', 'YueField'],
+  },
+  {
+    page: 'en/components/button.html',
+    label: 'the English Button page renders the real component',
+    // The component markup is language-independent; the *chrome* is not, so both halves are
+    // asserted: a rendered button and English section titles.
+    mustContain: ['yue-button yue-button--', 'Anatomy', 'yue-button__loader'],
+  },
+  {
+    page: 'en/guide/i18n.html',
+    label: 'the English i18n guide documents the locale contract',
+    mustContain: ['useLocale', 'fallback', 'input.clear', 'yue-i18n'],
+  },
 ]
+
+/**
+ * The locale entries `@yue-ui/vue` publishes, and the string each must carry.
+ *
+ * Two properties are being asserted, and both are about the *bundle boundary* rather than
+ * about correctness of the text:
+ *
+ *   1. every language pack is its own entry, so an application downloads the one it shows;
+ *   2. the **default** pack is the only one reachable from the root — a Chinese string
+ *      anywhere else in the package would mean the boundary leaked.
+ */
+const LOCALE_ENTRIES = [
+  { subpath: './locale', file: 'dist/locale/index.js', pack: null },
+  { subpath: './locale/en-US', file: 'dist/locale/en-US.js', pack: 'Clear' },
+  { subpath: './locale/zh-CN', file: 'dist/locale/zh-CN.js', pack: '清空' },
+]
+
+/** The pack that must not appear outside its own entry. */
+const NON_DEFAULT_PACK_STRING = '清空'
+const NON_DEFAULT_PACK_FILE = 'dist/locale/zh-CN.js'
 
 /** Substrings that would indicate a third-party CDN leaking into the build. */
 const CDN_MARKERS = [
@@ -94,6 +197,9 @@ const TOKEN_MARKERS = [
   '--button-disabled-background:',
   '--button-success-background:',
   '--button-focus-ring-color:',
+  // The selected (toggle) state reads the migrated `--button-selected-*` family, so its
+  // presence here proves the state has a token contract rather than a hard-coded colour.
+  '--button-selected-background:',
 ]
 
 /** Proof that the docs theme consumes tokens instead of hard-coded values. */
@@ -115,6 +221,32 @@ const LAYER_MARKERS = ['@layerprimitives', '@layersemantics', '@layercomponents'
  * the rules are all present, they just never apply.
  */
 const FORBIDDEN_IN_COMPONENT_CSS = ['@layer']
+
+/**
+ * The stylesheets `@yue-ui/vue` publishes, and the component blocks each must contain.
+ *
+ * The aggregate sheet must carry every component; a per-component sheet must carry its
+ * own and nothing else is asserted about it. Written out rather than globbed so that a
+ * component which stops being published is a failure here instead of a quietly shorter
+ * list.
+ */
+const COMPONENT_STYLESHEETS = [
+  {
+    subpath: './style.css',
+    file: 'dist/style.css',
+    blocks: ['button', 'input'],
+  },
+  {
+    subpath: './button.css',
+    file: 'dist/components/button/style.css',
+    blocks: ['button'],
+  },
+  {
+    subpath: './input.css',
+    file: 'dist/components/input/style.css',
+    blocks: ['input'],
+  },
+]
 
 /**
  * Ordering invariants. A token binding that is emitted *before* the value it is
@@ -154,6 +286,28 @@ function walk(dir) {
 }
 
 const isExternal = (url) => /^(?:https?:)?\/\//i.test(url.trim())
+
+/**
+ * `<link rel>` values that make the browser fetch a resource.
+ *
+ * Everything else — `canonical`, `alternate`, `license`, `author`, `me`, `next`/`prev` — is
+ * metadata. The distinction matters: a bilingual site *must* emit absolute canonical and
+ * `hreflang` URLs, and a check that treated those as loads would flag the correct
+ * configuration as a CDN leak.
+ */
+const RESOURCE_LINK_RELS = [
+  'stylesheet',
+  'preload',
+  'modulepreload',
+  'prefetch',
+  'icon',
+  'shortcut icon',
+  'apple-touch-icon',
+  'mask-icon',
+  'manifest',
+  'dns-prefetch',
+  'preconnect',
+]
 
 function check(distDir, { quiet }) {
   const problems = []
@@ -203,8 +357,15 @@ function check(distDir, { quiet }) {
       for (const match of text.matchAll(/<script[^>]*\ssrc=["']([^"']+)["']/gi)) {
         if (isExternal(match[1])) problems.push(`${shown}: external script "${match[1]}"`)
       }
-      for (const match of text.matchAll(/<link[^>]*\shref=["']([^"']+)["']/gi)) {
-        if (isExternal(match[1])) problems.push(`${shown}: external stylesheet "${match[1]}"`)
+      // Only `rel` values that make the browser *fetch* something count as a resource load.
+      // `canonical` and `alternate` are metadata: a bilingual site is expected to point at
+      // its own locale's absolute URLs, and treating those as loads would make the correct
+      // SEO setup indistinguishable from a CDN leak.
+      for (const match of text.matchAll(/<link\b[^>]*>/gi)) {
+        const rel = /\brel=["']([^"']+)["']/i.exec(match[0])?.[1]?.toLowerCase()
+        const href = /\bhref=["']([^"']+)["']/i.exec(match[0])?.[1]
+        if (!href || !rel || !RESOURCE_LINK_RELS.includes(rel)) continue
+        if (isExternal(href)) problems.push(`${shown}: external ${rel} href "${href}"`)
       }
     } else {
       for (const match of text.matchAll(/@import\s+(?:url\(\s*)?["']?([^"')\s;]+)/gi)) {
@@ -377,12 +538,14 @@ function checkVuePackage(problems, notes) {
     problems.push('@yue-ui/vue: dist does not import "vue", so the runtime was bundled in')
   }
 
-  // 3 — the two CSS entry points exist, are unlayered, and carry the rules
+  // 3 — every CSS entry point exists, is unlayered, and carries its component's rules
+  //
+  // The blocks are derived from the component folders rather than listed, so adding a
+  // component cannot silently leave its stylesheet unchecked: a new
+  // `components/<block>/style.css` shows up here as a missing subpath. `blocks` is what
+  // each sheet must prove it contains.
   const cssNamespaces = new Set()
-  for (const [subpath, file] of [
-    ['./style.css', 'dist/style.css'],
-    ['./button.css', 'dist/components/button/style.css'],
-  ]) {
+  for (const { subpath, file, blocks } of COMPONENT_STYLESHEETS) {
     const absolute = join(packageRoot, file)
     if (!existsSync(absolute)) {
       problems.push(`@yue-ui/vue: ${subpath} is missing (${file})`)
@@ -398,11 +561,17 @@ function checkVuePackage(problems, notes) {
         )
       }
     }
-    if (!withoutComments.includes('.yue-button')) {
-      problems.push(`@yue-ui/vue: ${file} does not contain the Button styles`)
-    }
-    for (const match of withoutComments.matchAll(/\.([a-z][a-z0-9]*)-button/g)) {
-      cssNamespaces.add(match[1])
+    for (const block of blocks) {
+      // The block rule itself — not merely a class that happens to contain the word —
+      // proves the component's styles actually travelled into this bundle.
+      if (!new RegExp(`\\.yue-${block}\\s*[,{]`).test(withoutComments)) {
+        problems.push(`@yue-ui/vue: ${file} does not contain the ${block} styles`)
+      }
+      for (const match of withoutComments.matchAll(
+        new RegExp(`\\.([a-z][a-z0-9]*)-${block}(?=[\\s,:{.[])`, 'g'),
+      )) {
+        cssNamespaces.add(match[1])
+      }
     }
     notes.push(`${file}: unlayered, ${css.length} bytes`)
   }
@@ -436,6 +605,124 @@ function checkVuePackage(problems, notes) {
   notes.push(
     `@yue-ui/vue dist: ${jsFiles.length} JS file(s), externals: ${[...externals].sort().join(', ') || 'none'}`,
   )
+}
+
+/**
+ * The locale boundary, asserted against the built artefacts.
+ *
+ * A language pack that is imported by something it should not be is invisible in review —
+ * the strings are correct, the application renders correctly, and the bundle quietly grew by
+ * a language nobody asked for. Only the emitted files show this.
+ */
+function checkLocaleEntries(problems, notes) {
+  const packageRoot = resolvePath(REPO_ROOT, VUE_PACKAGE_DIR)
+
+  for (const entry of LOCALE_ENTRIES) {
+    const file = join(packageRoot, entry.file)
+    if (!existsSync(file)) {
+      problems.push(`@yue-ui/vue: ${entry.subpath} is missing (${entry.file})`)
+      continue
+    }
+    const source = readFileSync(file, 'utf8')
+    if (entry.pack) {
+      if (!source.includes(entry.pack)) {
+        problems.push(`@yue-ui/vue: ${entry.file} does not contain its own message (${entry.pack})`)
+      }
+      // A pack must stay data. If a pack entry pulled in the component runtime, importing a
+      // language would cost a component library.
+      for (const marker of ['defineComponent', 'yue-button', 'yue-input']) {
+        if (source.includes(marker)) {
+          problems.push(`@yue-ui/vue: ${entry.file} contains "${marker}"; a language pack must stay data`)
+        }
+      }
+      notes.push(`${entry.file}: ${source.length} bytes, data only`)
+    }
+  }
+
+  // The non-default pack must live in exactly one file. `dist/locale/index.js` and the chunk
+  // graph are scanned too, because a barrel re-export is the usual way this leaks.
+  const distDir = join(packageRoot, 'dist')
+  if (!existsSync(distDir)) return
+  const leaks = []
+  for (const file of walk(distDir)) {
+    if (extname(file) !== '.js') continue
+    const relative_ = relative(packageRoot, file).replaceAll('\\', '/')
+    if (relative_ === NON_DEFAULT_PACK_FILE) continue
+    if (readFileSync(file, 'utf8').includes(NON_DEFAULT_PACK_STRING)) leaks.push(relative_)
+  }
+  if (leaks.length > 0) {
+    problems.push(
+      `@yue-ui/vue: the ${NON_DEFAULT_PACK_FILE} pack leaked into ${leaks.join(', ')}; ` +
+        'a language pack must only be reachable through its own entry',
+    )
+  } else {
+    notes.push(`locale: ${LOCALE_ENTRIES.length - 1} packs, only the default is reachable from the root`)
+  }
+}
+
+/**
+ * Cross-package registry keys must be the *same* symbol in both packages.
+ *
+ * `@yue-ui/vue` compiles the hooks layer into its bundle, so each key exists in two published
+ * artefacts at once. Built with `Symbol(...)` the two are different symbols, `inject()`
+ * matches by identity, and a consumer who configures the library through `@yue-ui/hooks`
+ * silently gets the defaults — `inject(key, fallback)` cannot tell a mismatched key from
+ * nothing provided. `Symbol.for(...)` reads the global registry, so every copy is the same key.
+ *
+ * The config and locale keys carry injected state. The diagnostics store is also global: a
+ * missing-key warning can be produced by the hooks copy bundled into `@yue-ui/vue` and drained
+ * through a direct `@yue-ui/hooks` import. A module-local queue would make that evidence vanish.
+ *
+ * This runs over the built JavaScript rather than the sources because it is a property of
+ * the artefacts: a bundler is free to inline or rename anything, and only the emitted file
+ * shows what a consumer actually gets. `verify:tarball` proves the same thing end to end.
+ */
+const REGISTRY_KEYS = ['yue:config', 'yue:locale', 'yue:locale-diagnostics']
+
+function checkConfigKey(problems, notes) {
+  const packages = [
+    { label: '@yue-ui/vue', root: resolvePath(REPO_ROOT, VUE_PACKAGE_DIR) },
+    { label: '@yue-ui/hooks', root: resolvePath(REPO_ROOT, 'packages/hooks') },
+  ]
+
+  for (const key of REGISTRY_KEYS) {
+    const registry = new RegExp(`Symbol\\.for\\(\\s*['"\`]${key}['"\`]\\s*\\)`)
+    // A separate global copy for stripping: `replaceAll` demands the `g` flag, and reusing a
+    // `g`-flagged pattern for `test()` would carry `lastIndex` between calls.
+    const registryGlobal = new RegExp(registry.source, 'g')
+    const private_ = new RegExp(`Symbol\\(\\s*['"\`]${key}['"\`]\\s*\\)`)
+
+    const found = []
+    for (const { label, root } of packages) {
+      const distDir = join(root, 'dist')
+      if (!existsSync(distDir)) {
+        problems.push(`${label}: no dist directory, so the ${key} key cannot be checked`)
+        continue
+      }
+      let registered = false
+      for (const file of walk(distDir).filter((candidate) => extname(candidate) === '.js')) {
+        // Comments first: the doc comment in `injection.ts` explains this very defect by
+        // quoting `Symbol('yue:config')`, and a naive scan reads the explanation as the bug.
+        const source = stripJsComments(readFileSync(file, 'utf8'))
+        if (registry.test(source)) registered = true
+        if (private_.test(source.replace(registryGlobal, ''))) {
+          problems.push(
+            `${label}: ${relative(root, file)} creates a private Symbol("${key}"), which can ` +
+              'never match the key in the other package',
+          )
+        }
+      }
+      if (!registered) {
+        problems.push(
+          `${label}: no module registers the key with Symbol.for("${key}"), so a ` +
+            'second copy of the key cannot match it',
+        )
+      }
+      found.push(`${label}${registered ? ' ✓' : ' ✗'}`)
+    }
+
+    notes.push(`registry key: Symbol.for("${key}") — ${found.join(', ')}`)
+  }
 }
 
 /**
@@ -562,6 +849,211 @@ function checkHooksPackage(problems, notes) {
   notes.push(`@yue-ui/hooks dist: ${jsFiles.length} JS file(s), ${relativeSpecifiers} relative import(s)`)
 }
 
+/**
+ * The bilingual site's static contract, asserted on the built HTML.
+ *
+ * Three claims that are easy to make and easy to get wrong, and that no unit test can see:
+ *
+ *   1. every page declares its own language in `<html lang>`, which is what a screen reader
+ *      uses to choose a voice;
+ *   2. every page carries a self-canonical URL, so the two trees are not indexed as duplicates
+ *      of each other;
+ *   3. every page carries `hreflang` alternates for both languages plus `x-default`, so a
+ *      search engine can pair them.
+ *
+ * The hostname is a placeholder today; the check asserts the *shape* (same relative path,
+ * correct prefix) rather than the domain, so replacing it stays a one-line change.
+ */
+function checkLocaleLinks(distDir, files, problems, notes) {
+  const html = files.filter((file) => extname(file) === '.html' && !/404\.html$/.test(file))
+  let checked = 0
+  const mismatches = []
+
+  for (const file of html) {
+    const relative_ = relative(distDir, file).replaceAll('\\', '/')
+    const source = readFileSync(file, 'utf8')
+    const isEnglish = relative_.startsWith('en/')
+
+    const lang = /<html[^>]*\blang=["']([^"']+)["']/i.exec(source)?.[1]
+    const expectedLang = isEnglish ? 'en-US' : 'zh-CN'
+    if (lang !== expectedLang) {
+      mismatches.push(`${relative_}: <html lang> is "${lang}", expected "${expectedLang}"`)
+    }
+
+    if (!/<link[^>]+rel=["']canonical["']/i.test(source)) {
+      mismatches.push(`${relative_}: no canonical link`)
+    }
+    for (const hreflang of ['zh-CN', 'en-US', 'x-default']) {
+      const pattern = new RegExp(`<link[^>]+rel=["']alternate["'][^>]*hreflang=["']${hreflang}["']`, 'i')
+      const reversed = new RegExp(`<link[^>]+hreflang=["']${hreflang}["'][^>]*rel=["']alternate["']`, 'i')
+      if (!pattern.test(source) && !reversed.test(source)) {
+        mismatches.push(`${relative_}: no hreflang="${hreflang}" alternate`)
+      }
+    }
+
+    // The alternate for the *other* tree must point at the same relative page there. This is
+    // the assertion that catches a switcher or a config that pairs the wrong pages.
+    //
+    // `index.html` is compared as its directory (`components/index.html` ↔ `en/components/`)
+    // because that is the URL the canonical/alternate links are built from: VitePress serves
+    // the directory, and a link to `en/components/index.html` would be a page the deployment
+    // does not advertise.
+    const asUrlPath = relative_.replace(/index\.html$/, '')
+    const counterpart = isEnglish ? asUrlPath : `en/${asUrlPath}`
+    const counterpartPattern = new RegExp(
+      `<link[^>]+href=["'][^"']*\\/${counterpart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`,
+      'i',
+    )
+    if (!counterpartPattern.test(source)) {
+      mismatches.push(`${relative_}: no alternate pointing at ${counterpart}`)
+    }
+
+    checked += 1
+  }
+
+  if (mismatches.length > 0) {
+    for (const mismatch of mismatches.slice(0, 10)) problems.push(`bilingual: ${mismatch}`)
+    if (mismatches.length > 10) {
+      problems.push(`bilingual: ${mismatches.length - 10} more canonical/lang problem(s)`)
+    }
+    return
+  }
+
+  const englishPages = html.filter((file) => relative(distDir, file).replaceAll('\\', '/').startsWith('en/'))
+  notes.push(
+    `bilingual: ${checked} page(s) carry lang + canonical + hreflang ` +
+      `(${englishPages.length} in /en/)`,
+  )
+}
+
+/**
+ * The sitemap's bilingual coverage.
+ *
+ * `transformHead` gives each page its own canonical and alternates, but the sitemap is produced by a
+ * separate VitePress plugin with its own inputs — so "both languages are indexed" is a claim about a
+ * *second* code path, and it is asserted against the pages that were actually built rather than
+ * against a remembered count.
+ */
+function checkSitemap(distDir, files, problems, notes) {
+  const sitemapPath = join(distDir, 'sitemap.xml')
+  if (!existsSync(sitemapPath)) {
+    problems.push('sitemap: sitemap.xml was not generated')
+    return
+  }
+
+  const sitemap = readFileSync(sitemapPath, 'utf8')
+  const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].trim())
+  if (locations.length === 0) {
+    problems.push('sitemap: sitemap.xml contains no <loc> entries')
+    return
+  }
+
+  const hostnames = new Set(locations.map((url) => new URL(url).origin))
+  if (hostnames.size !== 1) {
+    problems.push(
+      `sitemap: entries use ${hostnames.size} different origins: ${[...hostnames].join(', ')}`,
+    )
+  }
+
+  // `index.html` is advertised as its directory, the same way the canonical links are built.
+  const expected = files
+    .filter((file) => extname(file) === '.html' && !/404\.html$/.test(file))
+    .map((file) => relative(distDir, file).replaceAll('\\', '/'))
+    .map((relative_) => relative_.replace(/index\.html$/, ''))
+
+  const paths = locations.map((url) => new URL(url).pathname)
+  const missing = expected.filter(
+    (relative_) => !paths.some((path) => path === `/${relative_}` || path === `/${relative_}/`),
+  )
+  if (missing.length > 0) {
+    problems.push(
+      `sitemap: ${missing.length} built page(s) are absent, e.g. "${missing[0]}"`,
+    )
+  }
+
+  const englishCount = paths.filter((path) => path.startsWith('/en/')).length
+  if (englishCount === 0) {
+    problems.push('sitemap: no /en/ entry, so the English tree is not indexed')
+  }
+
+  const origin = [...hostnames][0] ?? ''
+  if (/\.example(?:$|:)/.test(origin) || origin.includes('yue-design.example')) {
+    // Not a failure: the placeholder is correct for development, and a release must be able to run
+    // the whole gate chain. It is printed on every run so it cannot be forgotten by omission, and
+    // the release checklist carries the blocking step.
+    notes.push(
+      `sitemap: WARNING canonical origin is the placeholder ${origin} — canonical, hreflang and ` +
+        'sitemap all point at it. Replace SITE_HOSTNAME before deploying (see the release checklist).',
+    )
+  }
+
+  notes.push(`sitemap: ${locations.length} URL(s) on ${origin} (${englishCount} in /en/)`)
+}
+
+/**
+ * The prerendered locale output — the static half of the SSR claim.
+ *
+ * VitePress server-renders every page, so each locale's HTML must already contain that locale's
+ * component text *before any JavaScript runs*. `verify:visual` drives the same pages in a browser and
+ * asserts the values survive hydration; this check is the part that would fail if SSR silently fell
+ * back to the default pack, which hydration alone cannot distinguish (the client would simply
+ * repair it, and the page would look right after a flash of the wrong language).
+ *
+ * The expectations are derived from each page's own `<html lang>`, so the check cannot pass by
+ * hard-coding the same string twice.
+ */
+function checkPrerenderedLocale(distDir, problems, notes) {
+  const cases = [
+    { file: 'components/input.html', other: 'en-US' },
+    { file: 'en/components/input.html', other: 'zh-CN' },
+  ]
+  const checked = []
+
+  for (const { file, other } of cases) {
+    const path = join(distDir, file)
+    if (!existsSync(path)) {
+      problems.push(`prerender: ${file} was not built`)
+      continue
+    }
+    const html = readFileSync(path, 'utf8')
+    const lang = /<html[^>]*\blang=["']([^"']+)["']/i.exec(html)?.[1] ?? ''
+    const pageIsChinese = lang.toLowerCase().startsWith('zh')
+    const own = pageIsChinese ? '清空' : 'Clear'
+    const mirror = pageIsChinese ? 'Clear' : '清空'
+
+    const labels = {}
+    for (const state of ['default', 'translated', 'regional']) {
+      const pattern = new RegExp(
+        `data-input-state="clearable-${state}"[\\s\\S]{0,600}?aria-label="([^"]*)"`,
+      )
+      labels[state] = pattern.exec(html)?.[1] ?? null
+    }
+
+    if (labels.default !== own) {
+      problems.push(
+        `prerender: ${file} (${lang}) has aria-label "${labels.default}" for the page's own locale, ` +
+          `expected "${own}" — server rendering did not use this page's pack`,
+      )
+      continue
+    }
+    // `translated` is an explicit subpath pack; `regional` can only come from the fallback chain
+    // (`en-GB → en → en-US` on the Chinese page, `zh-Hans-CN → zh-CN` on the English one).
+    for (const state of ['translated', 'regional']) {
+      if (labels[state] !== mirror) {
+        problems.push(
+          `prerender: ${file} ${state} field has aria-label "${labels[state]}", expected ` +
+            `"${mirror}" (the ${other} string)`,
+        )
+      }
+    }
+    checked.push(`${file} (${lang}) "${own}"/"${mirror}"/"${mirror}"`)
+  }
+
+  if (checked.length > 0) {
+    notes.push(`prerender: ${checked.join(' ↔ ')}`)
+  }
+}
+
 function main() {
   const argv = process.argv.slice(2)
   let distDir = resolvePath(REPO_ROOT, DEFAULT_DIST)
@@ -584,8 +1076,10 @@ function main() {
   process.stdout.write(`package: ${VUE_PACKAGE_DIR}\n`)
   const packageNotes = []
   checkVuePackage(problems, packageNotes)
+  const localeNotes = []
+  checkLocaleEntries(problems, localeNotes)
   if (!quiet) {
-    for (const note of packageNotes) process.stdout.write(`  ${note}\n`)
+    for (const note of [...packageNotes, ...localeNotes]) process.stdout.write(`  ${note}\n`)
   }
 
   process.stdout.write('package: packages/hooks\n')
@@ -595,7 +1089,25 @@ function main() {
     for (const note of hooksNotes) process.stdout.write(`  ${note}\n`)
   }
 
+  // Cross-package: it only means anything once both dists exist.
+  const configNotes = []
+  checkConfigKey(problems, configNotes)
+  if (!quiet) {
+    for (const note of configNotes) process.stdout.write(`  ${note}\n`)
+  }
+
   checkNoEmitIntoSource(problems)
+
+  const bilingualNotes = []
+  // `check()` walks the tree internally; the bilingual checks need the same file list, and a
+  // missing dist is already reported by `check()` above.
+  const builtFiles = existsSync(distDir) ? walk(distDir) : []
+  checkLocaleLinks(distDir, builtFiles, problems, bilingualNotes)
+  checkSitemap(distDir, builtFiles, problems, bilingualNotes)
+  checkPrerenderedLocale(distDir, problems, bilingualNotes)
+  if (!quiet) {
+    for (const note of bilingualNotes) process.stdout.write(`  ${note}\n`)
+  }
 
   if (problems.length > 0) {
     process.stdout.write(`\n${problems.length} problem(s):\n`)

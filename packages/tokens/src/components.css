@@ -79,7 +79,6 @@
     --button-primary-border-color        : transparent;
     --button-ghost-border-color          : transparent;
     --button-danger-border-color         : transparent;
-    --input-color                        : var(--text-primary);
     --tag-background                     : var(--surface);
     --tag-background-selected            : var(--selection-bg);
     --tag-color                          : var(--text-secondary);
@@ -177,7 +176,6 @@
     --progress-height                    : var(--space-8);
     --progress-border-radius             : var(--radius-full);
     --progress-track                     : var(--surface-component);
-    --progress-fill                      : var(--control-accent);
     --spinner-size                       : var(--size-20);
     --spinner-border-width               : var(--border-2);
     --spinner-color                      : var(--accent-solid);
@@ -329,4 +327,58 @@
     --button-link-color             : var(--link-color);
     --button-link-decoration        : var(--link-decoration);
     --button-link-decoration-hover  : underline
+}
+
+/* ------------------------------------------------------------------ *
+ * Input — component token extensions
+ *
+ * The migration already carries the whole `--input-*` colour and geometry contract
+ * (`--input-background`, `--input-border-color*`, `--input-height-*`,
+ * `--input-padding-inline-*`, `--input-gap`, `--input-border-radius`, …), so this
+ * block adds only what `YueInput` needs and the migration does not have.
+ *
+ * Stage 0 of the roadmap asked for a gap audit, and three candidates were rejected
+ * rather than added:
+ *
+ *   - `--input-border-color-invalid-hover` and `--input-border-color-invalid-focus`.
+ *     An invalid field keeps its error border through hover and focus, and signals
+ *     focus with the ring instead of by recolouring the border. That is the behaviour
+ *     the accessibility contract asks for ("focus-visible 不得覆盖错误语义"), and it
+ *     needs no extra token to express.
+ *   - a prefix/suffix spacing token. The migration already declares `--input-gap`
+ *     (`var(--space-8)`) and the component uses it for the affix row, so a second name
+ *     for the same distance would be a token whose only consumer is a rename.
+ *
+ * Every declaration below has a consumer in `packages/vue/src/components/input/`,
+ * a value in both themes, and — where it is a colour that text or a control is read
+ * against — a gating pair in `tools/token-audit.pairs.mjs`.
+ * ------------------------------------------------------------------ */
+:root {
+    /* Icon and motion scales the migration does not carry for inputs. */
+    --input-icon-size-sm            : var(--control-icon-size-sm);
+    --input-icon-size-md            : var(--control-icon-size-md);
+    --input-icon-size-lg            : var(--control-icon-size-lg);
+    --input-duration                : var(--motion-duration-interaction);
+    --input-ease                    : var(--motion-ease-standard);
+
+    /* Focus ring, so `:focus-visible` never hard-codes a width or colour. */
+    --input-focus-ring-color        : var(--focus-ring);
+    --input-focus-ring-width        : var(--focus-width);
+    --input-focus-ring-offset       : var(--focus-offset);
+
+    /* Readonly is not disabled: the value stays readable, selectable and focusable,
+     * so it gets its own quieter fill rather than the disabled container. */
+    --input-background-readonly     : var(--surface-subtle);
+
+    /* Prefix/suffix content is presentational but still content, so it is held to the
+     * text threshold rather than the control one. */
+    --input-affix-color             : var(--text-secondary);
+
+    /* The clear control. `--input-clear-hit-size` is the button's box, deliberately
+     * larger than the glyph it draws, so the target clears the 24px minimum. */
+    --input-clear-hit-size          : var(--size-24);
+    --input-clear-border-radius     : var(--radius-full);
+    --input-clear-glyph-width       : var(--border-2);
+    --input-clear-color             : var(--text-placeholder);
+    --input-clear-color-hover       : var(--text-primary)
 }

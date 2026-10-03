@@ -5,7 +5,6 @@ import { resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, markRaw, nextTick } from 'vue'
 import { YUE_NAMESPACE, yueConfigKey } from '@yue-ui/hooks'
-import type { ComponentSize } from '@yue-ui/hooks'
 import type { YueButtonProps, YueButtonSize } from './types'
 import YueButton from './YueButton.vue'
 
@@ -30,21 +29,7 @@ function readStylesheet(): string {
   throw new Error(`could not locate the Button stylesheet from ${process.cwd()}`)
 }
 
-/**
- * Compile-time proof that the locally declared size union has not drifted from
- * the hooks layer's `ComponentSize`.
- *
- * `YueButtonSize` is deliberately declared in `types.ts` rather than re-exported,
- * so that the shipped declarations do not reference a package the consumer has not
- * installed. That duplication is only safe if it is checked — if the hooks layer
- * ever gains a fourth size, this annotation becomes `never` and the file stops
- * compiling.
- */
-const sizeParity: [YueButtonSize] extends [ComponentSize]
-  ? [ComponentSize] extends [YueButtonSize]
-    ? true
-    : never
-  : never = true
+const STYLESHEET = readStylesheet()
 
 /**
  * `mount`'s own `slots` option declares `default` as optional, so spreading the
@@ -80,11 +65,14 @@ afterEach(() => {
 })
 
 describe('YueButton', () => {
-  describe('the local size union', () => {
-    it('still matches the hooks layer contract', () => {
-      // `sizeParity` is the type-level assertion; this keeps it referenced so
-      // `noUnusedLocals` stays on for the rest of the file.
-      expect(sizeParity).toBe(true)
+  describe('the size prop', () => {
+    it('is the shared control-size contract, not a local union', () => {
+      // The union itself lives in `packages/vue/src/shared/size.ts` and is checked
+      // against the hooks layer once, in `shared/size.test.ts`. This only pins that
+      // the component still accepts the documented steps.
+      expect(mountButton({ props: { size: 'sm' } }).classes()).toContain('yue-button--sm')
+      expect(mountButton({ props: { size: 'md' } }).classes()).toContain('yue-button--md')
+      expect(mountButton({ props: { size: 'lg' } }).classes()).toContain('yue-button--lg')
     })
   })
 
@@ -106,6 +94,13 @@ describe('YueButton', () => {
     it('renders the label through the default slot', () => {
       const wrapper = mountButton({ slots: { default: '提交' } })
       expect(wrapper.find('.yue-button__label').text()).toBe('提交')
+    })
+
+    it('announces no pressed state until the caller asks for one', () => {
+      // `active` is a toggle contract, not a visual state that happens to be off: an
+      // ordinary button that reports `aria-pressed="false"` tells a screen reader it is a
+      // toggle button, which it is not.
+      expect(mountButton().attributes('aria-pressed')).toBeUndefined()
     })
   })
 
@@ -160,6 +155,36 @@ describe('YueButton', () => {
     })
   })
 
+  describe('active (standalone toggle button)', () => {
+    it('adds the is-active state class when selected', () => {
+      const wrapper = mountButton({ props: { active: true } })
+      expect(wrapper.classes()).toContain('is-active')
+      expect(wrapper.attributes('aria-pressed')).toBe('true')
+    })
+
+    it('reports aria-pressed="false" without the state class when explicitly unselected', () => {
+      // `active: false` is a different statement from "no `active`": it says "this is a
+      // toggle button and it is currently off", which is exactly what `aria-pressed="false"`
+      // means to a screen reader.
+      const wrapper = mountButton({ props: { active: false } })
+      expect(wrapper.classes()).not.toContain('is-active')
+      expect(wrapper.attributes('aria-pressed')).toBe('false')
+    })
+
+    it('cannot have its pressed state forged through an attribute', () => {
+      // Same reasoning as `aria-busy`: `inheritAttrs: false` is what makes the component's
+      // own bindings win over a forwarded attribute.
+      const wrapper = mountButton({ props: { active: true }, attrs: { 'aria-pressed': 'false' } })
+      expect(wrapper.attributes('aria-pressed')).toBe('true')
+    })
+
+    it('still emits click while selected', async () => {
+      const wrapper = mountButton({ props: { active: true } })
+      await wrapper.trigger('click')
+      expect(wrapper.emitted('click')).toHaveLength(1)
+    })
+  })
+
   describe('disabled', () => {
     it('sets the native disabled attribute on a <button>', () => {
       expect(mountButton({ props: { disabled: true } }).attributes('disabled')).toBeDefined()
@@ -176,9 +201,148 @@ describe('YueButton', () => {
     })
 
     it('does not use aria-disabled on a native <button>', () => {
-      // A native <button> is disabled by the platform; adding aria-disabled as
+      // A native `<button>` is disabled by the platform; adding aria-disabled as
       // well would double-announce the state.
       expect(mountButton({ props: { disabled: true } }).attributes('aria-disabled')).toBeUndefined()
+    })
+  })
+
+  /**
+   * The aria and tab-order contract, as a matrix.
+   *
+   * Written out rather than asserted case by case because the defect it guards against is
+   * *tag-dependent*: the same state has to be expressed the same way whether the component
+   * rendered a `<button>`, an `<a>` or a consumer's component. The version this replaces got
+   * that wrong in one direction only — `loading` off a native `<button>` was "busy, still
+   * focusable", while `loading` on an `<a>` additionally claimed `aria-disabled="true"` and
+   * pushed the element out of the tab order, which is the one thing `loading` must never do.
+   */
+  describe('the aria and tab-order contract', () => {
+    interface AriaReading {
+      disabled: string | undefined
+      ariaDisabled: string | undefined
+      ariaBusy: string | undefined
+      tabindex: string | undefined
+    }
+
+    const CASES: Array<{
+      label: string
+      tag: 'button' | 'a'
+      disabled?: boolean
+      loading?: boolean
+      expected: AriaReading
+    }> = [
+      {
+        label: 'a plain native button',
+        tag: 'button',
+        expected: { disabled: undefined, ariaDisabled: undefined, ariaBusy: undefined, tabindex: undefined },
+      },
+      {
+        label: 'a disabled native button',
+        tag: 'button',
+        disabled: true,
+        // The platform removes it from the tab order, so no `tabindex` is written.
+        expected: { disabled: '', ariaDisabled: undefined, ariaBusy: undefined, tabindex: undefined },
+      },
+      {
+        label: 'a loading native button',
+        tag: 'button',
+        loading: true,
+        expected: { disabled: undefined, ariaDisabled: undefined, ariaBusy: 'true', tabindex: undefined },
+      },
+      {
+        label: 'a disabled and loading native button',
+        tag: 'button',
+        disabled: true,
+        loading: true,
+        expected: { disabled: '', ariaDisabled: undefined, ariaBusy: 'true', tabindex: undefined },
+      },
+      {
+        label: 'a plain anchor',
+        tag: 'a',
+        expected: { disabled: undefined, ariaDisabled: undefined, ariaBusy: undefined, tabindex: undefined },
+      },
+      {
+        label: 'a disabled anchor',
+        tag: 'a',
+        disabled: true,
+        expected: { disabled: undefined, ariaDisabled: 'true', ariaBusy: undefined, tabindex: '-1' },
+      },
+      {
+        label: 'a loading anchor',
+        tag: 'a',
+        loading: true,
+        // The regression: loading is "busy, still focusable", on every tag. It is not
+        // disabled — it is still reachable by Tab, still has its name, and the handler is
+        // what refuses the activation.
+        expected: { disabled: undefined, ariaDisabled: undefined, ariaBusy: 'true', tabindex: undefined },
+      },
+      {
+        label: 'a disabled and loading anchor',
+        tag: 'a',
+        disabled: true,
+        loading: true,
+        expected: { disabled: undefined, ariaDisabled: 'true', ariaBusy: 'true', tabindex: '-1' },
+      },
+    ]
+
+    it.each(CASES)('$label exposes exactly the documented attributes', ({ tag, disabled, loading, expected }) => {
+      const wrapper = mountButton({ props: { tag, disabled, loading } })
+      expect({
+        disabled: wrapper.attributes('disabled'),
+        ariaDisabled: wrapper.attributes('aria-disabled'),
+        ariaBusy: wrapper.attributes('aria-busy'),
+        tabindex: wrapper.attributes('tabindex'),
+      }).toEqual(expected)
+    })
+
+    // Only the non-native rows: a native `<button>` is taken out of the tab order by the
+    // platform, so `tabindex` is never written (asserted in the matrix above).
+    it.each(CASES.filter((entry) => entry.loading && entry.tag !== 'button'))(
+      '$label keeps its focus behaviour: only `disabled` leaves the tab order',
+      ({ tag, disabled, loading }) => {
+        const wrapper = mountButton({ props: { tag, disabled, loading } })
+        if (disabled) {
+          expect(wrapper.attributes('tabindex')).toBe('-1')
+        } else {
+          expect(wrapper.attributes('tabindex')).toBeUndefined()
+        }
+      },
+    )
+
+    it('applies the same contract to a custom component tag', () => {
+      const CustomTag = markRaw(
+        defineComponent({
+          name: 'ContractTag',
+          setup(_props, { slots }) {
+            return () => h('span', { class: 'custom-tag' }, slots.default?.())
+          },
+        }),
+      )
+      const loading = mountButton({ props: { tag: CustomTag, loading: true } }).find('.custom-tag')
+      expect(loading.attributes('aria-busy')).toBe('true')
+      expect(loading.attributes('aria-disabled')).toBeUndefined()
+      expect(loading.attributes('tabindex')).toBeUndefined()
+
+      const disabled = mountButton({ props: { tag: CustomTag, disabled: true } }).find('.custom-tag')
+      expect(disabled.attributes('aria-disabled')).toBe('true')
+      expect(disabled.attributes('tabindex')).toBe('-1')
+    })
+
+    it('still refuses activation while loading on a non-native tag', async () => {
+      // The other half of "loading keeps its tab order": the element stays reachable, so the
+      // handler is what has to refuse the activation — including the anchor's default
+      // navigation, which a keyboard Enter would otherwise trigger.
+      const wrapper = mountButton({
+        props: { tag: 'a', loading: true },
+        attrs: { href: '/pricing' },
+      })
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+      wrapper.element.dispatchEvent(event)
+
+      expect(wrapper.attributes('href')).toBe('/pricing')
+      expect(wrapper.emitted('click')).toBeUndefined()
+      expect(event.defaultPrevented).toBe(true)
     })
   })
 
@@ -187,10 +351,10 @@ describe('YueButton', () => {
       expect(mountButton({ props: { loading: true } }).attributes('aria-busy')).toBe('true')
     })
 
-    it('adds the is-loading state class and shows a spinner', () => {
+    it('adds the is-loading state class and shows the default spinner in the loader layer', () => {
       const wrapper = mountButton({ props: { loading: true } })
       expect(wrapper.classes()).toContain('is-loading')
-      expect(wrapper.find('.yue-button__spinner').exists()).toBe(true)
+      expect(wrapper.find('.yue-button__loader .yue-button__spinner').exists()).toBe(true)
     })
 
     it('does not emit click', async () => {
@@ -199,14 +363,26 @@ describe('YueButton', () => {
       expect(wrapper.emitted('click')).toBeUndefined()
     })
 
-    it('replaces the leading slot with the spinner and hides trailing', () => {
+    it('keeps the label and both icons in place instead of replacing them', () => {
+      // The regression this pins: the loader used to take the `leading` slot's place and
+      // hide `trailing`, which resized the button in the middle of the request and made
+      // "loading" a layout event. The content now stays where it is; the stylesheet only
+      // paints it invisible.
       const wrapper = mountButton({
         props: { loading: true },
         slots: { default: '保存', leading: '<i class="icon" />', trailing: '<i class="caret" />' },
       })
-      expect(wrapper.find('.yue-button__spinner').exists()).toBe(true)
-      expect(wrapper.find('.yue-button__icon--leading').exists()).toBe(false)
-      expect(wrapper.find('.yue-button__icon--trailing').exists()).toBe(false)
+      expect(wrapper.find('.yue-button__loader').exists()).toBe(true)
+      expect(wrapper.find('.yue-button__label').text()).toBe('保存')
+      expect(wrapper.find('.yue-button__icon--leading').exists()).toBe(true)
+      expect(wrapper.find('.yue-button__icon--trailing').exists()).toBe(true)
+      expect(wrapper.find('.is-loading > .yue-button__label').exists()).toBe(true)
+    })
+
+    it('does not render a loader layer when it is not loading', () => {
+      const wrapper = mountButton()
+      expect(wrapper.find('.yue-button__loader').exists()).toBe(false)
+      expect(wrapper.find('.yue-button__spinner').exists()).toBe(false)
     })
 
     it('does not set the native disabled attribute', () => {
@@ -214,6 +390,32 @@ describe('YueButton', () => {
       // the handler instead, so a mid-request button keeps focus and stays in the
       // tab order rather than being yanked out from under the user.
       expect(mountButton({ props: { loading: true } }).attributes('disabled')).toBeUndefined()
+    })
+  })
+
+  describe('the loader slot', () => {
+    it('replaces the default spinner', () => {
+      const wrapper = mountButton({
+        props: { loading: true },
+        slots: { loader: '<i class="my-loader" />' },
+      })
+      const loader = wrapper.find('.yue-button__loader')
+      expect(loader.exists()).toBe(true)
+      expect(loader.find('.my-loader').exists()).toBe(true)
+      expect(loader.find('.yue-button__spinner').exists()).toBe(false)
+    })
+
+    it('is not rendered when the button is not loading', () => {
+      const wrapper = mountButton({ slots: { loader: '<i class="my-loader" />' } })
+      expect(wrapper.find('.my-loader').exists()).toBe(false)
+    })
+
+    it('keeps the loader inside the button the consumer is describing', () => {
+      // The slot must not imply an icon library or a second root: it renders in the same
+      // absolutely positioned layer as the default spinner, so it cannot affect the
+      // button's width either.
+      const wrapper = mountButton({ props: { loading: true }, slots: { loader: '<b>…</b>' } })
+      expect(wrapper.find('.yue-button__loader > b').exists()).toBe(true)
     })
   })
 
@@ -406,24 +608,53 @@ describe('YueButton', () => {
 
   describe('design contracts', () => {
     it('keeps icon content inheriting the button color', () => {
-      const stylesheet = readStylesheet()
-      expect(stylesheet).toContain('.yue-button__icon > svg')
-      expect(stylesheet).toContain('width: 100%')
-      expect(stylesheet).toContain('height: 100%')
+      expect(STYLESHEET).toContain('.yue-button__icon > svg')
+      expect(STYLESHEET).toContain('width: 100%')
+      expect(STYLESHEET).toContain('height: 100%')
     })
 
     it('provides a static loading cue when reduced motion is requested', () => {
-      const stylesheet = readStylesheet()
-      expect(stylesheet).toContain('@media (prefers-reduced-motion: reduce)')
-      expect(stylesheet).toContain('animation: none')
-      expect(stylesheet).toContain('border-top-color: currentColor')
+      expect(STYLESHEET).toContain('@media (prefers-reduced-motion: reduce)')
+      expect(STYLESHEET).toContain('animation: none')
+      expect(STYLESHEET).toContain('border-top-color: currentColor')
     })
 
     it('keeps a visible focus contract and forced-colors fallback', () => {
-      const stylesheet = readStylesheet()
-      expect(stylesheet).toContain('.yue-button:focus-visible')
-      expect(stylesheet).toContain('@media (forced-colors: active)')
-      expect(stylesheet).toContain('border-color: ButtonBorder')
+      expect(STYLESHEET).toContain('.yue-button:focus-visible')
+      expect(STYLESHEET).toContain('@media (forced-colors: active)')
+      expect(STYLESHEET).toContain('border-color: ButtonBorder')
+    })
+
+    it('takes the loader out of the layout so loading cannot resize the button', () => {
+      const loader = /\.yue-button__loader \{[^}]*\}/.exec(STYLESHEET)?.[0] ?? ''
+      expect(loader).not.toBe('')
+      expect(loader).toContain('position: absolute')
+      expect(loader).toContain('inset: 0')
+      expect(loader).toContain('justify-content: center')
+    })
+
+    it('hides the loading content without deleting it from the accessibility tree', () => {
+      // `opacity: 0` keeps the label and its text in the accessibility tree, so a button
+      // that stays focusable while it works still has a name. `display: none`,
+      // `visibility: hidden` and an unrendered `v-if` would all break that, and the first
+      // two would also change the button's width mid-request.
+      expect(STYLESHEET).toMatch(/\.yue-button\.is-loading > \.yue-button__label,/)
+      expect(STYLESHEET).toMatch(/\.yue-button\.is-loading > \.yue-button__icon \{[^}]*opacity: 0/)
+      expect(STYLESHEET).not.toMatch(
+        /\.yue-button\.is-loading[^{]*\{[^}]*(display: none|visibility: hidden)/,
+      )
+    })
+
+    it('paints the selected state from the migrated selected tokens', () => {
+      for (const token of [
+        '--button-selected-background',
+        '--button-selected-color',
+        '--button-selected-border-color',
+        '--button-selected-background-hover',
+        '--button-selected-background-pressed',
+      ]) {
+        expect(STYLESHEET).toContain(`var(${token})`)
+      }
     })
   })
 
@@ -437,13 +668,12 @@ describe('YueButton', () => {
    * only knew `.yue-button`.
    */
   describe('the emitted classes and the stylesheet agree', () => {
-    const STYLESHEET = readStylesheet()
-
     /** Every class the component can emit, per its documented API. */
     const EMITTED = [
       'yue-button',
       'yue-button__label',
       'yue-button__icon',
+      'yue-button__loader',
       'yue-button__spinner',
       'yue-button--default',
       'yue-button--primary',
@@ -462,6 +692,9 @@ describe('YueButton', () => {
       'yue-button--round',
       'yue-button--circle',
     ]
+
+    /** The state markers the button can carry. Shared, unprefixed, and styled through the block. */
+    const STATES = ['is-active', 'is-block', 'is-disabled', 'is-loading']
 
     /**
      * Classes that intentionally have no rule of their own: the base block already
@@ -489,7 +722,8 @@ describe('YueButton', () => {
       expect(base).not.toBe('')
       expect(base).toContain('--_fill: var(--button-default-background)')
       expect(base).toContain('--_height: var(--button-height-md)')
-      expect(base).toContain('border-radius: var(--button-border-radius)')
+      expect(base).toContain('--_radius: var(--button-border-radius)')
+      expect(base).toContain('border-radius: var(--_radius)')
     })
 
     it('uses exactly one namespace, on both sides', () => {
@@ -512,13 +746,19 @@ describe('YueButton', () => {
       // Adding a class to the component means adding it here, which means deciding
       // whether the stylesheet should rule it.
       const emitted = mountButton({
-        props: { theme: 'danger', variant: 'text', size: 'lg', shape: 'round', block: true },
+        props: {
+          theme: 'danger',
+          variant: 'text',
+          size: 'lg',
+          shape: 'round',
+          block: true,
+          active: true,
+        },
       }).classes()
 
       for (const className of emitted) {
         if (className.startsWith('is-')) {
-          // State markers are shared, unprefixed, and styled through the block.
-          expect(['is-block', 'is-disabled', 'is-loading']).toContain(className)
+          expect(STATES, `${className} is not in the pinned state roster`).toContain(className)
           continue
         }
         expect(EMITTED, `${className} is not in the pinned roster`).toContain(className)
@@ -551,21 +791,40 @@ describe('YueButton', () => {
     it('shares one colour state between hover and focus-visible', () => {
       // A keyboard user has to see the same cue a pointer user does. The ring is a
       // separate declaration and is not replaced by the fill.
-      for (const variant of ['solid', 'outline', 'dashed', 'text', 'link']) {
-        const hover = new RegExp(`\\.yue-button--${variant}:hover`)
-        expect(STYLESHEET, `${variant} has no hover rule`).toMatch(hover)
-        expect(STYLESHEET, `${variant} does not react to focus-visible`).toMatch(
-          new RegExp(`\\.yue-button--${variant}(:hover)?[^{]*:focus-visible`),
-        )
+      const interactiveStates = [
+        ...['solid', 'outline', 'dashed', 'text', 'link'].map(
+          (variant) => `\\.yue-button--${variant}`,
+        ),
+        '\\.yue-button\\.is-active',
+      ]
+      for (const state of interactiveStates) {
+        expect(STYLESHEET, `${state} has no hover rule`).toMatch(new RegExp(`${state}:hover`))
+        expect(
+          STYLESHEET,
+          `${state} does not react to focus-visible`,
+        ).toMatch(new RegExp(`${state}(:hover)?[^{]*:focus-visible`))
       }
       expect(STYLESHEET).toMatch(/\.yue-button:focus-visible \{/)
     })
 
     it('keeps every interaction state off disabled and loading buttons', () => {
-      // A disabled button has no hover, and a loading one has no pressed state.
-      for (const rule of STYLESHEET.matchAll(/\.yue-button--[a-z]+:[a-z-]+[^{]*\{/g)) {
-        expect(rule[0], `${rule[0]} is not guarded`).toContain('.is-disabled')
-        expect(rule[0], `${rule[0]} is not guarded`).toContain('.is-loading')
+      // A disabled button has no hover, and a loading one has no pressed state. This reads
+      // real rule blocks rather than matching selector text, so it covers the standalone
+      // modifiers *and* the `.is-active` state block that a `--`-prefixed pattern misses.
+      const rules = [...STYLESHEET.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+        selector: match[1].trim(),
+        body: match[2],
+      }))
+      const stateful = rules.filter(
+        (rule) =>
+          rule.selector.includes('.yue-button') &&
+          /:(hover|active)\b/.test(rule.selector) &&
+          !rule.selector.startsWith('@'),
+      )
+      expect(stateful.length).toBeGreaterThan(5)
+      for (const rule of stateful) {
+        expect(rule.selector, `${rule.selector} is not guarded`).toContain('.is-disabled')
+        expect(rule.selector, `${rule.selector} is not guarded`).toContain('.is-loading')
       }
     })
 

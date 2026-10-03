@@ -59,7 +59,12 @@ export const CONTRAST_PAIRS = [
 /**
  * Gating profiles. Exactly the two scopes the browser prototype samples:
  * `:root` (light) and `[data-theme=dark]`, both with the default azure accent.
- * 32 pairs x 2 profiles = 64 gating checks per target.
+ *
+ * The check count is `pairs x profiles` and depends on which pair list the target is
+ * held to, so it is reported by the run rather than stated here: the frozen prototype
+ * gates 32 pairs (64 checks) and the package gates those plus its own additions (104
+ * checks at the time of writing). A number written into this comment would go stale the
+ * first time a pair was added — which is exactly what happened to it.
  */
 export const AUDIT_PROFILES = [
   { id: 'light/azure', theme: 'light', accent: 'azure' },
@@ -127,6 +132,60 @@ export const PACKAGE_CONTRAST_PAIRS = [
   ['文本按钮文字 页面背景', '--button-default-accent', '--page', 4.5],
   ['链接按钮文字 页面背景', '--button-link-color', '--page', 4.5],
   ['链接按钮文字 基础表面', '--button-link-color', '--surface', 4.5],
+  // The selected state of a toggle button. The tokens are the migrated
+  // `--button-selected-*` family, which resolves to the accent-subtle pair the migrated
+  // table already gates — but gating the *component* tokens is what ties that number to
+  // the state `YueButton.is-active` actually paints. All three states are listed because a
+  // selected button still reacts to hover and press.
+  ['选中按钮文字', '--button-selected-color', '--button-selected-background', 4.5],
+  ['选中按钮文字 悬停', '--button-selected-color', '--button-selected-background-hover', 4.5],
+  ['选中按钮文字 按下', '--button-selected-color', '--button-selected-background-pressed', 4.5],
+
+  // Input. The migrated table already covers the resting text, the placeholder and
+  // the resting/hover border; these are the states and parts it never had.
+  ['输入框焦点边界 / 输入背景', '--input-border-color-focus', '--input-background', 3],
+  ['输入框错误边界 / 输入背景', '--input-border-color-invalid', '--input-background', 3],
+  // Readonly keeps its value readable — it is explicitly not the disabled state, so
+  // the disabled exemption does not apply here.
+  ['只读输入文字 / 只读背景', '--input-color', '--input-background-readonly', 4.5],
+  // Prefix/suffix content is text, so it is held to the text threshold.
+  ['前置后置文字 / 输入背景', '--input-affix-color', '--input-background', 4.5],
+  // The clear control is a graphical control: WCAG 1.4.11 asks for 3:1.
+  ['清空控件 / 输入背景', '--input-clear-color', '--input-background', 3],
+  ['清空控件 悬停 / 输入背景', '--input-clear-color-hover', '--input-background', 3],
+]
+
+/**
+ * Pairs that are measured and printed but never gate.
+ *
+ * Two kinds of thing live here, for the same reason: they have a real number worth
+ * showing a reviewer, and a threshold that would be a lie to enforce.
+ *
+ * 1. **Disabled state.** WCAG 1.4.3 exempts inactive controls, and this design system
+ *    deliberately ships a quiet disabled state, so gating it at 3:1 would force a
+ *    visual change nobody asked for. Reporting it keeps the number visible.
+ *
+ * 2. **Translucent foregrounds.** `--disabled-content` is
+ *    `color-mix(…, transparent)`, so its rendered colour is the composite over
+ *    whatever it sits on. `flatten()` treats the *first* layer as opaque, which means
+ *    a lone translucent foreground is measured as if it were solid — for the pair
+ *    below that reports 11.94:1 where the rendered result is far lower. The entry
+ *    therefore composites the foreground explicitly: the array is painted bottom-up,
+ *    so `[page, disabled background, disabled text]` is the colour a user sees, and it
+ *    is compared against the same background. This is also why such a pair must not
+ *    gate: getting the composite wrong is a silent false pass, and the honest place
+ *    for a number with that history is the diagnostics block.
+ *
+ * Same entry shape as `PACKAGE_CONTRAST_PAIRS`, except that the foreground may be an
+ * array when the text itself is translucent.
+ */
+export const PACKAGE_DIAGNOSTIC_PAIRS = [
+  [
+    '禁用输入文字 / 禁用背景（豁免，仅供参考）',
+    ['--page', '--input-background-disabled', '--input-color-disabled'],
+    ['--page', '--input-background-disabled'],
+    3,
+  ],
 ]
 
 /**
@@ -141,13 +200,16 @@ export const PACKAGE_PAIRS = [...CONTRAST_PAIRS, ...PACKAGE_CONTRAST_PAIRS]
  * Tokens the package is allowed to have beyond the prototype, pinned exactly.
  *
  * `design-tokens-generic-v4/` is a byte-frozen visual regression baseline, so the
- * Button Component Tokens that `YueButton` needs are declared in the package only.
+ * Component Tokens that the Vue components need are declared in the package only.
  * The parity gate therefore runs in superset mode, and this list is what stops
  * that from becoming a loophole: `tests/token-audit.test.mjs` asserts the audit's
  * reported additions equal this array, so any new package-only token is a
  * deliberate, reviewed edit to this file rather than silent token sprawl.
  *
- * Every entry is referenced by `packages/vue/src/components/button/style.css`.
+ * Every entry is referenced by at least one component stylesheet —
+ * `packages/vue/src/components/{button,input}/style.css` — or by the shared token
+ * sheets. A token with no consumer would be a claim nobody can verify, which is why
+ * the roadmap's stage 0 asks for the consumer before the token.
  */
 export const PACKAGE_ONLY_TOKENS = [
   // Design contracts added after the frozen prototype: text hierarchy, layout,
@@ -219,6 +281,23 @@ export const PACKAGE_ONLY_TOKENS = [
   '--button-link-decoration',
   '--button-link-decoration-hover',
   '--button-outline-background',
+  // Input component tokens added for YueInput; the rest of the `--input-*` contract
+  // came across with the migration.
+  '--input-affix-color',
+  '--input-background-readonly',
+  '--input-clear-border-radius',
+  '--input-clear-color',
+  '--input-clear-color-hover',
+  '--input-clear-glyph-width',
+  '--input-clear-hit-size',
+  '--input-duration',
+  '--input-ease',
+  '--input-focus-ring-color',
+  '--input-focus-ring-offset',
+  '--input-focus-ring-width',
+  '--input-icon-size-lg',
+  '--input-icon-size-md',
+  '--input-icon-size-sm',
 ].sort()
 
 /** Default audit targets, resolved from the repository root. */

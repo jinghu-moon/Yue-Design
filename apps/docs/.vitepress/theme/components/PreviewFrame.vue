@@ -6,6 +6,7 @@ import DensitySwitch from './DensitySwitch.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
 import { DOCS_DENSITY_DEFAULT, usePreviewAppearance } from '../useTokenAppearance'
 import type { DocsDensity } from '../useTokenAppearance'
+import { useDocsLocale } from '../useDocsLocale'
 
 /**
  * A live preview surface with the controls a component page needs: light/dark,
@@ -39,6 +40,7 @@ const props = withDefaults(
 )
 
 const slots = useSlots()
+const { strings } = useDocsLocale()
 
 // Destructured at the top level so the template unwraps the refs. These two are
 // document-wide, so every frame on the page renders the same value.
@@ -71,7 +73,7 @@ function reset() {
       <AccentSwitch :model-value="accent" @update:model-value="setAccent" />
       <DensitySwitch v-model="density" />
       <YueButton class="preview-frame__reset" size="sm" variant="outline" @click="reset">
-        重置
+        {{ strings.preview.reset }}
       </YueButton>
     </div>
 
@@ -91,7 +93,7 @@ function reset() {
         :aria-expanded="open"
         @click="open = !open"
       >
-        {{ open ? '收起代码' : '查看代码' }}
+        {{ open ? strings.preview.hideCode : strings.preview.showCode }}
       </button>
       <div v-show="open" class="preview-frame__code-body">
         <slot name="code">

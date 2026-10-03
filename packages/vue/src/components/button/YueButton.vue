@@ -20,6 +20,11 @@ const props = withDefaults(defineProps<YueButtonProps>(), {
   block: false,
   nativeType: 'button',
   tag: 'button',
+  // Explicitly `undefined`, which is not the same as leaving it out. Vue's boolean
+  // casting turns an absent Boolean prop into `false`, and this prop has to be able to say
+  // three things: "pressed", "not pressed", and "this is not a toggle button at all". The
+  // declared default is what suppresses the cast.
+  active: undefined,
 })
 
 const emit = defineEmits<{
@@ -44,10 +49,39 @@ const resolvedSize = computed(() => props.size ?? config.size)
 const isNativeButton = computed(() => props.tag === 'button')
 
 /**
- * `loading` blocks activation without setting native `disabled`, so a button that
- * is mid-request keeps its focus and does not drop out of the tab order.
+ * The activation guard: what the click handler refuses.
+ *
+ * `loading` blocks activation without setting native `disabled`, so a button that is
+ * mid-request keeps its focus and does not drop out of the tab order. This is the *only*
+ * thing `loading` and `disabled` have in common — the attributes are decided separately, by
+ * `isDisabledOffNative` below, precisely so that a state expressed in the handler cannot
+ * leak into what the element announces.
  */
 const isInactive = computed(() => props.disabled || props.loading)
+
+/**
+ * The only state that takes a non-native tag out of the tab order.
+ *
+ * Deliberately *not* `isInactive`. `loading` means "busy, still reachable" on every tag, and
+ * a non-native control has to say the same thing a native `<button>` says: the platform
+ * removes a disabled `<button>` from the tab order and focuses past it, so the `<a>` /
+ * component path reproduces that with `tabindex="-1"` — and reproduces *only* that. Folding
+ * `loading` in here made the two paths disagree: the same `loading` prop announced
+ * `aria-disabled="true"` and `tabindex="-1"` on an anchor while the native button announced
+ * only `aria-busy`. Activation is refused by the handler in both cases, which is what makes
+ * "still focusable" honest rather than optimistic.
+ */
+const isDisabledOffNative = computed(() => !isNativeButton.value && props.disabled)
+
+/**
+ * `aria-pressed` is only emitted when the caller opted into the toggle contract by
+ * setting `active` at all. An undefined `active` is not "false": it means this is an
+ * ordinary button, and announcing a pressed state for one would be a lie a screen
+ * reader cannot see through.
+ */
+const ariaPressed = computed(() =>
+  props.active === undefined ? undefined : String(props.active),
+)
 
 const rootClass = computed(() => [
   ns.b(),
@@ -59,6 +93,7 @@ const rootClass = computed(() => [
     [ns.is('disabled')]: props.disabled,
     [ns.is('loading')]: props.loading,
     [ns.is('block')]: props.block,
+    [ns.is('active')]: props.active === true,
   },
 ])
 
@@ -127,13 +162,19 @@ if (import.meta.env.DEV) {
     :class="[rootClass, attrs.class]"
     :type="isNativeButton ? props.nativeType : undefined"
     :disabled="isNativeButton && props.disabled ? true : undefined"
-    :aria-disabled="!isNativeButton && isInactive ? 'true' : undefined"
+    :aria-disabled="isDisabledOffNative ? 'true' : undefined"
     :aria-busy="props.loading ? 'true' : undefined"
-    :tabindex="!isNativeButton && isInactive ? -1 : undefined"
+    :aria-pressed="ariaPressed"
+    :tabindex="isDisabledOffNative ? -1 : undefined"
     @click="onClick"
   >
-    <span v-if="props.loading" :class="ns.e('spinner')" aria-hidden="true" />
-    <span v-else-if="$slots.leading" :class="iconClass('leading')">
+    <!--
+      The content keeps its place while loading and is only made invisible (see
+      `.yue-button.is-loading` in the stylesheet). Replacing the leading slot with the
+      spinner — the obvious alternative — makes the button change width mid-request and
+      drops the label out of the accessibility tree, so it is deliberately not done.
+    -->
+    <span v-if="$slots.leading" :class="iconClass('leading')">
       <slot name="leading" />
     </span>
 
@@ -141,8 +182,20 @@ if (import.meta.env.DEV) {
       <slot />
     </span>
 
-    <span v-if="!props.loading && $slots.trailing" :class="iconClass('trailing')">
+    <span v-if="$slots.trailing" :class="iconClass('trailing')">
       <slot name="trailing" />
+    </span>
+
+    <span v-if="props.loading" :class="ns.e('loader')">
+      <!--
+        The default indicator is decoration: `aria-busy` on the button is what tells a
+        screen reader the control is working. A custom loader is left in the
+        accessibility tree on purpose, so a consumer whose indicator carries real
+        information ("上传中 40%") can expose it.
+      -->
+      <slot name="loader">
+        <span :class="ns.e('spinner')" aria-hidden="true" />
+      </slot>
     </span>
   </component>
 </template>

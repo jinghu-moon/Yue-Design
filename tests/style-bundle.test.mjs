@@ -1,4 +1,5 @@
-import { join, resolve } from 'node:path'
+import { existsSync, readdirSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { bundleStyle } from '../packages/vue/scripts/build-style.mjs'
@@ -98,9 +99,20 @@ describe('the real component stylesheet entry', () => {
   const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
   it('pulls in one stylesheet per component, and nothing else', () => {
+    // Derived from the filesystem rather than listed, so adding a component cannot
+    // leave its stylesheet out of the aggregate sheet unnoticed: the test compares the
+    // bundle against "every `src/components/*/style.css` that exists".
+    const srcDir = fileURLToPath(new URL('../packages/vue/src', import.meta.url))
+    const expected = readdirSync(join(srcDir, 'components'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => `components/${entry.name}/style.css`)
+      .filter((relativePath) => existsSync(join(srcDir, relativePath)))
+      .sort()
+    expect(expected.length).toBeGreaterThan(1)
+
     const { files } = bundleStyle(entry)
-    const names = files.map((file) => file.split(/[\\/]/).slice(-2).join('/'))
-    expect(names).toEqual(['src/style.css', 'button/style.css'])
+    const names = files.map((file) => relative(srcDir, file).replaceAll('\\', '/')).sort()
+    expect(names).toEqual(['style.css', ...expected].sort())
   })
 
   it('never declares @layer, so a host reset cannot outrank the components', () => {

@@ -9,6 +9,7 @@ import {
   DEFAULT_TARGETS,
   DIAGNOSTIC_PROFILES,
   PACKAGE_CONTRAST_PAIRS,
+  PACKAGE_DIAGNOSTIC_PAIRS,
   PACKAGE_ONLY_TOKENS,
   PACKAGE_PAIRS,
   PROTOTYPE_HTML,
@@ -27,10 +28,18 @@ const target = (spec) => ({ id: spec.id, entry: absolute(spec.entry) })
  */
 const pairsFor = (id) => (id === 'prototype' ? CONTRAST_PAIRS : PACKAGE_PAIRS)
 
+/**
+ * Shape check for a pair list.
+ *
+ * The foreground may be an array when the text itself is translucent: an opaque
+ * `flatten()` assumes its first layer is solid, so a lone translucent foreground would
+ * be measured as if it were the raw colour. Painting it over an explicit base is the
+ * only way to get a real number.
+ */
 const parseable = (pairs, label) => {
   for (const pair of pairs) {
     expect(pair, label).toHaveLength(4)
-    expect(pair[1], label).toMatch(/^--/)
+    for (const token of [].concat(pair[1])) expect(token, label).toMatch(/^--/)
     expect([].concat(pair[2]).every((token) => /^--/.test(token)), label).toBe(true)
     expect(pair[3], label).toBeGreaterThanOrEqual(3)
   }
@@ -119,15 +128,30 @@ describe('the package-only contrast contract', () => {
     expect(new Set(PACKAGE_PAIRS.map((pair) => pair[0])).size).toBe(PACKAGE_PAIRS.length)
   })
 
-  it('only names tokens the package adds, so it is not a second copy of the table', () => {
-    const additions = new Set(PACKAGE_ONLY_TOKENS)
-    for (const [, foreground, background] of PACKAGE_CONTRAST_PAIRS) {
-      const mentioned = [foreground, ...[].concat(background)]
-      expect(
-        mentioned.some((token) => additions.has(token)),
-        `${foreground} on ${[].concat(background).join(' + ')} names no post-migration token`,
-      ).toBe(true)
+  it('adds combinations rather than restating the migrated table', () => {
+    // Two separate claims, because either alone would be too weak:
+    //
+    //  - no entry may duplicate a migrated *combination*, or the list would be a
+    //    second copy of the table that could drift from it. A migrated token can
+    //    still appear here — `--input-border-color-focus` and
+    //    `--input-border-color-invalid` are migration-era tokens whose states the
+    //    prototype never sampled, and gating them is new coverage, not duplication;
+    //  - at least one entry must name a post-migration token, or the list would be
+    //    purely about old tokens and belong in CONTRAST_PAIRS (which it cannot join,
+    //    because that one is a verbatim transcription).
+    const signature = (pair) =>
+      `${JSON.stringify([].concat(pair[1]))}|${JSON.stringify([].concat(pair[2]))}`
+    const migrated = new Set(CONTRAST_PAIRS.map(signature))
+
+    for (const pair of PACKAGE_CONTRAST_PAIRS) {
+      expect(migrated.has(signature(pair)), `${pair[0]} duplicates a migrated pair`).toBe(false)
     }
+
+    const additions = new Set(PACKAGE_ONLY_TOKENS)
+    const namesAnAddition = PACKAGE_CONTRAST_PAIRS.some(([, foreground, background]) =>
+      [].concat(foreground, background).some((token) => additions.has(token)),
+    )
+    expect(namesAnAddition).toBe(true)
   })
 
   it('would fail on the frozen prototype, which is why it is not applied there', () => {
@@ -148,6 +172,50 @@ describe('the package-only contrast contract', () => {
     }
     for (const theme of ['默认', '主要', '危险', '警告', '成功']) {
       expect(labels).toContain(`描边按钮文字 ${theme}`)
+    }
+    for (const expected of ['输入框焦点边界 / 输入背景', '输入框错误边界 / 输入背景']) {
+      expect(labels).toContain(expected)
+    }
+  })
+})
+
+describe('the exempt contrast contract', () => {
+  const packageTarget = target(DEFAULT_TARGETS[1])
+
+  it('is well formed, including the translucent foreground it exists for', () => {
+    expect(PACKAGE_DIAGNOSTIC_PAIRS.length).toBeGreaterThan(0)
+    parseable(PACKAGE_DIAGNOSTIC_PAIRS, 'exempt')
+    expect(
+      PACKAGE_DIAGNOSTIC_PAIRS.some((pair) => Array.isArray(pair[1])),
+      'the disabled-state pair must composite its translucent text over a base',
+    ).toBe(true)
+  })
+
+  it('is measured, and measured against the composite rather than the raw colour', () => {
+    const result = auditTarget({ ...packageTarget, pairs: PACKAGE_DIAGNOSTIC_PAIRS })
+    expect(result.unresolved).toEqual([])
+    for (const check of result.checks) {
+      expect(check.error).toBeUndefined()
+      expect(check.ratio).toBeGreaterThan(1)
+      expect(check.ratio).toBeLessThan(21)
+    }
+    // The reason the pair cannot gate: an exempt *and* translucent-anchored number.
+    // `--disabled-content` is a `color-mix(..., transparent)`, so the raw colour
+    // reports far higher than the composite a user actually sees.
+    const raw = auditTarget({
+      ...packageTarget,
+      pairs: [['raw', '--input-color-disabled', ['--page', '--input-background-disabled'], 3]],
+    })
+    const composited = result.checks.find((check) => check.profile === 'light/azure')
+    const rawLight = raw.checks.find((check) => check.profile === 'light/azure')
+    expect(composited.ratio).toBeLessThan(rawLight.ratio)
+  })
+
+  it('is not part of the gating contract, so it can never turn the audit red', () => {
+    const pairs = auditTarget({ ...packageTarget, pairs: PACKAGE_PAIRS })
+    const labels = pairs.checks.map((check) => check.label)
+    for (const [label] of PACKAGE_DIAGNOSTIC_PAIRS) {
+      expect(labels).not.toContain(label)
     }
   })
 })

@@ -12,10 +12,58 @@
  * resolves modules the Node way, not just for a bundler.
  */
 export { DEFAULT_YUE_CONFIG, YUE_NAMESPACE } from './config/types.js'
-export type { ComponentSize, Namespace, YueConfig } from './config/types.js'
+export type { ComponentSize, Namespace, YueConfig, YueConfigInput } from './config/types.js'
 
 export { yueConfigKey } from './config/injection.js'
 
 export { installYueConfig, provideYueConfig, useConfig } from './config/useConfig.js'
 
 export { useNamespace } from './namespace/useNamespace.js'
+
+/**
+ * Locale: the mechanism, without a single concrete message.
+ *
+ * The catalog of strings Yue renders itself lives in `@yue-ui/vue`, because it is a
+ * component concern. Keeping the runtime here means a consumer can use the locale contract
+ * — `t`, `n`, `d`, subtree inheritance, an adapter — without the components, and it keeps
+ * the dependency direction intact.
+ */
+export {
+  DEFAULT_LOCALE,
+  createLocale,
+  consumeLocaleDiagnostics,
+  hasPluralForm,
+  installYueLocale,
+  interpolate,
+  isMessageLeaf,
+  isPlainObject,
+  isPluralMessage,
+  isValidLocale,
+  languageOf,
+  localeCandidates,
+  localeDirection,
+  lookupMessage,
+  mergeMessages,
+  normalizeLocale,
+  peekLocaleDiagnostics,
+  provideLocale,
+  resetLocaleDiagnostics,
+  resolveMessages,
+  selectPluralForm,
+  useLocale,
+  yueLocaleKey,
+} from './locale/index.js'
+export type {
+  DeepPartial,
+  LeafMessageKeys,
+  YueLocaleAdapter,
+  YueLocaleDiagnostic,
+  YueLocaleDiagnosticReason,
+  YueLocaleDirection,
+  YueLocaleInstance,
+  YueLocaleOptions,
+  YueMessageLeaf,
+  YueMessageParams,
+  YueMessageTree,
+  YuePluralMessage,
+} from './locale/index.js'

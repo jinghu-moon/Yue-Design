@@ -4,13 +4,17 @@ import type { UserConfig } from 'vite'
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 
-/** The two halves of the tree-shaking claim, one build each. */
-export const MODES = ['button', 'plugin'] as const
+/** The halves of the tree-shaking claim, one build each. */
+export const MODES = ['button', 'input', 'plugin', 'locale'] as const
 export type Mode = (typeof MODES)[number]
 
 const SOURCE: Record<Mode, string> = {
   button: 'button-entry.ts',
+  input: 'input-entry.ts',
   plugin: 'plugin-entry.ts',
+  // One language pack, and nothing else: the consumer who wants Yue's components in another
+  // language imports the pack from its own subpath.
+  locale: 'locale-entry.ts',
 }
 
 /**

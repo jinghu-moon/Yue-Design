@@ -20,8 +20,25 @@
       "types": "./dist/components/button/index.d.ts",
       "import": "./dist/components/button/index.js"
     },
+    "./input": {
+      "types": "./dist/components/input/index.d.ts",
+      "import": "./dist/components/input/index.js"
+    },
+    "./locale": {
+      "types": "./dist/locale/index.d.ts",
+      "import": "./dist/locale/index.js"
+    },
+    "./locale/en-US": {
+      "types": "./dist/locale/en-US.d.ts",
+      "import": "./dist/locale/en-US.js"
+    },
+    "./locale/zh-CN": {
+      "types": "./dist/locale/zh-CN.d.ts",
+      "import": "./dist/locale/zh-CN.js"
+    },
     "./style.css": "./dist/style.css",
     "./button.css": "./dist/components/button/style.css",
+    "./input.css": "./dist/components/input/style.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -40,11 +57,11 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@types/node": "^24.19.1",
-    "@vue/test-utils": "^2.4.6",
+    "@types/node": "^26.6.4",
+    "@vue/test-utils": "^2.4.11",
     "@yue-ui/design-tokens": "workspace:^",
     "@yue-ui/hooks": "workspace:^",
-    "vitest": "4.0.18",
-    "vue": "3.5.28"
+    "vitest": "5.0.2",
+    "vue": "3.5.43"
   }
 }

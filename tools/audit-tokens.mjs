@@ -22,6 +22,7 @@ import {
   CONTRAST_PAIRS,
   DEFAULT_TARGETS,
   DIAGNOSTIC_PROFILES,
+  PACKAGE_DIAGNOSTIC_PAIRS,
   PACKAGE_PAIRS,
 } from './token-audit.pairs.mjs'
 
@@ -261,6 +262,21 @@ function main() {
       )
     : []
 
+  // The package's exempt pairs, measured so the numbers stay visible. These never
+  // contribute to `ok` — see PACKAGE_DIAGNOSTIC_PAIRS for why each one is exempt.
+  const exempt =
+    options.diagnostics && specs === DEFAULT_TARGETS
+      ? results
+          .filter((result) => result.id !== 'prototype')
+          .map((result) =>
+            auditTarget({
+              id: result.id,
+              entry: result.entry,
+              pairs: PACKAGE_DIAGNOSTIC_PAIRS,
+            }),
+          )
+      : []
+
   const gatingOk = results.every((result) => result.ok)
   const parityOk = parity === null || parity.identical
   const ok = gatingOk && parityOk
@@ -272,6 +288,7 @@ function main() {
           ok,
           gating: results.map(({ resolver, ...rest }) => rest),
           parity,
+          exempt: exempt.map(({ resolver, ...rest }) => rest),
           diagnostics: diagnostics.map(({ resolver, ...rest }) => rest),
         },
         null,
@@ -311,6 +328,20 @@ function main() {
       }
       for (const unresolved of result.unresolved) {
         out.push(`    [${unresolved.profile}] ${unresolved.name}: ${unresolved.message}`)
+      }
+    }
+  }
+  if (exempt.length > 0) {
+    out.push('')
+    out.push('▌ exempt pairs (measured, never gating)')
+    for (const result of exempt) {
+      for (const check of result.checks) {
+        const value =
+          check.error ??
+          `${check.ratio.toFixed(2)}:1 (minimum ${check.minimum}:1 would be ${
+            check.pass ? 'met' : 'missed'
+          })`
+        out.push(`  [${check.profile}] ${check.label}: ${value}`)
       }
     }
   }

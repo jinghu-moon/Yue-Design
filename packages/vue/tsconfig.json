@@ -1,9 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"],
       "@yue-ui/hooks": ["../hooks/src/index.ts"],
       "@yue-ui/hooks/*": ["../hooks/src/*"]
     },

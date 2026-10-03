@@ -66,11 +66,23 @@ const tagCode = `<!-- 渲染成 <a>：没有原生 disabled，改用 aria-disabl
 <YueButton tag="a" href="/pricing">查看定价</YueButton>
 <YueButton tag="a" href="/pricing" disabled>查看定价（禁用）</YueButton>
 
+<!-- loading 在 <a> 上和 <button> 上说的是同一句话：忙，但仍然可以按 Tab 到达。
+     它不会把自己伪装成 disabled（不写 aria-disabled、不写 tabindex），
+     拦下点击的是处理器。 -->
+<YueButton tag="a" href="/pricing" loading>提交中</YueButton>
+
 <!-- 也可以是任何组件；放在响应式状态里记得 markRaw -->
 <YueButton :tag="RouterLink" to="/pricing">查看定价</YueButton>`
 
-const loadingCode = `<YueButton theme="primary" :loading="submitting" @click="submit">
-  {{ submitting ? '提交中' : '提交' }}
+const loadingStabilityCode = `<!-- 两个按钮的文字、图标、尺寸完全相同，只有 loading 不同 -->
+<YueButton size="lg">
+  <template #leading><PlusIcon /></template>
+  保存更改
+</YueButton>
+
+<YueButton size="lg" loading>
+  <template #leading><PlusIcon /></template>
+  保存更改
 </YueButton>`
 
 const blockCode = `<YueButton theme="primary" block>整行按钮</YueButton>`
@@ -130,15 +142,70 @@ async function submit() {
  */
 const matrixThemes = ['default', 'primary', 'success', 'warning', 'danger']
 const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
+
+const anatomyCode = `<YueButton size="lg">
+  <template #leading><SaveIcon /></template>
+  保存
+  <template #trailing><CaretDownIcon /></template>
+</YueButton>
+
+<!-- loading：内容留在原位，加载层盖在上面，宽度不跳 -->
+<YueButton size="lg" loading>保存</YueButton>`
+
+const loaderCode = `<!-- 默认：spinner，aria-hidden -->
+<YueButton theme="primary" :loading="submitting" @click="submit">
+  {{ submitting ? '提交中' : '提交' }}
+</YueButton>
+
+<!-- 自定义：仍然是按钮自己的指示器，不绑定任何图标库 -->
+<YueButton loading>
+  <template #loader><span class="my-loader" /></template>
+  上传
+</YueButton>`
+
+const groupCode = `<!-- 只是拼在一起：合并圆角 + role="group"，没有选择状态 -->
+<YueButtonGroup aria-label="对齐方式">
+  <YueButton variant="outline">左</YueButton>
+  <YueButton variant="outline">居中</YueButton>
+  <YueButton variant="outline">右</YueButton>
+</YueButtonGroup>
+
+<!-- 分段控件：分组之上加一个 v-model，选中项输出 aria-pressed -->
+<YueButtonToggle v-model="align" aria-label="对齐方式">
+  <YueButtonToggleItem value="left">左</YueButtonToggleItem>
+  <YueButtonToggleItem value="center">居中</YueButtonToggleItem>
+  <YueButtonToggleItem value="right">右</YueButtonToggleItem>
+</YueButtonToggle>`
+
+const toggleItemCode = `<!-- 每一项仍然是按钮：theme / variant / size / loading 都能单独给 -->
+<YueButtonToggle v-model="viewMode" aria-label="视图">
+  <YueButtonToggleItem value="list" variant="outline">
+    <template #leading><ListIcon /></template>
+    列表
+  </YueButtonToggleItem>
+  <YueButtonToggleItem value="grid" variant="outline">网格</YueButtonToggleItem>
+  <YueButtonToggleItem value="board" variant="outline" disabled>看板</YueButtonToggleItem>
+</YueButtonToggle>
+
+<!-- 可以全部关掉的一组按钮：分组 + 各自独立的 active -->
+<YueButtonGroup aria-label="文本格式">
+  <YueButton variant="text" :active="bold" @click="bold = !bold">粗体</YueButton>
+  <YueButton variant="text" :active="italic" @click="italic = !italic">斜体</YueButton>
+</YueButtonGroup>`
+
+const align = ref('center')
+const viewMode = ref('list')
+const bold = ref(true)
+const italic = ref(false)
 </script>
 
 # Button 按钮
 
-本页是 **示例**：所有区域渲染真实的 `YueButton`。接口表见 [API](./button/api)，使用原则见[指南](./button/guide)。
+本页是 **示例**：所有区域渲染真实的 `YueButton`（以及 Button 族的 `YueButtonGroup`、`YueButtonToggle`、`YueButtonToggleItem`）。接口表见 [API](./button/api)，使用原则见[指南](./button/guide)。
 
 按钮是 `@yue-ui/vue` 的第一个组件，也是整条链路（Token → Hooks → 组件 → 文档 → 打包消费）的验证用例。
 
-页面上的每个示例渲染的都是**真实的 `YueButton`**：同一份组件源码、同一份 `@yue-ui/vue/style.css`。它们不是截图，也不是抄写下来的 HTML —— 如果组件坏了，这一页就会跟着坏。
+页面上的每个示例渲染的都是**真实的组件**：同一份组件源码、同一份 `@yue-ui/vue/style.css`。它们不是截图，也不是抄写下来的 HTML —— 如果组件坏了，这一页就会跟着坏。
 
 ## 按需引入示例
 
@@ -161,6 +228,44 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 ::: tip 样式必须显式引入
 组件不解析 CSS：`dist/*.js` 里没有任何样式导入。这样 ESM 入口在 Node / SSR 下也能直接解析，级联顺序也留在你自己的源码里可见。
 :::
+
+## 组件解剖（Anatomy）
+
+按钮不是一个 `<button>` 加一段文字。它有六个部分，每一部分都由一个类名、若干 Component Token 和一条无障碍规则定义。先看结构，再看后面的 API 表会容易得多。
+
+<ButtonAnatomy />
+
+<PreviewFrame title="解剖图对应的真实代码" description="上面的两个按钮就是这段代码渲染出来的，加载层也在里面。" :code="anatomyCode">
+  <YueButton size="lg">
+    <template #leading>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </template>
+    保存
+    <template #trailing>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </template>
+  </YueButton>
+  <YueButton size="lg" loading>保存</YueButton>
+</PreviewFrame>
+
+| # | 部分 | 选择器 | 由什么决定 |
+| --- | --- | --- | --- |
+| 1 | 外层按钮盒 | `.yue-button` | `--button-height-*`、`--button-padding-inline-*`、`--button-border-width`、`--button-border-radius` |
+| 2 | 前置内容 | `.yue-button__icon--leading` | `leading` 插槽；`--button-icon-size-*`、`--button-gap` |
+| 3 | 文本区域 | `.yue-button__label` | 默认插槽；`--button-font-size-*`、`--button-font-weight`、`--button-line-height` |
+| 4 | 后置内容 | `.yue-button__icon--trailing` | `trailing` 插槽；与前置内容同一套尺寸 Token |
+| 5 | 加载层 | `.yue-button__loader` | `loading` 为真时渲染；`loader` 插槽或默认的 `.yue-button__spinner` |
+| 6 | 焦点环与点击区域 | `.yue-button:focus-visible` | `--button-focus-ring-*`；点击区域就是控件盒本身（`link` 例外） |
+
+三条结构约定值得单独记住：
+
+- **加载层是独立的一层。** 它绝对定位覆盖在内容之上，因此 loading 不会改变按钮宽度，也不会把 label 从无障碍树里摘掉 —— 见下面的[加载状态](#加载状态)。
+- **内容不会被替换，只会被隐藏。** loading 时 `leading` / `trailing` 仍然是它们在 DOM 里的那个位置，只是被画成透明；换掉某个插槽是最容易被写下去、也最容易被忽略的布局抖动来源。
+- **`link` 主动放弃盒子。** 它的第 1 部分没有固定高度和横向内边距，点击区域明显更小 —— 这就是为什么它只适合嵌在句子里。
 
 ## 基础示例
 
@@ -188,7 +293,7 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 | `warning` | 需要注意 | `--button-warning-background` | 5.73 / 11.56 |
 | `danger` | 破坏性操作 | `--button-danger-background` | 6.31 / 9.96 |
 
-对比度不是估的：`--button-{theme}-color` 落在 `--button-{theme}-background` 上、以及悬停与按下两个状态，都在 `pnpm audit:tokens` 的 92 项门禁里。
+对比度不是估的：`--button-{theme}-color` 落在 `--button-{theme}-background` 上、悬停与按下两个状态、未填充变体的 accent 文字，以及选中态的 `--button-selected-*`，都在 `pnpm audit:tokens` 的 110 项门禁里（这个数字由 `tools/token-audit.pairs.mjs` 决定，`audit:docs` 会检查它有没有写错）。
 
 ## Solid / Outline / Dashed / Text / Link
 
@@ -348,32 +453,148 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 - `disabled` 在 `<button>` 上设置**原生** `disabled`，点击由浏览器拦掉。
 - 换成 `<a>` 或自定义组件时用 `aria-disabled="true"` + `tabindex="-1"`，并在点击处理器里 `preventDefault()`。
 - 原生 `<button>` 上**不会**同时加 `aria-disabled`：平台已经表达了禁用，再加一次会被读屏重复播报。
+- **`loading` 与这整套输出无关。** 它在任何标签上都只输出 `aria-busy="true"`，不写 `aria-disabled`、不写 `tabindex`：忙不等于禁用，浏览器里按 Tab 必须仍然能到达它。下面这一小节里三个 `<a>` 的差异可以直接用 Tab 走一遍。
 
 ### 渲染成 `<a>` 或自定义组件
 
-<PreviewFrame title="tag" description="只有 <button> 能被平台禁用，其余标签靠 aria-disabled 与自己拦点击。" :code="tagCode">
-  <YueButton tag="a" href="#渲染成-a-或自定义组件">查看定价</YueButton>
-  <YueButton tag="a" href="#渲染成-a-或自定义组件" disabled>查看定价（禁用）</YueButton>
+<PreviewFrame title="tag" description="disabled 的 <a> 退出 Tab 顺序；loading 的 <a> 不退出——它的 Tab 顺序由浏览器逐次按键验证。" :code="tagCode">
+  <YueButton tag="a" href="#渲染成-a-或自定义组件" data-anchor="plain">查看定价</YueButton>
+  <YueButton tag="a" href="#渲染成-a-或自定义组件" loading data-anchor="loading">提交中</YueButton>
+  <YueButton tag="a" href="#渲染成-a-或自定义组件" disabled data-anchor="disabled">查看定价（禁用）</YueButton>
 </PreviewFrame>
 
 `tag` 接受任意标签名或组件。传组件时请用 `markRaw()` 包一层，否则 Vue 会把组件定义也变成响应式对象并在控制台提醒。
 
+三者输出的差别，一字不多：
+
+| 状态 | `disabled` | `aria-disabled` | `aria-busy` | `tabindex` |
+| --- | --- | --- | --- | --- |
+| 普通 `<a>` | — | — | — | — |
+| `loading` 的 `<a>` | — | — | `"true"` | — |
+| `disabled` 的 `<a>` | — | `"true"` | — | `"-1"` |
+| 原生 `<button>` + `loading` | — | — | `"true"` | —（原生按钮从不写 `tabindex`） |
+
+`loading` 期间点击被处理器 `preventDefault()` 拦下（包括键盘 Enter 触发的锚点跳转），所以「仍然可聚焦」是成立的，而不是乐观假设。
+
 ## 加载状态
 
-<PreviewFrame title="加载状态" description="loading 会阻止点击、设置 aria-busy，并把 leading 位换成 spinner —— 但不设置原生 disabled。" :code="loadingCode">
+<PreviewFrame title="加载状态" description="loading 会阻止点击、设置 aria-busy，并把加载层盖在内容上 —— 但不设置原生 disabled。" :code="loaderCode">
   <YueButton theme="primary" :loading="submitting" @click="submit">
     {{ submitting ? '提交中' : '提交' }}
   </YueButton>
-  <YueButton loading>默认加载</YueButton>
+  <YueButton loading data-loading-default>默认加载</YueButton>
   <YueButton variant="outline" loading>描边加载</YueButton>
+  <YueButton loading data-loader-custom>
+    <template #loader><span class="docs-loader" /></template>
+    自定义加载
+  </YueButton>
 </PreviewFrame>
 
-点第一个按钮可以看到真实的状态流转。
+点第一个按钮可以看到真实的状态流转；最后一个用的是 `loader` 插槽，它替换的是**指示器**，不是布局。
 
 `loading` 与 `disabled` 故意不复用同一个机制：
 
 - `disabled` → 原生 `disabled`，元素退出可聚焦序列。
 - `loading` → `aria-busy="true"` + 处理器拦截点击，**保留焦点与 tab 顺序**。请求还没回来就把焦点从用户脚下抽走，是比「能点到」更糟的问题。
+
+### 加载不改变布局
+
+内容留在原位、加载层盖在上面，这不是审美选择，而是为了让按钮在请求前后保持同一个宽度：
+
+<PreviewFrame title="同样的内容，一个在加载" description="两个按钮的文字、图标与尺寸完全相同，只有 loading 不同；宽度在浏览器里被逐像素比对。" :code="loadingStabilityCode" surface-class="preview-frame__surface--stack">
+  <YueButton size="lg" data-loading-idle>
+    <template #leading>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </template>
+    保存更改
+  </YueButton>
+  <YueButton size="lg" loading data-loading-active>
+    <template #leading>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </template>
+    保存更改
+  </YueButton>
+</PreviewFrame>
+
+三件事同时成立，缺一不可：
+
+| 约定 | 为什么 |
+| --- | --- |
+| 内容不卸载（无 `v-if`） | 卸载会立刻改变宽度，也会让按钮在加载期间失去可访问名称 |
+| 内容用 `opacity: 0` 隐藏，不用 `display: none` / `visibility: hidden` | 后两者会把文字移出无障碍树；`opacity` 只影响绘制 |
+| 加载层 `position: absolute; inset: 0` | 完全脱离布局；默认 spinner 与自定义 loader 都不会撑开按钮 |
+
+文案仍然建议从「提交」变成「提交中」：`aria-busy` 说明的是「忙」，说不出在忙什么，而 spinner 对读屏用户是不可见的。
+
+## 按钮分组与分段控件
+
+三个组件，各管一件事。**分组逻辑不放进 `YueButton`**：按钮不需要知道「组」这个概念存在。
+
+- `YueButton` —— 单个按钮，`active` 是它唯一的开关语义；
+- `YueButtonGroup` —— 合并圆角 + `role="group"`，没有选择状态；
+- `YueButtonToggle` —— 在分组之上持有 `v-model`；
+- `YueButtonToggleItem` —— 一个就是某个值的按钮。
+
+<PreviewFrame title="分组与分段控件" description="上面两个只是拼在一起，下面两个会记住选了哪一个。" :code="groupCode">
+  <div class="group-demo">
+    <YueButtonGroup aria-label="对齐方式">
+      <YueButton variant="outline" data-toggle-state="group-left">左</YueButton>
+      <YueButton variant="outline">居中</YueButton>
+      <YueButton variant="outline">右</YueButton>
+    </YueButtonGroup>
+  </div>
+  <div class="group-demo">
+    <YueButtonToggle v-model="align" aria-label="对齐方式" data-toggle="align">
+      <YueButtonToggleItem value="left" variant="outline" data-toggle-item="left">左</YueButtonToggleItem>
+      <YueButtonToggleItem value="center" variant="outline" data-toggle-item="center">居中</YueButtonToggleItem>
+      <YueButtonToggleItem value="right" variant="outline" data-toggle-item="right">右</YueButtonToggleItem>
+    </YueButtonToggle>
+  </div>
+</PreviewFrame>
+
+当前选中：`{{ align }}`。点击后会立即变化 —— 这一页渲染的是真实组件，不是示意图。
+
+分组是**结构**，不是「一次设置八个 prop」的快捷方式。它没有 `theme` / `variant` / `size`：对照组内的按钮逐项设置，或者按[覆写与级联](#覆写与级联)里说的，在容器上重指 `--button-*` Token。
+
+### 选中态的视觉与语义
+
+选中项读的是迁移时就存在的 `--button-selected-*` 一族（`--selected-background` / `--selected-color`），它们本来就被对比度门禁覆盖，只是此前没有组件去画。
+
+<PreviewFrame title="每一项仍然是一个按钮" description="theme / variant / size / loading 都可以单独给；disabled 只禁用它自己。" :code="toggleItemCode" surface-class="preview-frame__surface--stack">
+  <YueButtonToggle v-model="viewMode" aria-label="视图" data-toggle="view">
+    <YueButtonToggleItem value="list" variant="outline" data-toggle-item="list">
+      <template #leading>
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 4h10M3 8h10M3 12h10" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </template>
+      列表
+    </YueButtonToggleItem>
+    <YueButtonToggleItem value="grid" variant="outline" data-toggle-item="grid">网格</YueButtonToggleItem>
+    <YueButtonToggleItem value="board" variant="outline" disabled data-toggle-item="board">看板</YueButtonToggleItem>
+  </YueButtonToggle>
+
+  <YueButtonGroup aria-label="文本格式">
+    <YueButton variant="text" :active="bold" data-standalone="bold" @click="bold = !bold">粗体</YueButton>
+    <YueButton variant="text" :active="italic" data-standalone="italic" @click="italic = !italic">斜体</YueButton>
+  </YueButtonGroup>
+</PreviewFrame>
+
+| 场景 | 用什么 |
+| --- | --- |
+| 几个选项**必须**有一个是当前项（分段控件） | `YueButtonToggle` + `YueButtonToggleItem`，选中项输出 `aria-pressed="true"` |
+| 一组互不相关的开关（粗体 / 斜体） | `YueButtonGroup` + 每个 `YueButton` 自己的 `active` |
+| 只是视觉上排在一起 | `YueButtonGroup` |
+
+选择是强制的：再次点击已选中的项不会取消选择。没有「当前项」的分段控件回答不了「现在是哪一个」；可以全部关掉的一组按钮是上面第二种场景。
+
+::: tip 键盘导航尚未实现
+分组现在只是一组普通的 Tab 停靠点，方向键与 roving tabindex 是后续工作。只改 tab 顺序而不提供方向键，会比不做更糟，所以这一步没有半成品。
+:::
 
 ## Block 状态
 
@@ -407,8 +628,13 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 | 插槽 | 渲染位置 | 备注 |
 | --- | --- | --- |
 | `default` | `.yue-button__label` | 省略时请另行提供可访问名称 |
-| `leading` | `.yue-button__icon--leading` | `loading` 时被 spinner 顶替 |
-| `trailing` | `.yue-button__icon--trailing` | `loading` 时隐藏 |
+| `leading` | `.yue-button__icon--leading` | `loading` 时留在原位并被隐藏，不会被顶替 |
+| `trailing` | `.yue-button__icon--trailing` | `loading` 时留在原位并被隐藏 |
+| `loader` | `.yue-button__loader` | 替换默认 spinner；渲染在绝对定位的加载层里 |
+
+## 接口表在 API 页
+
+这一页只回答「长什么样、怎么用」。Props、Slots、Events 和应用级配置的完整表格只写在 [Button API](./button/api) 一处 —— 同一份契约抄两遍，就一定会有一遍先过期。**`YueConfig` 只有 `size`**；语言不在配置里，它是 locale 实例，见[国际化指南](/guide/i18n)。
 
 ## 深色主题
 
@@ -430,42 +656,6 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 
 受影响的不只是填充色：`--accent-text`、`--accent-border`、`--on-accent`、以及 `--link-decoration`（中性下变 `underline`）都会跟着走，Link 变体因此会从「无下划线」变成「有下划线」。
 
-## Props
-
-| Prop | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| `theme` | `'default' \| 'primary' \| 'success' \| 'warning' \| 'danger'` | `'default'` | 语义色角色 |
-| `variant` | `'solid' \| 'outline' \| 'dashed' \| 'text' \| 'link'` | `'solid'` | 绘制方式 |
-| `size` | `'sm' \| 'md' \| 'lg'` | 取 `YueConfig.size`（`'md'`） | 尺寸档位 |
-| `shape` | `'square' \| 'round' \| 'circle'` | `'square'` | 圆角形态 |
-| `disabled` | `boolean` | `false` | 原生 `disabled`，或 `aria-disabled` |
-| `loading` | `boolean` | `false` | 阻止点击、`aria-busy`、显示 spinner |
-| `block` | `boolean` | `false` | 吃满容器宽度 |
-| `nativeType` | `'button' \| 'submit' \| 'reset'` | `'button'` | 只在 `tag="button"` 时生效 |
-| `tag` | `string \| Component` | `'button'` | 渲染成什么；`'a'` 与自定义组件按非 button 处理 |
-
-`YueConfig`（应用级配置）只有一项：
-
-| 配置项 | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 组件未传 `size` 时的回落值 |
-
-## Slots
-
-| 插槽 | 说明 |
-| --- | --- |
-| `default` | 按钮文字 |
-| `leading` | 文字前的内容，通常是图标 |
-| `trailing` | 文字后的内容，通常是图标 |
-
-## Events
-
-| 事件 | 载荷 | 触发条件 |
-| --- | --- | --- |
-| `click` | `MouseEvent` | 仅在既未 `disabled` 也未 `loading` 时触发 |
-
-`click` 是声明过的 emit，所以 `@click` 不会落到 `$attrs` 里，也不会和原生事件各触发一次。
-
 ## Token 映射
 
 组件样式里不出现任何裸色值，也不直接读 primitive Token。`--_*` 是组件内部的组合槽位，每个都由下面这些 Button Component Token 赋值，主题修饰符只负责重指：
@@ -478,6 +668,7 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 | `--_on-fill` | `--button-default-color` |
 | `--_accent` | `--button-default-accent` |
 | `--_border` | `--button-default-border-color` |
+| `--_radius` | `--button-border-radius`（`round` / `circle` 会把它改成 `--button-border-radius-full`） |
 
 | 用途 | Token |
 | --- | --- |
@@ -485,17 +676,22 @@ const matrixVariants = ['solid', 'outline', 'dashed', 'text', 'link']
 | 几何 | `--button-padding-block`、`--button-padding-inline-flush`、`--button-gap`、`--button-border-width`、`--button-border-radius`、`--button-border-radius-full` |
 | 排版 | `--button-font-weight`、`--button-line-height` |
 | 图标与加载 | `--button-icon-size-{sm,md,lg}`、`--button-spinner-border-width`、`--button-spinner-duration` |
+| 选中态 | `--button-selected-background`、`--button-selected-color`、`--button-selected-border-color`、`--button-selected-background-hover`、`--button-selected-background-pressed` |
 | 动效 | `--button-duration`、`--button-ease` |
 | 焦点 | `--button-focus-ring-color`、`--button-focus-ring-width`、`--button-focus-ring-offset` |
 | 禁用 | `--button-disabled-background`、`--button-disabled-color`、`--button-disabled-border-color` |
 | 未填充变体 | `--button-subtle-background`、`--button-subtle-background-hover`、`--button-subtle-background-pressed`、`--button-outline-background` |
 | 链接变体 | `--button-link-color`、`--button-link-decoration`、`--button-link-decoration-hover` |
 
+分组不引入任何新 Token：合并圆角读的是按钮自己的 `--_radius`（由 `--button-border-radius` 或 `--button-border-radius-full` 赋值），重叠边框读的是 `--button-border-width`。
+
 ## 无障碍说明
 
 - **原生优先。** 默认渲染 `<button type="button">`，键盘、焦点、表单语义都由平台提供。
 - **`disabled` 与 `aria-disabled` 分工明确。** `<button>` 用原生 `disabled`；`<a>` 和自定义组件用 `aria-disabled="true"`，同时 `tabindex="-1"` 退出 tab 顺序，点击在处理器里被拦掉。
-- **`loading` 不夺走焦点。** 它设置 `aria-busy="true"` 并拦截点击，但保留元素可聚焦；spinner 是 `aria-hidden="true"` 的装饰，状态由 `aria-busy` 播报。
+- **`loading` 不夺走焦点，也不夺走名字。** 它设置 `aria-busy="true"` 并拦截点击，但保留元素可聚焦；内容用 `opacity: 0` 隐藏而不是卸载，所以按钮在请求期间仍然有可访问名称，spinner 是 `aria-hidden="true"` 的装饰。
+- **`active` 的三态是有意的。** 不传 `active` 的按钮不会输出 `aria-pressed`：普通按钮不该被读成开关按钮；`active=false` 才表示「是开关按钮，当前未选中」。
+- **分段控件必须有名。** `YueButtonToggle` 渲染 `role="group"`，请传 `aria-label` 或用 `aria-labelledby` 指向可见文字，组内每一项输出 `aria-pressed="true|false"`。
 - **`circle` 必须有可访问名称。** 图标是 `aria-hidden` 的，所以请用 `aria-label`，或让 `aria-labelledby` 指向可见文字。开发模式下缺失会收到一次控制台警告。
 - **焦点环来自 Token。** `:focus-visible` 用 `--button-focus-ring-*` 绘制，宽度与偏移都不是硬编码值，跟随主题变化。
 - **尊重用户偏好。** `prefers-reduced-motion: reduce` 下过渡和 spinner 旋转被关闭，但保留静态加载提示；`forced-colors: active` 下边框改用系统色 `ButtonBorder`，禁用态用 `GrayText`。
@@ -551,4 +747,31 @@ Token 包声明了层顺序，但**组件规则本身不在任何层里**，这�
 | `--td-*` Token 与具体色值 | Yue 有自己的 `--button-*` 体系；跨库抄色值会让两套主题各自演变后无法解释差异 |
 | `--ghost` 修饰符（`white-ghost` 前景，用于深色/彩色底上） | Yue 的 `--button-ghost-*` 是迁移时就定下的「未填充」契约，而且被审计门禁盯着。把它改成「反色底上的按钮」会直接推翻那条契约。真要这种按钮，应当新增一组 `--button-on-inverse-*` Token，而不是复用 `ghost` |
 | 把 `text` 与 `ghost` 并存 | 参考实现的 `variant="text"` 与 Yue 原来的 `ghost` 是同一种观感。两个名字一种外观，只会让使用者纠结选哪个——所以 Yue 统一叫 `text` |
+
+## 与 Vuetify 的取舍
+
+`refer/vuetify` 是另一条参考线：它的 Button 是一个大型生态组件，成熟之处在**信息架构**（Usage → API → Anatomy → Props → Variants → Slots → Examples → Accessibility）、**状态建模**（`active` / `loading` / `readonly` 正交）、**上下文默认值**和**真实浏览器测试**。Yue 吸收的正是这四条，而不是它的 API 面。
+
+### 采纳
+
+| 来自 Vuetify | Yue 的做法 |
+| --- | --- |
+| 文档里的 Anatomy | 采纳：本页开头的[组件解剖](#组件解剖-anatomy)，用真实 `YueButton` 渲染，不是示意图 |
+| `active` 与 `disabled` / `loading` 正交 | 采纳：`active` 是三态（不传 / `false` / `true`），独立于禁用与加载 |
+| 可替换的 `loader` 插槽 | 采纳：默认 spinner 保留，自定义指示器渲染在同一个绝对定位的加载层里，不绑定图标库 |
+| loading 时内容留在原位（`opacity: 0`） | 采纳：见[加载不改变布局](#加载不改变布局) |
+| 分组与选择分开建模 | 采纳，但拆得更细：`YueButtonGroup`（结构）/ `YueButtonToggle`（`v-model`）/ `YueButtonToggleItem`（一个值） |
+| API 元数据与文档的一致性检查 | 采纳：`pnpm audit:docs` 比对类型定义、SFC、API 表与示例中的 prop |
+| 浏览器里跑状态与对比度 | 采纳：`verify:visual` 逐格量测，本文档页就是被测对象 |
+
+### 不采纳
+
+| Vuetify 的做法 | 为什么不抄 |
+| --- | --- |
+| `icon` / `prepend-icon` / `append-icon` 字符串 prop | 依赖 VIcon 与图标注册表。Yue 明确不自带图标库，`leading` / `trailing` 插槽对通用包更合适 |
+| `elevation` / `ripple` / `position` / `location` / 任意尺寸 prop | Material 专属能力；ripple 还需要 `overflow: hidden`，会裁掉自定义内容 |
+| 五档尺寸 × 五档 density | Yue 保持少量、可验证的档位；“这一片更紧凑”用容器上重指 `--button-*` Token 表达 |
+| `defaults: { VBtn: { … } }` 通用默认值 Provider | 目前只有一个组件需要子树默认值，过早抽象会把一个配置项变成一层框架。先保留 `YueConfig` + `provideYueConfig()` 的两级继承 |
+| Sass 编译期主题变量 | Yue 的 CSS Token 与 CSS 变量支持运行时换肤和浅色 / 深色模式 |
+| 把 `value` / 分组逻辑塞进 Button | 按钮不需要知道「组」存在。分组由 `YueButtonToggle` + `YueButtonToggleItem` 承担 |
 

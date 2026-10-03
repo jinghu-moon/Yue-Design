@@ -44,8 +44,12 @@ Token 包的入口声明层顺序，组件样式因此有了确定的位置：
 | 安装 | `corepack pnpm install` | 锁文件可复现，无网络失败 |
 | 类型 | `corepack pnpm typecheck` | 每个包独立通过 |
 | 构建 | `corepack pnpm build` | 拓扑顺序 tokens → hooks → vue → docs |
-| 测试 | `corepack pnpm test` | Token 解析、色彩数学、审计全部通过 |
-| Token 审计 | `corepack pnpm audit:tokens` | 每个目标 64/64，且多目标解析逐值一致 |
+| 测试 | `corepack pnpm test` | Token 解析、色彩数学、审计、API↔文档一致性全部通过 |
+| Token 审计 | `corepack pnpm audit:tokens` | 迁移契约在每个目标 64/64；包内追加契约使包目标达到 110/110，且多目标解析逐值一致 |
+| 文档一致性 | `corepack pnpm audit:docs` | 类型定义、SFC、API 页表格与示例属性名逐项对齐；文档里引用的数字与契约文件一致 |
+| 产物 | `corepack pnpm verify:dist` | 无外部资源、exports 全部可解析、层顺序与类名命名空间一致 |
+| 浏览器 | `corepack pnpm verify:visual` | 文档页在真实 Chrome 里的对比度、布局与状态断言全部通过 |
+| 发布物 | `corepack pnpm verify:tarball` | pack 后装进临时项目，原生 ESM 与浏览器都能消费 |
 
 ## 与归档项目的关系
 

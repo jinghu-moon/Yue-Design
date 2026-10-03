@@ -41,7 +41,14 @@ export default defineConfig({
         test: {
           name: 'components',
           environment: 'happy-dom',
-          include: ['packages/hooks/src/**/*.test.ts', 'packages/vue/src/**/*.test.ts'],
+          include: [
+            'packages/hooks/src/**/*.test.ts',
+            'packages/vue/src/**/*.test.ts',
+            // Adapter tests: they mount real components and therefore need a DOM and the SFC
+            // compiler, but they test an integration whose code lives in the docs theme — the
+            // adapter is deliberately not a package yet (see the I18N roadmap, phase 5).
+            'tests/i18n/**/*.test.ts',
+          ],
           testTimeout: 30_000,
         },
       },

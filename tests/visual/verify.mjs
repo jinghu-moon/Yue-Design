@@ -22,7 +22,13 @@
  *  10. the variant semantics hold in the rendered box: `solid`/`outline`/`dashed`/
  *      `text` share the control box, `link` does not;
  *  11. hover and `:focus-visible` land on the same colour state, and the focus ring
- *      survives.
+ *      survives;
+ *  12. the Input page's eight states, in light, dark and the neutral accent: value
+ *      contrast on the composited fill, hover that must and must not fire, the error
+ *      border surviving focus, `label for` reaching the native control, the real tab
+ *      order, readonly being copyable while disabled is not, clearing that keeps the
+ *      caret, and the computed `forced-colors` / `prefers-reduced-motion` results;
+ *  13. a long value at 390px widens nothing: the control scrolls instead of the page.
  *
  * Screenshots are written to `tests/visual/button-{light,dark,mobile}.png`, plus
  * element crops of the theme x variant matrix.
@@ -479,6 +485,1276 @@ async function checkFocusRingSurvives(page) {
   )
 }
 
+/**
+ * The Input states the documentation renders, and what each one must be.
+ *
+ * `data-input-state` lands on the wrapper, because `data-*` is routed there by the
+ * component's documented attribute contract — so these selectors are also a live check
+ * that the routing did not change.
+ */
+const INPUT_STATES = {
+  resting: { editable: true },
+  placeholder: { editable: true },
+  disabled: { disabled: true },
+  readonly: { readonly: true },
+  invalid: { invalid: true },
+  'readonly-invalid': { readonly: true, invalid: true },
+  clearable: { clearable: true },
+  affixed: { editable: true, affixed: true },
+}
+
+/**
+ * Check every Input state where it matters: the rendered pixels and the real platform
+ * behaviour.
+ *
+ * A jsdom/happy-dom unit test cannot make most of these claims. It cannot tell whether
+ * `:focus-visible` matched, whether Tab skipped a disabled control, whether a label's
+ * `for` reached the real `<input>` rather than a wrapper, or whether the focus ring was
+ * actually drawn — and `mount()` without `attachTo` cannot even focus an element. So the
+ * authoritative assertions for those live here.
+ */
+async function checkInputs(page, theme) {
+  const selectors = Object.keys(INPUT_STATES)
+  const missing = []
+  for (const id of selectors) {
+    if ((await page.locator(`[data-input-state="${id}"]`).count()) === 0) missing.push(id)
+  }
+  if (missing.length > 0) {
+    fail(`${theme}: the Input page is missing state(s): ${missing.join(', ')}`)
+    return
+  }
+
+  // Every hook must be unique. `querySelector` silently returns the first match, so a
+  // duplicated value makes the assertions below read one element while the reader assumes
+  // another — this actually happened: the state matrix binds its values at runtime, so
+  // `disabled` existed both there and in the prose example, and the contrast probe was
+  // measuring the four-character example field rather than the matrix cell.
+  const duplicateHooks = await page.evaluate(
+    (ids) =>
+      ids
+        .map((id) => ({ id, count: document.querySelectorAll(`[data-input-state="${id}"]`).length }))
+        .filter((entry) => entry.count !== 1),
+    selectors,
+  )
+  if (duplicateHooks.length > 0) {
+    fail(
+      `${theme}: data-input-state hooks are not unique — ` +
+        duplicateHooks.map((entry) => `${entry.id}×${entry.count}`).join(', '),
+    )
+  }
+
+  const readState = (id) =>
+    page.$eval(
+      `[data-input-state="${id}"]`,
+      (element, normalizeName) => {
+        const normalize = window[normalizeName]
+        const control = element.querySelector('input')
+        const style = getComputedStyle(element)
+        // The opaque colour the field is painted on. Several Input tokens are
+        // `color-mix(…, transparent)`, so a fill read on its own is not a colour a user
+        // ever sees — and `flatten()` treats its first layer as opaque, which would turn
+        // a translucent fill into a wrong-but-plausible number.
+        let node = element.parentElement
+        let backdrop = 'rgb(255, 255, 255)'
+        while (node) {
+          const background = getComputedStyle(node).backgroundColor
+          if (background && !/rgba\(0, 0, 0, 0\)|transparent/.test(background)) {
+            backdrop = background
+            break
+          }
+          node = node.parentElement
+        }
+        return {
+          background: normalize(style.backgroundColor),
+          backdrop: normalize(backdrop),
+          borderColor: normalize(style.borderTopColor),
+          borderWidth: style.borderTopWidth,
+          color: normalize(style.color),
+          outlineWidth: style.outlineWidth,
+          outlineStyle: style.outlineStyle,
+          outlineColor: normalize(style.outlineColor),
+          disabled: control.disabled,
+          readOnly: control.readOnly,
+          ariaInvalid: control.getAttribute('aria-invalid'),
+          value: control.value,
+          focusVisible: control.matches(':focus-visible'),
+          focused: document.activeElement === control,
+          // Distinguishes a real readonly from a disabled-by-other-means field.
+          selectable: style.userSelect !== 'none',
+          clearCount: element.querySelectorAll('.yue-input__clear').length,
+          classes: [element.className, control.className],
+        }
+      },
+      NORMALIZE_FN,
+    )
+
+  const readings = {}
+  for (const id of selectors) readings[id] = await readState(id)
+
+  // 1 — the three "cannot edit" states must be three different things, not one look.
+  for (const [id, expected] of Object.entries(INPUT_STATES)) {
+    const reading = readings[id]
+    if (Boolean(expected.disabled) !== reading.disabled) {
+      fail(`${theme} ${id}: native disabled is ${reading.disabled}, expected ${Boolean(expected.disabled)}`)
+    }
+    if (Boolean(expected.readonly) !== reading.readOnly) {
+      fail(`${theme} ${id}: native readonly is ${reading.readOnly}, expected ${Boolean(expected.readonly)}`)
+    }
+    if (Boolean(expected.invalid) !== (reading.ariaInvalid === 'true')) {
+      fail(`${theme} ${id}: aria-invalid is ${reading.ariaInvalid}`)
+    }
+    if (!expected.invalid && reading.ariaInvalid !== null) {
+      fail(`${theme} ${id}: a valid field carries aria-invalid="${reading.ariaInvalid}"`)
+    }
+  }
+
+  if (readings.disabled.background === readings.resting.background) {
+    fail(`${theme}: the disabled field shares the resting fill`)
+  }
+  if (readings.readonly.background === readings.resting.background) {
+    fail(`${theme}: the readonly field shares the resting fill`)
+  }
+  if (readings.disabled.background === readings.readonly.background) {
+    fail(`${theme}: readonly and disabled are visually the same state`)
+  }
+  if (readings.disabled.color === readings.resting.color) {
+    fail(`${theme}: disabled text is not distinguished from resting text`)
+  }
+  if (readings.readonly.color !== readings.resting.color) {
+    fail(`${theme}: readonly text colour changed; it must stay readable like any value`)
+  }
+  if (readings.invalid.borderColor === readings.resting.borderColor) {
+    fail(`${theme}: the invalid field's border is not distinguished from resting`)
+  }
+  if (readings['readonly-invalid'].borderColor !== readings.invalid.borderColor) {
+    fail(`${theme}: readonly dropped the error border`)
+  }
+
+  // 2 — contrast of the value in each state, measured on the composited result.
+  //
+  // Both the fill and (for the disabled state) the text are `color-mix(…, transparent)`,
+  // so the only honest measurement paints the fill onto the surface behind it and then
+  // the text onto that. Comparing either one raw reports a number nobody experiences: an
+  // earlier version of this check compared two translucent values and announced
+  // 1.01:1 for a state that is really about 2.2:1.
+  const contrastOf = (reading) => {
+    const backdrop = flatten([parseColor(reading.backdrop), parseColor(reading.background)])
+    const text = flatten([
+      parseColor(reading.backdrop),
+      parseColor(reading.background),
+      parseColor(reading.color),
+    ])
+    return contrastRatio(text, backdrop)
+  }
+  const ratios = []
+  for (const id of selectors) {
+    const ratio = contrastOf(readings[id])
+    ratios.push({ id, ratio })
+    // Disabled is exempt from WCAG and deliberately quiet, so it is reported rather
+    // than gated — the same boundary the token audit draws.
+    if (!INPUT_STATES[id].disabled && ratio < 4.5) {
+      fail(`${theme} ${id}: value contrast ${ratio.toFixed(2)}:1 is below AA`)
+    }
+  }
+  const worst = ratios.reduce((low, entry) => (entry.ratio < low.ratio ? entry : low), ratios[0])
+  const gating = ratios.filter((entry) => !INPUT_STATES[entry.id].disabled)
+  const worstGating = gating.reduce((low, entry) => (entry.ratio < low.ratio ? entry : low), gating[0])
+  notes.push(
+    `${theme} inputs: ${selectors.length} states, lowest gated value contrast ` +
+      `${worstGating.ratio.toFixed(2)}:1 (${worstGating.id}); ` +
+      `disabled ${ratios.find((entry) => entry.id === 'disabled').ratio.toFixed(2)}:1 ` +
+      '(exempt, reported only)',
+  )
+
+  // 2b — readonly is copyable and disabled is not.
+  //
+  // This is the behavioural half of "readonly is not disabled", and it is the reason the
+  // two states get different fills: a readonly value exists to be selected and copied, so
+  // it has to be reachable by the keyboard and its text has to be selectable. Only a real
+  // browser can answer either question — `mount()` without `attachTo` cannot focus, and
+  // jsdom does not implement text selection.
+  const copyable = await page.evaluate(() => {
+    const probe = (state) => {
+      const control = document.querySelector(`[data-input-state="${state}"] input`)
+      control.focus()
+      control.select()
+      const focused = document.activeElement === control
+      return {
+        focused,
+        // `window.getSelection()` deliberately not used: an `<input>`'s selection is not
+        // part of the document selection, so it always reports ''. The control's own
+        // selection range is the honest signal.
+        selectedAll:
+          control.selectionStart === 0 && control.selectionEnd === control.value.length,
+        selectedLength: control.selectionEnd - control.selectionStart,
+        valueLength: control.value.length,
+      }
+    }
+    const result = { readonly: probe('readonly'), disabled: probe('disabled') }
+    document.activeElement?.blur?.()
+    return result
+  })
+  if (!copyable.readonly.focused) {
+    fail(`${theme}: the readonly field could not take focus, so its value cannot be copied`)
+  }
+  if (!copyable.readonly.selectedAll) {
+    fail(
+      `${theme}: selecting the readonly field selected ${copyable.readonly.selectedLength} of ` +
+        `${copyable.readonly.valueLength} characters, so the value is not fully copyable`,
+    )
+  }
+  if (copyable.disabled.focused) {
+    fail(`${theme}: the disabled field took focus, which a native disabled control must not`)
+  }
+  // Deliberately *not* asserted: that `selectionStart/End` stay at zero for the disabled
+  // field. `select()` sets the range even on a disabled input — the API does not consult
+  // the disabled state — so a range-based check reports "selectable" for something a user
+  // cannot reach. The honest evidence for "not copyable" is that the control cannot take
+  // focus and is skipped by Tab, both asserted above and below.
+
+  // 3 — hover changes the border, but not on a field the user cannot edit.
+  for (const id of ['resting', 'affixed']) {
+    await page.mouse.move(0, 0)
+    await page.hover(`[data-input-state="${id}"]`)
+    await page.waitForTimeout(250)
+    const hovered = await readState(id)
+    if (hovered.borderColor === readings[id].borderColor) {
+      fail(`${theme} ${id}: hover did not change the border colour`)
+    }
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(250)
+  }
+  for (const id of ['disabled', 'readonly', 'invalid']) {
+    await page.mouse.move(0, 0)
+    await page.hover(`[data-input-state="${id}"]`)
+    await page.waitForTimeout(250)
+    const hovered = await readState(id)
+    if (hovered.borderColor !== readings[id].borderColor) {
+      // disabled/readonly must not react to hover; invalid must keep its error border.
+      fail(`${theme} ${id}: hover changed the border, which it must not`)
+    }
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(250)
+  }
+
+  // 4 — keyboard focus draws a ring, and the error border survives it.
+  await page.keyboard.press('Tab')
+  await page.$eval('[data-input-state="invalid"] input', (element) => element.focus())
+  await page.waitForTimeout(250)
+  const invalidFocused = await readState('invalid')
+  if (!invalidFocused.focusVisible) {
+    fail(`${theme}: the invalid field did not match :focus-visible when focused by keyboard`)
+  }
+  if (invalidFocused.borderColor !== readings.invalid.borderColor) {
+    fail(
+      `${theme}: focusing the invalid field replaced its error border with ` +
+        `${invalidFocused.borderColor} — focus must not erase the error`,
+    )
+  }
+  if (
+    invalidFocused.outlineStyle === 'none' ||
+    Number.parseFloat(invalidFocused.outlineWidth) <= 0
+  ) {
+    fail(
+      `${theme}: an invalid field shows no focus ring ` +
+        `(${invalidFocused.outlineWidth} ${invalidFocused.outlineStyle})`,
+    )
+  }
+  await page.$eval('[data-input-state="invalid"] input', (element) => element.blur())
+
+  // 4b — the locale is scoped to a subtree, and the page language drives the default.
+  //
+  // The two assertions together are what makes this real: the first field must speak the
+  // *page* language (proving the docs site installed the component locale at all), and the
+  // second must speak the other one (proving a subtree provider overrides it without the
+  // component knowing a language exists).
+  const locale = await page.evaluate(() => {
+    const label = (state) =>
+      document
+        .querySelector(`[data-input-state="${state}"] .yue-input__clear`)
+        ?.getAttribute('aria-label') ?? null
+    return {
+      lang: document.documentElement.lang,
+      page: label('clearable-default'),
+      scoped: label('clearable-translated'),
+    }
+  })
+  const expectedLabels = locale.lang.toLowerCase().startsWith('zh')
+    ? { page: '清空', scoped: 'Clear', other: 'en-US' }
+    : { page: 'Clear', scoped: '清空', other: 'zh-CN' }
+  if (locale.page === null || locale.scoped === null) {
+    fail(`${theme}: the localisation example did not render both clear controls`)
+  } else {
+    if (locale.page !== expectedLabels.page) {
+      fail(
+        `${theme}: a field on a "${locale.lang}" page reads "${locale.page}" instead of ` +
+          `"${expectedLabels.page}" — the page language did not reach the component`,
+      )
+    }
+    if (locale.scoped !== expectedLabels.scoped) {
+      fail(
+        `${theme}: the scoped field reads "${locale.scoped}" instead of ` +
+          `"${expectedLabels.scoped}" — the subtree locale did not override the page`,
+      )
+    }
+    if (locale.page === locale.scoped) {
+      fail(`${theme}: the scoped locale had no effect — both fields read "${locale.page}"`)
+    }
+    notes.push(
+      `${theme} locale: page "${locale.lang}" reads "${locale.page}", subtree (${expectedLabels.other}) ` +
+        `reads "${locale.scoped}"`,
+    )
+  }
+
+  // 5 — a real `<label for>` reaches the real control, not the wrapper.
+  const label = page.locator('label[for="email-field"]')
+  if ((await label.count()) === 0) {
+    fail(`${theme}: the page renders no <label for> bound to a YueInput`)
+  } else {
+    await label.first().click()
+    await page.waitForTimeout(120)
+    const focusedByLabel = await page.$eval(
+      '[data-input-state="native-attrs"] input',
+      (element) => document.activeElement === element,
+    )
+    if (!focusedByLabel) {
+      fail(`${theme}: clicking the label did not focus the native input`)
+    }
+    // If the id had landed on the wrapper, the label would point at a non-focusable div
+    // and this would silently do nothing — which is the whole reason to check it here.
+    const idOnControl = await page.$eval(
+      '[data-input-state="native-attrs"] input',
+      (element) => element.id,
+    )
+    if (idOnControl !== 'email-field') fail(`${theme}: the id is on the wrong element`)
+    await page.$eval('[data-input-state="native-attrs"] input', (element) => element.blur())
+  }
+
+  // 6 — the real tab order, walked with real key presses.
+  //
+  // Not `element.tabIndex >= 0`: a disabled `<input>` still reports `tabIndex === 0`,
+  // because that property reflects the attribute, not whether focus navigation will
+  // reach it. The only way to know that Tab skips it is to press Tab and look.
+  const tabOrder = await page.evaluate(() => {
+    const clear = document.querySelector('[data-input-state="clearable"] .yue-input__clear')
+    return {
+      clearType: clear.type,
+      clearLabel: clear.getAttribute('aria-label'),
+      clearTabIndex: clear.tabIndex,
+    }
+  })
+  if (tabOrder.clearType !== 'button') {
+    fail(`${theme}: the clear control is type="${tabOrder.clearType}", not "button"`)
+  }
+  if (tabOrder.clearTabIndex < 0) fail(`${theme}: the clear control is not reachable by Tab`)
+  if (tabOrder.clearLabel === null || tabOrder.clearLabel === '') {
+    fail(`${theme}: the clear control has no accessible name`)
+  }
+
+  await page.$eval('[data-input-state="resting"] input', (element) => element.focus())
+  const walk = []
+  for (let step = 0; step < 20; step += 1) {
+    await page.keyboard.press('Tab')
+    const landed = await page.evaluate(() => {
+      const active = document.activeElement
+      if (!active) return null
+      const wrapper = active.closest('[data-input-state]')
+      return {
+        state: wrapper?.dataset.inputState ?? null,
+        tag: active.tagName.toLowerCase(),
+        className: active.className,
+      }
+    })
+    if (landed) walk.push(landed)
+    if (landed && landed.state === 'affixed') break
+  }
+  const landedOnDisabled = walk.some(
+    (entry) => entry.state === 'disabled',
+  )
+  if (landedOnDisabled) {
+    fail(`${theme}: Tab reached the disabled field, so it is still in the tab order`)
+  }
+  const reachedClear = walk.some((entry) => entry.tag === 'button' && entry.state === 'clearable')
+  if (!reachedClear) {
+    fail(
+      `${theme}: Tab never reached the clear control, so the walk proves nothing about ` +
+        `the fields it did visit (${walk.map((entry) => `${entry.state}:${entry.tag}`).join(' → ')})`,
+    )
+  }
+  const reachedReadonly = walk.some((entry) => entry.state === 'readonly' && entry.tag === 'input')
+  if (!reachedReadonly) {
+    fail(`${theme}: Tab skipped the readonly field, which must stay focusable`)
+  }
+
+  // 7 — clearing empties the field and keeps the caret in it. This is the assertion the
+  // unit test deliberately deferred: only a real browser has focus.
+  await page.$eval('[data-input-state="clearable"] input', (element) => {
+    element.focus()
+    element.value = 'typed by the test'
+    element.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await page.waitForTimeout(120)
+  await page.click('[data-input-state="clearable"] .yue-input__clear')
+  await page.waitForTimeout(200)
+  const afterClear = await page.$eval(
+    '[data-input-state="clearable"] input',
+    (element) => ({ value: element.value, focused: document.activeElement === element }),
+  )
+  if (afterClear.value !== '') {
+    fail(`${theme}: the clear control did not empty the field (value "${afterClear.value}")`)
+  }
+  if (!afterClear.focused) {
+    fail(`${theme}: clearing moved focus out of the input instead of leaving it there`)
+  }
+
+  // 8 — every class the component rendered is matched by a rule the page loaded. A
+  // renamed class, or a sheet that failed to load, would leave the field unstyled while
+  // the markup still looked right.
+  const classAudit = await page.evaluate(
+    ({ ids, defaults }) => {
+      const all = []
+      for (const sheet of document.styleSheets) {
+        let rules
+        try {
+          rules = sheet.cssRules
+        } catch {
+          continue
+        }
+        const walk = (list) => {
+          for (const rule of list) {
+            if (rule.selectorText) all.push(rule.selectorText)
+            else if (rule.cssRules) walk(rule.cssRules)
+          }
+        }
+        walk(rules)
+      }
+
+      /**
+       * `element.matches()` cannot evaluate a selector containing a pseudo-element, so
+       * the pseudo-element tail is removed before matching. This keeps the check about
+       * what it is for — "a loaded rule names this class on this element" — without
+       * pretending the audit can tell whether a vendor pseudo-element applies.
+       */
+      const withoutPseudo = (selector) => selector.replace(/::[a-z-]+(\([^)]*\))?/gi, '')
+
+      const unmatched = []
+      for (const id of ids) {
+        const wrapper = document.querySelector(`[data-input-state="${id}"]`)
+        for (const node of [wrapper, ...wrapper.querySelectorAll('*')]) {
+          for (const className of node.classList) {
+            // Documented base defaults carry no rule of their own: the base block
+            // already declares their values. Registering them here is what keeps the
+            // check from being satisfied by an accident.
+            if (defaults.includes(className)) continue
+            const matched = all.some((selector) => {
+              if (!selector.includes(`.${className}`)) return false
+              const candidate = withoutPseudo(selector)
+              try {
+                // The element itself, an ancestor carrying the class
+                // (`.yue-input.is-invalid`), or a descendant selector that the class
+                // scopes (`.yue-input.is-clearable .yue-input__native`). All three are
+                // real ways a rendered class earns its place in the sheet.
+                return (
+                  node.matches(candidate) ||
+                  node.closest(candidate) !== null ||
+                  node.querySelector(candidate) !== null
+                )
+              } catch {
+                return false
+              }
+            })
+            if (!matched) unmatched.push(`${node.tagName.toLowerCase()}.${className}`)
+          }
+        }
+      }
+      return [...new Set(unmatched)]
+    },
+    // `yue-input--md` is the base size block, exactly like `yue-button--md`.
+    { ids: selectors, defaults: ['yue-input--md'] },
+  )
+  if (classAudit.length > 0) {
+    fail(`${theme}: rendered Input class(es) matched by no loaded rule: ${classAudit.join(', ')}`)
+  }
+
+  // 9 — reduced motion comes from the token, not from a second media query in the
+  // component sheet. Asserting the computed duration is the only way to know the token
+  // path still works.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const reduced = await page.$eval('[data-input-state="resting"]', (element) => {
+    const style = getComputedStyle(element)
+    return { duration: style.transitionDuration, delay: style.transitionDelay }
+  })
+  const durations = reduced.duration.split(',').map((value) => Number.parseFloat(value))
+  if (durations.some((value) => Number.isFinite(value) && value > 0)) {
+    fail(`${theme}: prefers-reduced-motion still transitions for ${reduced.duration}`)
+  }
+  await page.emulateMedia({ reducedMotion: null })
+
+  // 9b — RTL. The roadmap lists it as a candidate scenario, and "candidate" is exactly
+  // when a layout claim needs a measurement: `dir` has to reach the element that lays the
+  // affix row out, or the text mirrors while the icons do not.
+  if ((await page.locator('[data-input-state="rtl"]').count()) > 0) {
+    const rtl = await page.$eval('[data-input-state="rtl"]', (element) => {
+      const control = element.querySelector('input')
+      const prefix = element.querySelector('.yue-input__prefix')
+      const clear = element.querySelector('.yue-input__clear')
+      const box = (node) => (node ? node.getBoundingClientRect() : null)
+      return {
+        wrapperDir: element.getAttribute('dir'),
+        // If `dir` had been routed to the control, this would be null and the wrapper
+        // would still be laying out left-to-right.
+        wrapperDirection: getComputedStyle(element).direction,
+        controlDirection: getComputedStyle(control).direction,
+        prefixRight: box(prefix)?.right ?? null,
+        controlLeft: box(control)?.left ?? null,
+        clearLeft: box(clear)?.left ?? null,
+        controlRight: box(control)?.right ?? null,
+      }
+    })
+
+    if (rtl.wrapperDir !== 'rtl') fail(`${theme}: the RTL example's dir did not reach the field`)
+    if (rtl.wrapperDirection !== 'rtl') {
+      fail(`${theme}: the RTL field's computed direction is "${rtl.wrapperDirection}"`)
+    }
+    if (rtl.controlDirection !== 'rtl') {
+      fail(
+        `${theme}: the control did not inherit the field's direction ` +
+          `("${rtl.controlDirection}")`,
+      )
+    }
+    // The prefix must sit to the *right* of the control's left edge: that is what
+    // "mirrored" means for a row, and it is the assertion a text-only check cannot make.
+    if (rtl.prefixRight === null || rtl.controlLeft === null || rtl.prefixRight <= rtl.controlLeft) {
+      fail(
+        `${theme}: the prefix is not on the right-hand side in RTL ` +
+          `(prefix right ${rtl.prefixRight}, control left ${rtl.controlLeft})`,
+      )
+    }
+    if (rtl.clearLeft === null || rtl.controlRight === null || rtl.clearLeft >= rtl.controlRight) {
+      fail(
+        `${theme}: the clear control did not move to the left in RTL ` +
+          `(clear left ${rtl.clearLeft}, control right ${rtl.controlRight})`,
+      )
+    }
+    notes.push(
+      `${theme} rtl: field direction ${rtl.wrapperDirection}, control inherits ` +
+        `${rtl.controlDirection}, prefix right of the control, clear control on the left`,
+    )
+  }
+
+  // 10 — forced colours replaces the palette with system colours.
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.waitForTimeout(120)
+  const forced = await readState('disabled')
+  const forcedResting = await readState('resting')
+  if (forcedResting.borderColor === readings.resting.borderColor) {
+    fail(`${theme}: forced-colors did not replace the field's border colour`)
+  }
+  if (forced.color === readings.disabled.color) {
+    fail(`${theme}: forced-colors did not replace the disabled text colour`)
+  }
+  await page.emulateMedia({ forcedColors: null })
+
+  await page.mouse.move(0, 0)
+}
+
+/**
+ * The loading contract, measured on the rendered page.
+ *
+ * "Loading must not resize the button" is a layout claim, and a unit test cannot make it:
+ * happy-dom has no layout engine, so every width is zero and the assertion would pass for
+ * any markup at all. The honest measurement is two real buttons with identical content,
+ * one loading and one not, in a real browser.
+ */
+async function checkLoadingLayout(page, theme) {
+  const reading = await page.evaluate(() => {
+    const idle = document.querySelector('[data-loading-idle]')
+    const active = document.querySelector('[data-loading-active]')
+    if (!idle || !active) return null
+
+    const box = (node) => {
+      const rect = node?.getBoundingClientRect()
+      return rect ? { width: rect.width, height: rect.height, left: rect.left, right: rect.right } : null
+    }
+    const layer = active.querySelector('.yue-button__loader')
+    const layerStyle = layer ? getComputedStyle(layer) : null
+    const label = active.querySelector('.yue-button__label')
+
+    return {
+      idle: box(idle),
+      active: box(active),
+      layer: box(layer),
+      spinner: box(active.querySelector('.yue-button__spinner')),
+      // The loader is `inset: 0`, so it fills the button's *padding* box: the border is
+      // outside it by definition, which is why the comparison below subtracts it.
+      borderWidth: Number.parseFloat(getComputedStyle(active).borderTopWidth) || 0,
+      labelText: label?.textContent?.trim() ?? null,
+      labelOpacity: label ? getComputedStyle(label).opacity : null,
+      leadingPresent: Boolean(active.querySelector('.yue-button__icon--leading')),
+      layerPosition: layerStyle?.position ?? null,
+      layerInset: layerStyle
+        ? [layerStyle.top, layerStyle.right, layerStyle.bottom, layerStyle.left]
+        : null,
+      busy: active.getAttribute('aria-busy'),
+      nativeDisabled: active.hasAttribute('disabled'),
+      tabIndex: active.tabIndex,
+    }
+  })
+
+  if (!reading) {
+    fail(`${theme}: the page has no [data-loading-idle] / [data-loading-active] pair`)
+    return
+  }
+
+  // The claim under test: the same content renders the same box, loading or not.
+  if (reading.idle.width !== reading.active.width || reading.idle.height !== reading.active.height) {
+    fail(
+      `${theme}: loading changed the button box — idle ${reading.idle.width}×${reading.idle.height}, ` +
+        `loading ${reading.active.width}×${reading.active.height}`,
+    )
+  }
+  // The mechanism: the content is still there (so the width is still decided by it) and is
+  // painted invisible rather than removed.
+  if (reading.labelText !== '保存更改' || reading.labelOpacity !== '0') {
+    fail(
+      `${theme}: the loading label is "${reading.labelText}" at opacity ${reading.labelOpacity}, ` +
+        'so loading either removed the text or left it visible',
+    )
+  }
+  if (!reading.leadingPresent) {
+    fail(`${theme}: loading removed the leading icon instead of keeping it in place`)
+  }
+  // The loader sits on top and covers the control box.
+  if (reading.layerPosition !== 'absolute' || reading.layerInset?.join(',') !== '0px,0px,0px,0px') {
+    fail(
+      `${theme}: the loader layer is ${reading.layerPosition} with inset ${reading.layerInset?.join(',')}`,
+    )
+  }
+  if (
+    !reading.layer ||
+    Math.abs(reading.layer.width - (reading.active.width - 2 * reading.borderWidth)) > 1 ||
+    Math.abs(reading.layer.height - (reading.active.height - 2 * reading.borderWidth)) > 1
+  ) {
+    fail(
+      `${theme}: the loader layer (${reading.layer?.width}×${reading.layer?.height}) does not ` +
+        `cover the button's padding box (${reading.active.width}×${reading.active.height} ` +
+        `minus ${reading.borderWidth}px of border)`,
+    )
+  }
+  if (!reading.spinner || reading.spinner.width < 8 || reading.spinner.height < 8) {
+    fail(`${theme}: the default spinner has no visible box`)
+  }
+  // Centred, not offset: the spinner's mid-line is the button's mid-line.
+  const spinnerCentre = reading.spinner.left + reading.spinner.width / 2
+  const buttonCentre = reading.active.left + reading.active.width / 2
+  if (Math.abs(spinnerCentre - buttonCentre) > 1.5) {
+    fail(
+      `${theme}: the spinner is not centred in the button (spinner ${spinnerCentre}, ` +
+        `button ${buttonCentre})`,
+    )
+  }
+  // Loading keeps the button focusable and out of the native `disabled` state.
+  if (reading.busy !== 'true' || reading.nativeDisabled) {
+    fail(`${theme}: a loading button is busy="${reading.busy}" disabled=${reading.nativeDisabled}`)
+  }
+  if (reading.tabIndex < 0) fail(`${theme}: a loading button left the tab order`)
+
+  const focusKept = await page.evaluate(() => {
+    const active = document.querySelector('[data-loading-active]')
+    active.focus()
+    const kept = document.activeElement === active
+    active.blur()
+    return kept
+  })
+  if (!focusKept) fail(`${theme}: a loading button could not take focus, so it steals it back mid-request`)
+
+  // The `loader` slot replaces the indicator, not the layout.
+  const custom = await page.evaluate(() => {
+    const button = document.querySelector('[data-loader-custom]')
+    const layer = button?.querySelector('.yue-button__loader')
+    const box = layer?.querySelector('.docs-loader')?.getBoundingClientRect()
+    return {
+      hasCustom: Boolean(layer?.querySelector('.docs-loader')),
+      hasSpinner: Boolean(layer?.querySelector('.yue-button__spinner')),
+      labelText: button?.querySelector('.yue-button__label')?.textContent?.trim() ?? null,
+      customBox: box ? { width: box.width, height: box.height } : null,
+    }
+  })
+  if (!custom.hasCustom || custom.hasSpinner) {
+    fail(
+      `${theme}: the loader slot rendered custom=${custom.hasCustom} and the default spinner=${custom.hasSpinner}`,
+    )
+  }
+  if (!custom.customBox || custom.customBox.width < 4) {
+    fail(`${theme}: the custom loader has no visible box: ${JSON.stringify(custom.customBox)}`)
+  }
+  if (custom.labelText !== '自定义加载') {
+    fail(`${theme}: a custom loader replaced the label ("${custom.labelText}") instead of layering over it`)
+  }
+
+  notes.push(
+    `${theme} loading: idle ${reading.idle.width}×${reading.idle.height} = loading ` +
+      `${reading.active.width}×${reading.active.height}, label kept at opacity 0, ` +
+      `custom loader ${custom.customBox.width}×${custom.customBox.height}`,
+  )
+}
+
+/**
+ * The anatomy figure's own claim: every part it labels exists in the DOM.
+ *
+ * A diagram that names a class nobody renders is worse than no diagram — it teaches a
+ * structure the component does not have. The selectors are read out of the figure and
+ * resolved against the live page, including the focus ring, which is primed with a real
+ * key press because `:focus-visible` cannot be forced from script.
+ */
+async function checkAnatomy(page, theme) {
+  const selector = '[data-anatomy="assembled"]'
+  if ((await page.locator('.button-anatomy').count()) === 0) {
+    fail(`${theme}: the Button page renders no anatomy figure`)
+    return
+  }
+
+  // Prime `:focus-visible`, so the ring — one of the six parts — can be resolved.
+  await page.keyboard.press('Tab')
+  await page.$eval(selector, (element) => element.focus())
+  await page.waitForTimeout(120)
+
+  const reading = await page.evaluate(() => {
+    const root = document.querySelector('.button-anatomy')
+    const selectors = [...root.querySelectorAll('.button-anatomy__selector')].map((node) =>
+      node.textContent.trim(),
+    )
+    const assembled = root.querySelector('[data-anatomy="assembled"]')
+    const loading = root.querySelector('[data-anatomy="loading"]')
+    const loadingLabel = loading?.querySelector('.yue-button__label')
+    return {
+      parts: root.querySelectorAll('.button-anatomy__part').length,
+      selectors,
+      resolved: selectors.map((entry) => ({ entry, count: document.querySelectorAll(entry).length })),
+      assembled: {
+        leading: Boolean(assembled?.querySelector('.yue-button__icon--leading')),
+        label: assembled?.querySelector('.yue-button__label')?.textContent.trim() ?? null,
+        trailing: Boolean(assembled?.querySelector('.yue-button__icon--trailing')),
+      },
+      loading: {
+        layer: Boolean(loading?.querySelector('.yue-button__loader')),
+        labelOpacity: loadingLabel ? getComputedStyle(loadingLabel).opacity : null,
+        labelText: loadingLabel?.textContent.trim() ?? null,
+      },
+    }
+  })
+
+  await page.$eval(selector, (element) => element.blur())
+
+  if (reading.parts !== reading.selectors.length || reading.parts < 6) {
+    fail(
+      `${theme}: the anatomy figure labels ${reading.parts} part(s) and names ` +
+        `${reading.selectors.length} selector(s); six are expected`,
+    )
+  }
+  const unresolved = reading.resolved.filter((entry) => entry.count === 0)
+  if (unresolved.length > 0) {
+    fail(
+      `${theme}: the anatomy figure names selector(s) nothing on the page matches: ` +
+        unresolved.map((entry) => entry.entry).join(', '),
+    )
+  }
+  if (!reading.assembled.leading || !reading.assembled.trailing || reading.assembled.label !== '保存') {
+    fail(`theme: the assembled anatomy button is missing a part: ${JSON.stringify(reading.assembled)}`)
+  }
+  if (!reading.loading.layer || reading.loading.labelOpacity !== '0') {
+    fail(
+      `${theme}: the anatomy's loading button does not show the layered loader ` +
+        `(layer ${reading.loading.layer}, label opacity ${reading.loading.labelOpacity})`,
+    )
+  }
+
+  notes.push(
+    `${theme} anatomy: ${reading.parts} parts, ${reading.selectors.length} selectors all resolved ` +
+      `(including ${reading.selectors.at(-1)})`,
+  )
+}
+
+/**
+ * Toggle selection, in the browser, on the rendered pixels.
+ *
+ * Three things cannot be checked from a unit test and are exactly the ones worth checking:
+ * that the joined corners are produced by the stylesheet the page loaded, that the selected
+ * item is distinguishable from its neighbours, and that its label is still readable in both
+ * themes and while hovered.
+ */
+async function checkToggle(page, theme) {
+  const group = '[data-toggle="align"]'
+  if ((await page.locator(group).count()) === 0) {
+    fail(`${theme}: the page renders no [data-toggle] group`)
+    return
+  }
+
+  const structure = await page.$eval(group, (element) => {
+    const items = [...element.querySelectorAll('.yue-button')]
+    const rect = (node) => node.getBoundingClientRect()
+    return {
+      role: element.getAttribute('role'),
+      name: element.getAttribute('aria-label'),
+      count: items.length,
+      pressed: items.map((item) => item.getAttribute('aria-pressed')),
+      activeCount: items.filter((item) => item.classList.contains('is-active')).length,
+      radii: items.map((item) => ({
+        topLeft: getComputedStyle(item).borderTopLeftRadius,
+        topRight: getComputedStyle(item).borderTopRightRadius,
+      })),
+      firstRight: rect(items[0]).right,
+      secondLeft: rect(items[1]).left,
+      classes: items.map((item) => item.className),
+    }
+  })
+
+  if (structure.role !== 'group') fail(`${theme}: the toggle renders role="${structure.role}"`)
+  if (!structure.name) fail(`${theme}: the toggle group has no accessible name`)
+  if (structure.count !== 3) fail(`${theme}: expected 3 toggle items, saw ${structure.count}`)
+  if (structure.activeCount !== 1) {
+    fail(`${theme}: ${structure.activeCount} items look selected, expected exactly 1`)
+  }
+  if (structure.pressed.join(',') !== 'false,true,false') {
+    fail(`${theme}: aria-pressed is [${structure.pressed.join(', ')}], expected the middle item`)
+  }
+  // Joined corners come from the stylesheet, not from the markup: the outer edges keep the
+  // button's radius, the inner ones are square, and the shared edge is overlapped.
+  const [first, middle, last] = structure.radii
+  if (first.topLeft === '0px' || first.topRight !== '0px') {
+    fail(`${theme}: the first toggle item's corners are wrong: ${JSON.stringify(first)}`)
+  }
+  if (middle.topLeft !== '0px' || middle.topRight !== '0px') {
+    fail(`${theme}: the middle toggle item kept a corner radius: ${JSON.stringify(middle)}`)
+  }
+  if (last.topLeft !== '0px' || last.topRight === '0px') {
+    fail(`${theme}: the last toggle item's corners are wrong: ${JSON.stringify(last)}`)
+  }
+  // …and the shared edge is overlapped rather than doubled.
+  if (Math.abs(structure.firstRight - structure.secondLeft) > 1.5) {
+    fail(
+      `${theme}: toggle items are not joined (first ends at ${structure.firstRight}, ` +
+        `second starts at ${structure.secondLeft})`,
+    )
+  }
+
+  // The selected fill has to be a real colour state, not the resting fill of its variant.
+  const unselected = await readCell(page, '[data-toggle-item="left"]')
+  const selected = await readCell(page, '[data-toggle-item="center"]')
+  if (selected.background === unselected.background) {
+    fail(`${theme}: the selected item has the same fill as its unselected neighbour`)
+  }
+  const ratio = cellContrast(selected)
+  if (ratio < 4.5) {
+    fail(`${theme}: the selected toggle label is ${ratio.toFixed(2)}:1 against its fill`)
+  }
+
+  await page.hover('[data-toggle-item="center"]')
+  await page.waitForTimeout(250)
+  const hovered = await readCell(page, '[data-toggle-item="center"]')
+  const hoverRatio = cellContrast(hovered)
+  if (hoverRatio < 4.5) {
+    fail(`${theme}: the selected toggle label is ${hoverRatio.toFixed(2)}:1 while hovered`)
+  }
+  await page.mouse.move(0, 0)
+
+  // Activating another item moves the selection, and only the selection.
+  await page.click('[data-toggle-item="left"]')
+  await page.waitForTimeout(150)
+  const afterClick = await page.$eval(group, (element) => {
+    const items = [...element.querySelectorAll('.yue-button')]
+    return {
+      pressed: items.map((item) => item.getAttribute('aria-pressed')),
+      activeCount: items.filter((item) => item.classList.contains('is-active')).length,
+    }
+  })
+  if (afterClick.pressed.join(',') !== 'true,false,false' || afterClick.activeCount !== 1) {
+    fail(
+      `${theme}: activating another item produced [${afterClick.pressed.join(', ')}] with ` +
+        `${afterClick.activeCount} active`,
+    )
+  }
+
+  // Mandatory selection: activating the active item again changes nothing.
+  await page.click('[data-toggle-item="left"]')
+  await page.waitForTimeout(150)
+  const afterRepeat = await page.$eval(`${group} [data-toggle-item="left"]`, (element) =>
+    element.getAttribute('aria-pressed'),
+  )
+  if (afterRepeat !== 'true') {
+    fail(`${theme}: clicking the selected item again deselected it (aria-pressed="${afterRepeat}")`)
+  }
+
+  // A disabled item is disabled, and a disabled item cannot change the selection.
+  const viewGroup = '[data-toggle="view"]'
+  const beforeDisabled = await page.$eval(
+    `${viewGroup} [data-toggle-item="list"]`,
+    (element) => element.getAttribute('aria-pressed'),
+  )
+  const disabledNative = await page.$eval(`${viewGroup} [data-toggle-item="board"]`, (element) => ({
+    disabled: element.hasAttribute('disabled'),
+    pressed: element.getAttribute('aria-pressed'),
+  }))
+  await page.$eval(`${viewGroup} [data-toggle-item="board"]`, (element) => element.click())
+  await page.waitForTimeout(150)
+  const afterDisabled = await page.$eval(
+    `${viewGroup} [data-toggle-item="list"]`,
+    (element) => element.getAttribute('aria-pressed'),
+  )
+  if (!disabledNative.disabled) fail(`${theme}: the disabled toggle item is not natively disabled`)
+  if (disabledNative.pressed !== 'false') {
+    fail(`${theme}: the disabled toggle item reports aria-pressed="${disabledNative.pressed}"`)
+  }
+  if (beforeDisabled !== 'true' || afterDisabled !== 'true') {
+    fail(
+      `${theme}: clicking a disabled item moved the selection (${beforeDisabled} → ${afterDisabled})`,
+    )
+  }
+
+  // A standalone toggle button (`active` without a group) reports its own state and toggles.
+  const standaloneBefore = await page.$eval(
+    '[data-standalone="italic"]',
+    (element) => element.getAttribute('aria-pressed'),
+  )
+  await page.click('[data-standalone="italic"]')
+  await page.waitForTimeout(150)
+  const standaloneAfter = await page.$eval(
+    '[data-standalone="italic"]',
+    (element) => element.getAttribute('aria-pressed'),
+  )
+  if (standaloneBefore !== 'false' || standaloneAfter !== 'true') {
+    fail(`${theme}: a standalone toggle went ${standaloneBefore} → ${standaloneAfter}`)
+  }
+  await page.click('[data-standalone="italic"]')
+  await page.waitForTimeout(150)
+
+  notes.push(
+    `${theme} toggle: 3 items joined (radius ${first.topLeft} / ${middle.topLeft} / ` +
+      `${last.topRight}), selected ${ratio.toFixed(2)}:1 resting and ${hoverRatio.toFixed(2)}:1 ` +
+      'hovered, mandatory selection held',
+  )
+}
+
+/**
+ * The aria and tab-order contract for the non-native `tag` path, walked with real key presses.
+ *
+ * `loading` has to mean the same thing on an `<a>` as it does on a `<button>`: busy, still
+ * reachable. A unit test can assert the attributes; only a browser can answer whether Tab
+ * actually lands on the element — a disabled control still reports `tabIndex >= 0` from
+ * script, and a `tabindex="-1"` element looks identical in the markup either way.
+ */
+async function checkAnchorTabOrder(page, theme) {
+  const hooks = ['plain', 'loading', 'disabled']
+  const missing = []
+  for (const hook of hooks) {
+    if ((await page.locator(`[data-anchor="${hook}"]`).count()) !== 1) missing.push(hook)
+  }
+  if (missing.length > 0) {
+    fail(`${theme}: the tag example is missing anchor(s): ${missing.join(', ')}`)
+    return
+  }
+
+  const reading = await page.evaluate((names) => {
+    const out = {}
+    for (const name of names) {
+      const element = document.querySelector(`[data-anchor="${name}"]`)
+      out[name] = {
+        tag: element.tagName.toLowerCase(),
+        loading: element.classList.contains('is-loading'),
+        labelOpacity: (() => {
+          const label = element.querySelector('.yue-button__label')
+          return label ? getComputedStyle(label).opacity : null
+        })(),
+        nativeDisabled: element.hasAttribute('disabled'),
+        ariaDisabled: element.getAttribute('aria-disabled'),
+        ariaBusy: element.getAttribute('aria-busy'),
+        tabindex: element.getAttribute('tabindex'),
+      }
+    }
+    return out
+  }, hooks)
+
+  for (const [name, state] of Object.entries(reading)) {
+    if (state.tag !== 'a') fail(`${theme}: [data-anchor="${name}"] rendered a <${state.tag}>, not an <a>`)
+    if (state.nativeDisabled) {
+      fail(`${theme}: [data-anchor="${name}"] carries the native disabled attribute, which an <a> cannot honour`)
+    }
+  }
+
+  // The three states, spelled out — this is the matrix the unit test asserts, re-checked on
+  // the rendered page so a stale build cannot make the unit test look right.
+  if (reading.plain.ariaDisabled !== null || reading.plain.ariaBusy !== null || reading.plain.tabindex !== null) {
+    fail(`${theme}: a plain anchor exposes state: ${JSON.stringify(reading.plain)}`)
+  }
+  if (reading.loading.ariaBusy !== 'true' || !reading.loading.loading) {
+    fail(`${theme}: the loading anchor does not announce aria-busy: ${JSON.stringify(reading.loading)}`)
+  }
+  if (reading.loading.ariaDisabled !== null || reading.loading.tabindex !== null) {
+    fail(
+      `${theme}: the loading anchor claims to be disabled ` +
+        `(aria-disabled=${reading.loading.ariaDisabled}, tabindex=${reading.loading.tabindex})`,
+    )
+  }
+  if (reading.loading.labelOpacity !== '0') {
+    fail(`${theme}: the loading anchor's label is at opacity ${reading.loading.labelOpacity}`)
+  }
+  if (reading.disabled.ariaDisabled !== 'true' || reading.disabled.tabindex !== '-1') {
+    fail(`${theme}: the disabled anchor is not taken out of the tab order: ${JSON.stringify(reading.disabled)}`)
+  }
+  if (reading.disabled.ariaBusy !== null) {
+    fail(`${theme}: the disabled anchor announces aria-busy without loading`)
+  }
+
+  // The walk: from the plain anchor, one Tab must land on the loading one, and the next must
+  // leave the disabled one behind.
+  const describeActive = () =>
+    page.evaluate(() => {
+      const active = document.activeElement
+      if (!active || active === document.body) return null
+      return {
+        anchor: active.dataset?.anchor ?? null,
+        description: `${active.tagName.toLowerCase()}.${(active.className || '').split(' ')[0] || '—'}`,
+      }
+    })
+
+  await page.$eval('[data-anchor="plain"]', (element) => element.focus())
+  await page.keyboard.press('Tab')
+  const afterFirst = await describeActive()
+  await page.keyboard.press('Tab')
+  const afterSecond = await describeActive()
+
+  if (afterFirst?.anchor !== 'loading') {
+    fail(`${theme}: Tab skipped the loading anchor (landed on ${afterFirst?.description ?? 'nothing'})`)
+  }
+  if (afterSecond?.anchor === 'disabled') {
+    fail(`${theme}: Tab reached the disabled anchor, so it is still in the tab order`)
+  }
+  // The walk only proves something about the disabled anchor if the second Tab really did
+  // move somewhere else — a landing of `null` could also mean the page ended.
+  if (afterSecond === null) {
+    fail(`${theme}: the anchor walk left the document, so nothing proves the disabled anchor was skipped`)
+  }
+
+  notes.push(
+    `${theme} anchors: loading is reachable by Tab (${afterFirst.description}) with no aria-disabled ` +
+      `and no tabindex; the disabled one is skipped (next stop: ${afterSecond.description})`,
+  )
+
+  await page.$eval('[data-anchor="plain"]', (element) => element.blur())
+}
+
+/**
+ * The bilingual site, driven the way a reader drives it.
+ *
+ * Every claim here is one a static check cannot make: that clicking the language switch lands on
+ * the *same* page in the other tree, that `html[lang]` follows, that the examples' component
+ * text follows the page language (and that a subtree can still disagree on purpose), and that
+ * the docs chrome is in the language the page claims.
+ */
+async function checkBilingualSite(page, origin) {
+  /** The observable state of one page: language, chrome, and what the examples render. */
+  const readPage = () =>
+    page.evaluate(() => {
+      const label = (state) =>
+        document
+          .querySelector(`[data-input-state="${state}"] .yue-input__clear`)
+          ?.getAttribute('aria-label') ?? null
+      const toolbar = document.querySelector('.preview-frame__toolbar')
+      const langMenu = document.querySelector('.VPNavBarTranslations button')
+      return {
+        lang: document.documentElement.lang,
+        // The switcher is VitePress' own locale menu; its accessible name is localized through
+        // `langMenuLabel`, and its link must point at the counterpart page.
+        langMenuLabel: langMenu?.getAttribute('aria-label') ?? null,
+        // The preview toolbar is the second piece of docs chrome on a component page.
+        resetLabel: toolbar?.querySelector('.preview-frame__reset')?.textContent?.trim() ?? null,
+        codeToggle: document.querySelector('.preview-frame__code-toggle')?.textContent?.trim() ?? null,
+        clearDefault: label('clearable-default'),
+        clearScoped: label('clearable-translated'),
+        clearRegional: label('clearable-regional'),
+      }
+    })
+
+  /** Click through the built-in locale menu, the way a reader does. */
+  async function switchLocale(hrefPart) {
+    await page.click('.VPNavBarTranslations button')
+    await page.waitForSelector('.VPNavBarTranslations a', { timeout: 5_000 })
+    await page.click(`.VPNavBarTranslations a[href*="${hrefPart}"]`)
+    await page.waitForLoadState('load')
+  }
+
+  await page.goto(`${origin}/components/input`, { waitUntil: 'load' })
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  const chinese = await readPage()
+
+  if (chinese.lang !== 'zh-CN') fail(`bilingual: the Chinese tree reports lang="${chinese.lang}"`)
+  if (chinese.langMenuLabel !== '语言') {
+    fail(`bilingual: the Chinese language menu is labelled "${chinese.langMenuLabel}"`)
+  }
+  if (chinese.resetLabel !== '重置') {
+    fail(`bilingual: the Chinese preview toolbar says "${chinese.resetLabel}"`)
+  }
+  if (chinese.clearDefault !== '清空') {
+    // The page language has to reach the *component*: this is the claim that the docs site
+    // installed the locale contract rather than only translating its own chrome.
+    fail(`bilingual: a field on a Chinese page reads "${chinese.clearDefault}"`)
+  }
+  if (chinese.clearScoped !== 'Clear') {
+    fail(`bilingual: the subtree override on the Chinese page reads "${chinese.clearScoped}"`)
+  }
+  // `en-GB` has no pack anywhere in the repository, so this value can only come from the fallback
+  // chain; an exact-match lookup would have to render the key or an empty string.
+  if (chinese.clearRegional !== 'Clear') {
+    fail(
+      `bilingual: the regional-locale field on the Chinese page reads "${chinese.clearRegional}" ` +
+        '— the fallback chain did not reach the en-US pack',
+    )
+  }
+
+  // Through the menu, not by typing a URL: the reader's path. The hash proves the switcher
+  // carries it, which is the reason VitePress' own menu is used instead of a custom link.
+  await page.goto(`${origin}/components/input#clearable`, { waitUntil: 'load' })
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  await switchLocale('/en/')
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  const english = await readPage()
+
+  if (!page.url().includes('/en/components/input')) {
+    fail(`bilingual: the language switch landed on ${page.url()} instead of the same page in /en/`)
+  }
+  if (!page.url().includes('#clearable')) {
+    fail(`bilingual: the language switch dropped the URL hash (${page.url()})`)
+  }
+  if (english.lang !== 'en-US') {
+    fail(`bilingual: after switching, html lang is "${english.lang}"`)
+  }
+  if (english.langMenuLabel !== 'Language') {
+    fail(`bilingual: the English language menu is labelled "${english.langMenuLabel}"`)
+  }
+  if (english.resetLabel !== 'Reset') {
+    fail(`bilingual: the English preview toolbar says "${english.resetLabel}"`)
+  }
+  if (!/View code|Hide code/.test(english.codeToggle ?? '')) {
+    fail(`bilingual: the English code toggle says "${english.codeToggle}"`)
+  }
+  if (english.clearDefault !== 'Clear') {
+    fail(`bilingual: a field on an English page reads "${english.clearDefault}"`)
+  }
+  if (english.clearScoped !== '清空') {
+    // The mirror of the Chinese page: the subtree demonstrates the *other* language.
+    fail(`bilingual: the subtree override on the English page reads "${english.clearScoped}"`)
+  }
+  // The distinguishing assertion of the fallback chain: `zh-Hans-CN` has no pack of its own, so an
+  // exact-match lookup would fall through to `en-US` and read "Clear" — the page default.
+  if (english.clearRegional !== '清空') {
+    fail(
+      `bilingual: the regional-locale field on the English page reads "${english.clearRegional}" ` +
+        'instead of "清空" — a regional tag did not resolve through the fallback chain to zh-CN',
+    )
+  }
+  if (english.clearRegional === english.clearDefault) {
+    fail('bilingual: the regional field matches the page default, so the fallback proved nothing')
+  }
+
+  // Reload: the language must come from the route, not from a client-side toggle that resets.
+  await page.reload({ waitUntil: 'load' })
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  const reloaded = await readPage()
+  if (reloaded.lang !== 'en-US' || reloaded.clearDefault !== 'Clear') {
+    fail(
+      `bilingual: after a reload the English page reports lang="${reloaded.lang}" and ` +
+        `"${reloaded.clearDefault}"`,
+    )
+  }
+
+  // Back: the SPA router must restore the Chinese page *and* its component language.
+  await page.goBack({ waitUntil: 'load' })
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  const back = await readPage()
+  if (back.lang !== 'zh-CN' || back.clearDefault !== '清空') {
+    fail(
+      `bilingual: going back reported lang="${back.lang}" and "${back.clearDefault}" instead of ` +
+        'the Chinese page',
+    )
+  }
+
+  // Dark mode survives the language switch: appearance and language are independent axes.
+  await switchLocale('/en/')
+  await page.waitForSelector('[data-input-state="clearable-default"]', { timeout: 15_000 })
+  await page.getByRole('button', { name: 'Dark' }).first().click()
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+  const darkEnglish = await page.evaluate(() => ({
+    theme: document.documentElement.dataset.theme,
+    lang: document.documentElement.lang,
+    label:
+      document
+        .querySelector('[data-input-state="clearable-default"] .yue-input__clear')
+        ?.getAttribute('aria-label') ?? null,
+  }))
+  if (darkEnglish.theme !== 'dark' || darkEnglish.lang !== 'en-US' || darkEnglish.label !== 'Clear') {
+    fail(`bilingual: dark mode in English reported ${JSON.stringify(darkEnglish)}`)
+  }
+  await page.evaluate(() => {
+    document.documentElement.classList.remove('dark')
+    document.documentElement.dataset.theme = 'light'
+  })
+
+  // The one document that serves both trees: the 404 page names both languages and links both.
+  await page.goto(`${origin}/404.html`, { waitUntil: 'load' })
+  await page.waitForTimeout(300)
+  const notFound = await page.evaluate(() => ({
+    rendered: Boolean(document.querySelector('.docs-not-found__actions')),
+    links: [...document.querySelectorAll('.docs-not-found__actions a')].map((link) =>
+      link.getAttribute('href'),
+    ),
+    text: document.querySelector('.docs-not-found')?.textContent ?? '',
+  }))
+  if (!notFound.rendered) fail('bilingual: the 404 page did not render its bilingual content')
+  else if (!notFound.links.includes('/') || !notFound.links.includes('/en/')) {
+    fail(`bilingual: the 404 page links to ${JSON.stringify(notFound.links)}`)
+  } else if (!/页面不存在/.test(notFound.text) || !/Page not found/.test(notFound.text)) {
+    fail('bilingual: the 404 page does not name both languages')
+  }
+
+  // No Chinese anywhere in the English chrome: the defect a translated *page* can still have.
+  await page.goto(`${origin}/en/components/button`, { waitUntil: 'load' })
+  await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
+  const chrome = await page.evaluate(() => {
+    // `innerText`, not `textContent`: the language menu's items are in the DOM even while the
+    // flyout is closed, and one of them is *supposed* to say "简体中文" — it names each language in
+    // its own language. Only text the reader can actually see is under test here.
+    return {
+      nav: document.querySelector('.VPNavBar')?.innerText ?? '',
+      sidebar: document.querySelector('.VPSidebar')?.innerText ?? '',
+      // Local search is configured per locale; its button label is the visible half of that.
+      search: document.querySelector('.VPNavBarSearch')?.innerText?.trim() ?? '',
+      searchLabel:
+        document.querySelector('.DocSearch-Button, .VPNavBarSearchButton')?.getAttribute('aria-label') ??
+        null,
+    }
+  })
+  const cjk = /[\u4e00-\u9fff]/
+  if (cjk.test(chrome.nav)) {
+    fail(`bilingual: the English nav bar contains Chinese text: ${chrome.nav.slice(0, 120)}`)
+  }
+  if (cjk.test(chrome.sidebar)) {
+    fail(`bilingual: the English sidebar contains Chinese text: ${chrome.sidebar.slice(0, 120)}`)
+  }
+  if (!/Search/.test(`${chrome.search} ${chrome.searchLabel ?? ''}`)) {
+    fail(
+      `bilingual: the English search control is not labelled in English ` +
+        `("${chrome.search}" / "${chrome.searchLabel}")`,
+    )
+  }
+
+  notes.push(
+    `bilingual: / zh-CN "${chinese.clearDefault}"/"${chinese.clearScoped}"/"${chinese.clearRegional}" ↔ ` +
+      `/en en-US "${english.clearDefault}"/"${english.clearScoped}"/"${english.clearRegional}" ` +
+      '(page, subtree, fallback chain), switch + reload + back + dark mode, 404 bilingual, ' +
+      'English chrome clean',
+  )
+}
+
 async function main() {
   if (!existsSync(SITE_DIR)) {
     process.stderr.write(
@@ -662,6 +1938,26 @@ async function main() {
     await checkMatrix(page, 'light')
     await matrixFigure.screenshot({ path: join(HERE, 'button-matrix-light.png') })
 
+    // The parts of the Button that are not a colour: the anatomy figure, the loading layer
+    // and the toggle. Run after the matrix sweep so their interactions cannot disturb it.
+    await checkAnatomy(page, 'light')
+    await checkLoadingLayout(page, 'light')
+    await checkToggle(page, 'light')
+    // Tag-level, not colour-level: the `tag="a"` path is walked once, with real key presses.
+    await checkAnchorTabOrder(page, 'light')
+
+    // The Input page in light. Its six states are a different axis from the Button's
+    // theme x variant matrix, so they get their own pass rather than being folded in.
+    await page.goto(`${origin}/components/input`, { waitUntil: 'load' })
+    await page.waitForSelector('[data-input-state="resting"]', { timeout: 15_000 })
+    await checkInputs(page, 'light')
+    await page.screenshot({ path: join(HERE, 'input-light.png'), fullPage: true })
+
+    // Back to the Button page: everything below this point — the dark switch, the
+    // screenshots, the second matrix pass — assumes the Button page is loaded.
+    await page.goto(`${origin}/components/button`, { waitUntil: 'load' })
+    await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
+
     // 3 — the dark switch really re-themes the tokens.
     await page.getByRole('button', { name: '深色' }).first().click()
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
@@ -691,6 +1987,19 @@ async function main() {
     await checkMatrix(page, 'dark')
     await matrixFigure.screenshot({ path: join(HERE, 'button-matrix-dark.png') })
 
+    // The toggle's selected fill is a token pair that flips with the theme, so the
+    // selection sweep is a different measurement in dark, not a repeat of the light one.
+    await checkLoadingLayout(page, 'dark')
+    await checkToggle(page, 'dark')
+
+    // The Input page, in dark. Same states, same assertions, different token values.
+    await page.goto(`${origin}/components/input`, { waitUntil: 'load' })
+    await page.waitForSelector('[data-input-state="resting"]', { timeout: 15_000 })
+    await checkInputs(page, 'dark')
+    await page.screenshot({ path: join(HERE, 'input-dark.png'), fullPage: true })
+    await page.goto(`${origin}/components/button`, { waitUntil: 'load' })
+    await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
+
     // 4 — accent switching.
     await page.getByRole('button', { name: '中性' }).first().click()
     await page.waitForFunction(() => document.documentElement.dataset.accent === 'neutral')
@@ -699,6 +2008,17 @@ async function main() {
       fail('--accent-solid did not change when switching to the neutral accent')
     }
     notes.push(`neutral accent: --accent-solid = ${neutralAccent['--accent-solid']}`)
+
+    // The same Input states under the neutral accent. This is the profile where a
+    // hard-coded brand hue in a focus or error border would go unnoticed, because the
+    // resting colours barely move.
+    await page.goto(`${origin}/components/input`, { waitUntil: 'load' })
+    await page.waitForSelector('[data-input-state="resting"]', { timeout: 15_000 })
+    const neutralTheme = await page.evaluate(() => document.documentElement.dataset.theme)
+    await checkInputs(page, `neutral-accent/${neutralTheme}`)
+    await page.screenshot({ path: join(HERE, 'input-neutral.png'), fullPage: true })
+    await page.goto(`${origin}/components/button`, { waitUntil: 'load' })
+    await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
 
     // Back to the documented defaults, and prove reset works.
     await page.getByRole('button', { name: '重置' }).first().click()
@@ -751,6 +2071,11 @@ async function main() {
     notes.push(`code panels: first is ${codeText.split('\n')[0].trim().slice(0, 40)}…`)
     await codeToggle.click()
 
+    // 6 — the bilingual site, driven through the switcher rather than by URL.
+    // Runs with the wide viewport, because it reads nav chrome; the mobile pass below is a
+    // separate concern.
+    await checkBilingualSite(page, origin)
+
     // 5 — no horizontal overflow at 390px.
     await page.setViewportSize({ width: 390, height: 844 })
     await page.waitForTimeout(150)
@@ -775,6 +2100,56 @@ async function main() {
       )
     }
     await page.screenshot({ path: join(HERE, 'button-mobile.png'), fullPage: true })
+
+    // 5b — the Input page at the same width, with a long value in the field.
+    //
+    // The roadmap calls this out separately from the page-level check: a single-line
+    // field holding a long value is the classic way a form forces a document wider than
+    // the viewport, because an `<input>`'s intrinsic width follows its content unless
+    // something stops it.
+    await page.goto(`${origin}/components/input`, { waitUntil: 'load' })
+    await page.waitForSelector('[data-input-state="resting"]', { timeout: 15_000 })
+    const longValue = await page.evaluate(() => {
+      const control = document.querySelector('[data-input-state="resting"] input')
+      control.value = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.repeat(4)
+      control.dispatchEvent(new Event('input', { bubbles: true }))
+      return control.value.length
+    })
+    await page.waitForTimeout(200)
+    const inputOverflow = await page.evaluate(() => {
+      const wrapper = document.querySelector('[data-input-state="resting"]')
+      const control = wrapper.querySelector('input')
+      return {
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        controlScrolls: control.scrollWidth > control.clientWidth,
+        wrapperWidth: Math.round(wrapper.getBoundingClientRect().width),
+        viewport: document.documentElement.clientWidth,
+      }
+    })
+    notes.push(
+      `390px input page: scrollWidth ${inputOverflow.scrollWidth} / ${inputOverflow.clientWidth}, ` +
+        `field ${inputOverflow.wrapperWidth}px with a ${longValue}-character value`,
+    )
+    if (inputOverflow.scrollWidth > inputOverflow.clientWidth) {
+      fail(
+        `horizontal overflow on the Input page at 390px: ${inputOverflow.scrollWidth} > ` +
+          `${inputOverflow.clientWidth}`,
+      )
+    }
+    if (inputOverflow.wrapperWidth > inputOverflow.viewport) {
+      fail(
+        `the field is ${inputOverflow.wrapperWidth}px wide in a ${inputOverflow.viewport}px ` +
+          'viewport',
+      )
+    }
+    if (!inputOverflow.controlScrolls) {
+      fail(
+        'a long value did not make the control itself scroll, so the value is widening the ' +
+          'field instead of scrolling inside it',
+      )
+    }
+    await page.screenshot({ path: join(HERE, 'input-mobile.png'), fullPage: true })
 
     // 6 + 7 — the page must be self-contained and silent.
     if (externalRequests.length > 0) {
@@ -806,6 +2181,10 @@ async function main() {
   'button-mobile.png',
   'button-matrix-light.png',
   'button-matrix-dark.png',
+  'input-light.png',
+  'input-dark.png',
+  'input-neutral.png',
+  'input-mobile.png',
 ]) {
     const file = join(HERE, shot)
     if (existsSync(file)) process.stdout.write(`  screenshot: ${relative(REPO_ROOT, file).replaceAll('\\', '/')}\n`)

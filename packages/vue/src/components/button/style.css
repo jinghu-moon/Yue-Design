@@ -26,6 +26,8 @@
  *   --_accent                                  the theme's readable-on-surface colour
  *   --_border                                  resting border colour
  *   --_height / --_padding-inline / --_font-size / --_icon-size   size ramp
+ *   --_radius                                  corner radius, so a group can read the
+ *                                              child's own shape when it joins corners
  */
 
 .yue-button {
@@ -39,6 +41,7 @@
   --_padding-inline: var(--button-padding-inline-md);
   --_font-size: var(--button-font-size-md);
   --_icon-size: var(--button-icon-size-md);
+  --_radius: var(--button-border-radius);
 
   box-sizing: border-box;
   display: inline-flex;
@@ -48,7 +51,7 @@
   height: var(--_height);
   padding: var(--button-padding-block) var(--_padding-inline);
   border: var(--button-border-width) solid var(--_border);
-  border-radius: var(--button-border-radius);
+  border-radius: var(--_radius);
   font-family: inherit;
   font-size: var(--_font-size);
   font-weight: var(--button-font-weight);
@@ -217,18 +220,59 @@
   color: var(--button-link-color);
 }
 
+/* ---------------------------------------------------------------- selected
+ *
+ * The selected state of a toggle button.
+ *
+ * The colours are the migrated `--button-selected-*` family, which resolves to the
+ * semantic pair the audit already gates (`--selected-color` on `--selected-background`) —
+ * a contract the button has always had and simply never painted.
+ *
+ * This block sits after the variants on purpose. `is-active` and a variant modifier have
+ * the same specificity, so the selected fill has to come later to win, while `is-disabled`
+ * further down still overrides it and a selected disabled button stays disabled-looking.
+ */
+
+.yue-button.is-active {
+  background-color: var(--button-selected-background);
+  border-color: var(--button-selected-border-color);
+  color: var(--button-selected-color);
+}
+
+/* Same "one colour state for pointer and keyboard" rule as the variants: hover and
+ * focus-visible land on the same fill, and the ring is a separate declaration. */
+.yue-button.is-active:hover:not(.is-disabled):not(.is-loading),
+.yue-button.is-active:focus-visible:not(.is-disabled):not(.is-loading) {
+  background-color: var(--button-selected-background-hover);
+}
+
+.yue-button.is-active:active:not(.is-disabled):not(.is-loading) {
+  background-color: var(--button-selected-background-pressed);
+}
+
+/* `link` keeps its no-box contract: selection is signalled by the accent text and the
+ * underline it already uses for hover, never by a fill behind a line of prose. */
+.yue-button--link.is-active {
+  background-color: var(--button-subtle-background);
+  border-color: var(--button-ghost-border-color);
+  text-decoration: var(--button-link-decoration-hover);
+}
+
 /* ------------------------------------------------------------------ shapes */
 
 .yue-button--round {
-  border-radius: var(--button-border-radius-full);
+  /* Reported through `--_radius` rather than written straight onto `border-radius`, so a
+   * group that joins this button's corners can read the radius the button actually has. */
+  --_radius: var(--button-border-radius-full);
 }
 
 /* Icon-only: the inline inset goes to zero and the box is kept square, which is
  * what makes the round corner read as a circle. */
 .yue-button--circle {
+  --_radius: var(--button-border-radius-full);
+
   width: var(--_height);
   padding-inline: var(--button-padding-inline-flush);
-  border-radius: var(--button-border-radius-full);
 }
 
 /* ------------------------------------------------------------------ states */
@@ -240,6 +284,20 @@
 
 .yue-button.is-loading {
   cursor: progress;
+}
+
+/* Layout stability, and the reason loading never resizes the button: the label and the
+ * icons keep their place in the flow and are only painted invisible, while the loader is
+ * layered on top of them.
+ *
+ * `opacity` rather than `visibility`, and neither `display: none` nor a `v-if`: an
+ * unrendered or `visibility: hidden` label drops out of the accessibility tree, which
+ * would leave a button that deliberately keeps its focus with no accessible name for as
+ * long as the request is in flight.
+ */
+.yue-button.is-loading > .yue-button__label,
+.yue-button.is-loading > .yue-button__icon {
+  opacity: 0;
 }
 
 .yue-button.is-disabled {
@@ -296,6 +354,17 @@
   height: 100%;
 }
 
+/* The loader layer is out of flow, so it is centred on the control box without taking
+ * part in the layout: whatever indicator ends up inside it — the default spinner or a
+ * consumer's own — the button's width is still decided by its label and icons alone. */
+.yue-button__loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .yue-button__spinner {
   flex: none;
   width: var(--_icon-size);
@@ -310,6 +379,73 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ------------------------------------------------------------- button group
+ *
+ * Structure, not styling decisions: the group joins the corners of the buttons inside it
+ * and overlaps their shared edge, and that is all it does. Every value it reads is a
+ * Button Component Token, and every property is logical, so a `dir="rtl"` group mirrors
+ * without a second rule set.
+ *
+ * `> .yue-button` is why the group can do this at all: at 0,2,0 it outranks a child's own
+ * shape modifier (0,1,0) without an `!important`, and it injects no prop, class or state
+ * into the button to get there.
+ */
+
+.yue-button-group {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.yue-button-group--vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Inner corners collapse; the outer ones take the radius of the button that owns them, so
+ * a group of `round` buttons keeps round ends instead of being quietly squared off. */
+.yue-button-group > .yue-button {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.yue-button-group:not(.yue-button-group--vertical) > .yue-button:first-child {
+  border-start-start-radius: var(--_radius);
+  border-end-start-radius: var(--_radius);
+}
+
+.yue-button-group:not(.yue-button-group--vertical) > .yue-button:last-child {
+  border-start-end-radius: var(--_radius);
+  border-end-end-radius: var(--_radius);
+}
+
+.yue-button-group--vertical > .yue-button:first-child {
+  border-start-start-radius: var(--_radius);
+  border-start-end-radius: var(--_radius);
+}
+
+.yue-button-group--vertical > .yue-button:last-child {
+  border-end-start-radius: var(--_radius);
+  border-end-end-radius: var(--_radius);
+}
+
+/* Two adjacent 1px borders would add up to 2px, so the shared edge is overlapped.
+ * `link` is excluded: it has no control box and no inline inset, so pulling two links
+ * together would run their text into each other. */
+.yue-button-group:not(.yue-button-group--vertical)
+  > .yue-button:not(.yue-button--link)
+  + .yue-button:not(.yue-button--link) {
+  margin-inline-start: calc(-1 * var(--button-border-width));
+}
+
+.yue-button-group--vertical
+  > .yue-button:not(.yue-button--link)
+  + .yue-button:not(.yue-button--link) {
+  margin-block-start: calc(-1 * var(--button-border-width));
 }
 
 /* ------------------------------------------------------- honors user prefs */

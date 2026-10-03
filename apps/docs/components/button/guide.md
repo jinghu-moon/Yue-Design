@@ -1,6 +1,6 @@
 # Button 按钮指南
 
-这一页描述按钮如何参与页面设计。API 和默认值见 [API](./api)，所有状态和变体的真实渲染见[示例](/components/button)。
+这一页描述按钮如何参与页面设计。API 和默认值见 [API](./api)，所有状态和变体的真实渲染见[示例](/components/button)，组件由哪些部分组成见示例页的[组件解剖](/components/button#组件解剖-anatomy)。
 
 ## 何时使用
 
@@ -61,6 +61,34 @@
 
 loading 表示操作已经开始但结果尚未返回。它会阻止重复激活、设置 `aria-busy="true"`，但不设置原生 `disabled`，因此用户的焦点不会突然消失。文案可以从“提交”变为“提交中”，让状态不仅依赖 spinner。
 
+两条结构约定是硬性的，不是风格偏好：
+
+- **不要为了 loading 把 `leading` / `trailing` 换成别的节点。** 内容留在原位、加载层盖在上面，按钮宽度才不会在请求前后跳动。需要别的指示器时用 `loader` 插槽，它会渲染在同一个加载层里。
+- **不要用 `display: none` / `visibility: hidden` 隐藏内容。** 那会把文字移出无障碍树；组件用的是 `opacity: 0`。
+
+还有一条语义边界：**`loading` 不等于 `disabled`**。[渲染成 `<a>` 或自定义组件](/components/button#渲染成-a-或自定义组件)时这一点最容易写错——loading 的链接仍然是可 Tab 到达的链接，组件只输出 `aria-busy`，不写 `aria-disabled`、不写 `tabindex="-1"`。真正不可操作请用 `disabled`；「正在处理、请稍等」请用 `loading`。
+
+### 选中（active）
+
+`active` 是**开关按钮**的语义：它输出 `aria-pressed`，因此读屏用户能听到「已按下 / 未按下」。三态是有意的 —— 不传 `active` 的普通按钮不会输出 `aria-pressed`，不会被读成开关按钮。
+
+### 分组与分段控件
+
+| 场景 | 用什么 | 理由 |
+| --- | --- | --- |
+| 几个选项必须有一个是当前项（视图切换、对齐方式） | `YueButtonToggle` + `YueButtonToggleItem` | 选择是强制的，组内每项输出 `aria-pressed`；再次点击当前项不会取消，因为「一个都没选中」回答不了「现在是哪一个」 |
+| 一组互不相关的开关（粗体 / 斜体） | `YueButtonGroup` + 每个 `YueButton` 自己的 `active` | 语义上就是多个独立开关，可以全部关闭 |
+| 只是视觉上排在一起 | `YueButtonGroup` | 它只合并圆角、给出 `role="group"`，不带任何状态 |
+
+两条容易搞错的边界：
+
+- **分组不是「一次设置八个 prop」。** `YueButtonGroup` 没有 `theme` / `variant` / `size`。要让一整片区域的按钮更紧凑，请在容器上重指 `--button-*` Component Token —— 这也是工具条里「紧凑」演示的做法。
+- **分组的可访问名称是必须的。** 组本身没有文字，`aria-label` 或 `aria-labelledby` 缺一不可。
+
+::: tip 键盘导航
+方向键与 roving tabindex 尚未实现，组内项现在是普通的 Tab 停靠点。在这之前，请把分段控件当作「一组可点击的按钮」，不要依赖方向键在它们之间移动。
+:::
+
 ### Block
 
 `block` 用于窄屏表单、底部操作或需要明确占满容器的单一操作。不要在一个宽桌面工具栏中让所有按钮都 block。
@@ -77,6 +105,8 @@ loading 表示操作已经开始但结果尚未返回。它会阻止重复激活
 - 这个区域是否只有一个最高优先级操作？
 - 文案是否说明了动作和结果？
 - disabled 是否有附近的原因说明？
-- loading 是否阻止重复提交且保留焦点？
+- loading 是否阻止重复提交、保留焦点，并且没有改变按钮尺寸？
 - 图标是否装饰性地标记为 `aria-hidden`？纯图标按钮是否有名称？
+- 开关按钮是否只在真的可用时使用 `active`（普通按钮不该输出 `aria-pressed`）？
+- 分段控件是否有 `aria-label`，且是否确认过「必须有一个选中项」？
 - 浅色、深色、窄屏和键盘焦点是否都可读、可操作？

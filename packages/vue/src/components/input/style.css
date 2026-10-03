@@ -1,0 +1,313 @@
+/**
+ * YueInput
+ *
+ * NOT in `@layer implementations`, deliberately. Unlayered CSS outranks every layer, so
+ * a component sheet inside one loses to the host's unlayered resets — VitePress ships
+ * `button { background-color: transparent }`, Tailwind's Preflight and normalize.css do
+ * the same — and the field's fill silently disappears in a real project. Token sheets
+ * are layered; component sheets are not. `pnpm verify:dist` asserts both halves.
+ *
+ * Every value comes from an `--input-*` Component Token. No raw hex, no primitive token,
+ * no reaching into another component's namespace: that is what lets a consumer retheme
+ * a field by repointing one token, and what lets the audit check contrast without
+ * knowing anything about this file.
+ *
+ * DOM contract (stable, and reasoned about in the guide):
+ *
+ *   <div class="yue-input ...">          ← the field: border, fill, padding, focus ring
+ *     <span class="yue-input__prefix">
+ *     <input class="yue-input__native">  ← the actual form control
+ *     <button class="yue-input__clear">  ← a real button, when clearable and non-empty
+ *     <span class="yue-input__suffix">
+ *   </div>
+ *
+ * The wrapper is not a control: it is not focusable, it holds no value and it is not
+ * submitted. Native attributes, `aria-*` and the value all live on `__native`, so
+ * `label for`, `form`, `:invalid` and autofill keep working the way the platform
+ * intends. State classes (`is-disabled`, `is-readonly`, `is-invalid`) are mirrored on
+ * the wrapper so the *field* can style itself — the wrapper is what paints.
+ */
+
+.yue-input {
+  /* One composition slot per size-dependent value, so a size block below only has to
+   * repoint four tokens and every state keeps working. */
+  --_height: var(--input-height-md);
+  --_padding-inline: var(--input-padding-inline-md);
+  --_font-size: var(--input-font-size-md);
+  --_icon-size: var(--input-icon-size-md);
+  --_background: var(--input-background);
+  --_border-color: var(--input-border-color);
+  --_color: var(--input-color);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--input-gap);
+  width: 100%;
+  /* `min-width: 0` so a field inside a flex or grid column can shrink instead of
+   * forcing the column wider than its container. */
+  min-width: 0;
+  height: var(--_height);
+  padding: var(--input-padding-block) var(--_padding-inline);
+  border: var(--input-border-width) solid var(--_border-color);
+  border-radius: var(--input-border-radius);
+  background-color: var(--_background);
+  color: var(--_color);
+  font-family: inherit;
+  font-size: var(--_font-size);
+  /* Baseline alignment: a field sitting next to a `<button>` or a label in a text row
+   * lines up on the text baseline rather than on the bottom of its box. */
+  vertical-align: middle;
+  /* Only the two properties the state rules actually change. Not `all`. */
+  transition:
+    border-color var(--input-duration) var(--input-ease),
+    background-color var(--input-duration) var(--input-ease);
+}
+
+.yue-input--sm {
+  --_height: var(--input-height-sm);
+  --_padding-inline: var(--input-padding-inline-sm);
+  --_font-size: var(--input-font-size-sm);
+  --_icon-size: var(--input-icon-size-sm);
+}
+
+/* `md` is the base block above: no modifier, so the common case costs no extra rule. */
+
+.yue-input--lg {
+  --_height: var(--input-height-lg);
+  --_padding-inline: var(--input-padding-inline-lg);
+  --_font-size: var(--input-font-size-lg);
+  --_icon-size: var(--input-icon-size-lg);
+}
+
+/* ---------------------------------------------------------------- *
+ * The native control
+ * ---------------------------------------------------------------- */
+
+.yue-input__native {
+  /* The wrapper owns the border and the fill; the control is a transparent layer that
+   * fills them. Literal `0` / `transparent` here are structural resets, not design
+   * values — there is no design decision to retheme. */
+  flex: 1 1 auto;
+  /* Without this a long value widens the whole field instead of scrolling inside it. */
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  /* The focused control's default ring would be drawn *inside* the field, clipped by
+   * the border and doubled up with the ring below. Suppressing it is only acceptable
+   * because `.yue-input:has(.yue-input__native:focus-visible)` draws a real one on the
+   * wrapper — the stylesheet test asserts both halves together, so the affordance can
+   * never be suppressed without being replaced. */
+  outline: none;
+  /* The field supplies its own radius and background per engine. */
+  appearance: none;
+}
+
+.yue-input__native::placeholder {
+  color: var(--input-placeholder-color);
+  /* Firefox lowers placeholder opacity by default, which would undo the audited
+   * placeholder contrast. */
+  opacity: 1;
+}
+
+/* There is deliberately no `::-webkit-search-cancel-button` rule.
+ *
+ * `appearance: none` above removes the engine's own decoration of the control, which
+ * includes that button, so a rule suppressing it would be dead. An earlier version of this
+ * sheet carried one scoped to `clearable`, plus a comment claiming a plain `type="search"`
+ * therefore kept the platform's control — a claim that could not be reproduced in Chromium,
+ * where neither state renders the button at all.
+ *
+ * So the contract is stated rather than implied: **YueInput owns the clear affordance.**
+ * `clearable` is the one way to get a clear control. It is styled from tokens, reachable by
+ * keyboard, named for assistive technology, and behaves the same in every engine — Chrome's
+ * search button is not, and Firefox and Safari do not have it. If the engine's button is
+ * ever wanted back, it has to be a decision rather than an accident of which reset the sheet
+ * happens to include.
+ */
+
+/* ---------------------------------------------------------------- *
+ * Prefix / suffix
+ * ---------------------------------------------------------------- */
+
+.yue-input__prefix,
+.yue-input__suffix {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--input-affix-color);
+}
+
+/* Content is sized here rather than by the consumer, so a missing `width` attribute on
+ * an inline SVG cannot stretch the field. */
+.yue-input__prefix > svg,
+.yue-input__suffix > svg {
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+}
+
+/* ---------------------------------------------------------------- *
+ * Clear control
+ *
+ * A real button: reachable by Tab, announced with a name, and given a hit area larger
+ * than the glyph it draws. No icon font and no SVG asset — the cross is two bars, so it
+ * scales with the token, needs no download and survives `forced-colors`.
+ * ---------------------------------------------------------------- */
+
+.yue-input__clear {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--input-clear-hit-size);
+  height: var(--input-clear-hit-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--input-clear-border-radius);
+  background-color: transparent;
+  color: var(--input-clear-color);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color var(--input-duration) var(--input-ease),
+    background-color var(--input-duration) var(--input-ease);
+}
+
+.yue-input__clear::before,
+.yue-input__clear::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 55%;
+  block-size: var(--input-clear-glyph-width);
+  border-radius: var(--input-clear-border-radius);
+  background-color: currentColor;
+}
+
+.yue-input__clear::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.yue-input__clear::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.yue-input__clear:hover {
+  color: var(--input-clear-color-hover);
+}
+
+/* The clear control is its own focus target, so it needs its own ring: the field's ring
+ * says "this field is focused", which is not the same statement. */
+.yue-input__clear:focus-visible {
+  outline: var(--input-focus-ring-width) solid var(--input-focus-ring-color);
+  outline-offset: var(--input-focus-ring-offset);
+}
+
+/* ---------------------------------------------------------------- *
+ * States
+ *
+ * Order matters: these all set `--_border-color`, so the later block wins where two
+ * apply at once. Error is checked before disabled, so a disabled field that is also
+ * invalid looks disabled — it is not actionable, and an error border would invite a
+ * click.
+ * ---------------------------------------------------------------- */
+
+/* Hover only while the field is editable and not already showing an error. */
+.yue-input:not(.is-disabled):not(.is-readonly):not(.is-invalid):hover {
+  --_border-color: var(--input-border-color-hover);
+}
+
+/* Any focus moves the border to the focus role — the quiet cue for a pointer user. */
+.yue-input:not(.is-invalid):focus-within {
+  --_border-color: var(--input-border-color-focus);
+}
+
+/* Keyboard focus adds the ring. The roadmap forbids colour as the *only* focus cue, so
+ * this is the cue that does not depend on being able to tell two colours apart. */
+.yue-input:has(.yue-input__native:focus-visible) {
+  outline: var(--input-focus-ring-width) solid var(--input-focus-ring-color);
+  outline-offset: var(--input-focus-ring-offset);
+}
+
+/* Note there is no `:has(.yue-input__clear:focus-visible)` companion rule: the two
+ * `:has()` states are mutually exclusive — only one element holds focus — so when the
+ * clear control is focused the field's ring is not drawn in the first place, while
+ * `:focus-within` above still moves the border. */
+
+.yue-input.is-invalid {
+  --_border-color: var(--input-border-color-invalid);
+}
+
+/* Readonly: still readable, still focusable, still selected-and-copied, so it keeps the
+ * text colour and only drops to a quieter fill. Explicitly not the disabled state. */
+.yue-input.is-readonly {
+  --_background: var(--input-background-readonly);
+  cursor: default;
+}
+
+.yue-input.is-disabled {
+  --_background: var(--input-background-disabled);
+  --_border-color: var(--input-border-color-disabled);
+  --_color: var(--input-color-disabled);
+  cursor: not-allowed;
+}
+
+.yue-input.is-disabled .yue-input__native,
+.yue-input.is-disabled .yue-input__clear {
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------- *
+ * Forced colours
+ *
+ * The system owns the palette here, so the tokens are replaced by system colours and
+ * anything that relied on a hue needs a second, non-colour channel.
+ * ---------------------------------------------------------------- */
+
+@media (forced-colors: active) {
+  .yue-input {
+    border-color: FieldText;
+    background-color: Field;
+    color: FieldText;
+  }
+
+  /* The ring may be flattened into the border, so the border is forced back on. */
+  .yue-input:has(.yue-input__native:focus-visible),
+  .yue-input__clear:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .yue-input__clear {
+    color: ButtonText;
+  }
+
+  /* `--error` is a hue, and hues are not available here. `Mark` is the system's
+   * "pay attention" colour; `aria-invalid` remains the authoritative signal, which is
+   * why the state is not carried by colour alone anywhere in this file. */
+  .yue-input.is-invalid {
+    border-color: Mark;
+  }
+
+  .yue-input.is-disabled {
+    border-color: GrayText;
+    color: GrayText;
+  }
+
+  .yue-input.is-disabled .yue-input__native::placeholder {
+    color: GrayText;
+  }
+}
+
+/* No `prefers-reduced-motion` block: `--input-duration` resolves to
+ * `--motion-duration-interaction`, which the token sheet already zeroes under that
+ * preference. Restating it here would be a second place to keep in sync, and the
+ * reduced-motion test asserts the computed duration rather than the source. */

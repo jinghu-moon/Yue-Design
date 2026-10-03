@@ -129,6 +129,50 @@
   font-size: var(--font-size-sm);
 }
 
+/* Input state matrix: the fields stack, because a 100%-wide field inside a wrapping
+ * flex row would otherwise collapse to its content width and stop representing what a
+ * form actually looks like. */
+.preview-frame__surface--matrix .matrix-row .yue-input {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+/* Documentation chrome for the Input examples. Not part of the library: the field
+ * supplies none of this, which is the point being demonstrated. */
+.field-label {
+  display: block;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+}
+
+.field-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.narrow-demo {
+  width: 100%;
+  max-width: 22rem;
+}
+
+/* The password example uses a real button inside the suffix slot, so this only has to
+ * make it look like a text action — it is the consumer's control, not the library's. */
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link-color);
+  font: inherit;
+  cursor: pointer;
+}
+
+.linkish:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
 /* Density is a consumer override, not a token-contract axis — the token package
  * has no density dimension. The frame re-points the Button's OWN Component
  * Tokens on its surface, which is exactly the mechanism the docs recommend, and
@@ -148,6 +192,187 @@
 
 .preview-frame__code {
   border-top: var(--border-1) solid var(--border-divider);
+}
+
+/* ------------------------------------------------------------ 404 (bilingual) */
+
+.docs-not-found {
+  padding: var(--space-64) var(--space-24) var(--space-96);
+  text-align: center;
+}
+
+.docs-not-found__code {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--weight-semibold, 600);
+  line-height: 1;
+}
+
+.docs-not-found__title {
+  margin: var(--space-12) 0 0;
+  border: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.02em;
+}
+
+.docs-not-found__divider {
+  width: var(--space-64);
+  height: var(--border-1);
+  margin: var(--space-24) auto var(--space-16);
+  background-color: var(--border-divider);
+}
+
+.docs-not-found__quote {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 28rem;
+  margin: 0 auto;
+  border: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.docs-not-found__hint {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-16) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.docs-not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: center;
+  margin-block-start: var(--space-24);
+}
+
+.docs-not-found__link {
+  padding: var(--space-4) var(--space-16);
+  border: var(--border-1) solid var(--accent-border);
+  border-radius: var(--radius-full);
+  color: var(--accent-text);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.docs-not-found__link:hover {
+  background-color: var(--accent-subtle);
+  color: var(--accent-subtle-text);
+}
+
+/* ------------------------------------------------------------- button anatomy
+ *
+ * Documentation chrome, not library CSS. The stage frames real component output — the
+ * buttons inside it come from `YueButton` — and the list labels the parts. Nothing here is
+ * absolutely positioned, so the figure cannot push the page sideways at 390px.
+ */
+
+.button-anatomy {
+  margin: var(--space-16) 0;
+}
+
+.button-anatomy__stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-16);
+  padding: var(--space-24) var(--space-16);
+  border: var(--border-1) dashed var(--border-divider);
+  border-radius: var(--radius-md);
+  background-color: var(--page);
+  background-image: radial-gradient(var(--border-divider) var(--border-1), transparent 0);
+  background-size: var(--space-16) var(--space-16);
+}
+
+.button-anatomy__caption {
+  margin-block-start: var(--space-8);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.button-anatomy__parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-12) var(--space-16);
+  margin: var(--space-16) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.button-anatomy__part {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  font-size: var(--font-size-sm);
+}
+
+.button-anatomy__index {
+  flex: none;
+  width: var(--size-20);
+  height: var(--size-20);
+  border-radius: var(--radius-full);
+  background-color: var(--accent-subtle);
+  color: var(--accent-subtle-text);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--size-20);
+  text-align: center;
+}
+
+.button-anatomy__name {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.button-anatomy__selector {
+  margin-inline-start: var(--space-4);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.button-anatomy__note {
+  display: block;
+  color: var(--text-secondary);
+}
+
+/* Two groups side by side in one preview surface: they are alternatives to compare, so the
+ * wrapper keeps them from reading as one six-button row. */
+.group-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* A documentation-only loading indicator, to show that the `loader` slot needs no icon
+ * library. Defined here rather than reusing the component's own keyframes: the private
+ * `yue-button-spin` name is not part of the public API. */
+.docs-loader {
+  width: var(--size-16);
+  height: var(--size-16);
+  border: var(--border-2) solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: docs-loader-spin calc(var(--duration-slow) * 3) linear infinite;
+}
+
+@keyframes docs-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-loader {
+    animation: none;
+  }
 }
 
 /* Per-example layout hooks. The surface is a wrapping flex row by default, which

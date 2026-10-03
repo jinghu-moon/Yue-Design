@@ -14,7 +14,7 @@
     "@yue-ui/design-tokens": "workspace:^",
     "@yue-ui/hooks": "workspace:^",
     "@yue-ui/vue": "workspace:^",
-    "vue": "3.5.28"
+    "vue": "3.5.43"
   },
   "devDependencies": {
     "vitepress": "1.6.4"

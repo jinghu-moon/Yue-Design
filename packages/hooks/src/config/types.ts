@@ -31,10 +31,26 @@ export const YUE_NAMESPACE = 'yue'
  *
  * A component always wins over the config: `size` is only consulted when the
  * component's own `size` prop is unset.
+ *
+ * It holds exactly one thing, and that is the design: anything that is *state* rather than
+ * an application-wide default — the active language, a translated string, formatted output —
+ * belongs to the locale instance (`provideLocale()` / `useLocale()`), and anything that is
+ * per-call belongs to a prop. Text used to live here; it moved to the locale contract in
+ * `docs/04-yue-i18n-rfc.md`, because a language is not a component option.
  */
 export interface YueConfig {
   /** Fallback size for components that expose a `size` prop. */
   size: ComponentSize
+}
+
+/**
+ * What a caller is allowed to pass.
+ *
+ * Distinct from `YueConfig`, which is the *resolved* shape: every key present. A caller may
+ * name one option and the library fills in the rest.
+ */
+export interface YueConfigInput {
+  size?: ComponentSize
 }
 
 /** Used when no configuration is provided anywhere in the application. */
