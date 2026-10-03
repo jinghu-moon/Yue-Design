@@ -1,0 +1,37 @@
+/* Yue primitives — form-control scale (height, padding, type, icon)
+ *
+ * A Primitive, not a component token: Button, Input and Tag derive their defaults from it, and it
+ * carries no component semantics of its own. Overriding it changes several components at once, which
+ * is why the component catalogue never listed it as an override point.
+ *
+ * `--control-accent` and `--control-accent-checked` deliberately do NOT live here despite the prefix:
+ * they are semantic roles (the accent colour, and the text that sits on it), so declaring them in this
+ * layer would make a primitive depend on semantics — a forward reference that resolves lazily and
+ * silently breaks when the semantic layer is absent. They are declared in `semantics/accent.css`, and
+ * Phase 4 renames them so the prefix stops claiming a layer they are not in.
+ */
+:root {
+  --control-height-sm                  : var(--size-28);
+
+  --control-padding-inline-sm          : var(--space-8);
+
+  --control-font-size-sm               : var(--font-size-sm);
+
+  --control-icon-size-sm               : var(--size-16);
+
+  --control-height-md                  : var(--size-32);
+
+  --control-padding-inline-md          : var(--space-12);
+
+  --control-font-size-md               : var(--font-size-md);
+
+  --control-icon-size-md               : var(--size-16);
+
+  --control-height-lg                  : var(--size-40);
+
+  --control-padding-inline-lg          : var(--space-16);
+
+  --control-font-size-lg               : var(--font-size-lg);
+
+  --control-icon-size-lg               : var(--size-20);
+}

@@ -17,13 +17,17 @@ import { statSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { auditTarget, compareTargets } from './lib/audit.mjs'
+import { checkTokenArchitecture } from './lib/token-architecture.mjs'
+import { checkRenameResidue, checkTokenGrammar } from './lib/token-grammar.mjs'
 import {
   AUDIT_PROFILES,
   CONTRAST_PAIRS,
   DEFAULT_TARGETS,
   DIAGNOSTIC_PROFILES,
   PACKAGE_DIAGNOSTIC_PAIRS,
+  PACKAGE_DIVERGENCES,
   PACKAGE_PAIRS,
+  PACKAGE_RENAMES,
 } from './token-audit.pairs.mjs'
 
 const REPO_ROOT = resolvePath(dirname(fileURLToPath(import.meta.url)), '..')
@@ -213,8 +217,26 @@ function renderParity(parity) {
   const added = parity.addedNames ?? []
   lines.push(`  additions (package-only): ${added.length}`)
   for (const name of added) lines.push(`    + ${name}`)
+  // Divergences are reported with their reason, and a register entry that stopped
+  // diverging is reported as stale: the register must describe reality, not history.
+  const divergences = parity.divergentNames ?? []
+  lines.push(`  registered divergences: ${divergences.length}`)
+  for (const name of divergences) {
+    const entry = (parity.divergences ?? []).find((divergence) => divergence.name === name)
+    lines.push(`    ≠ ${name} — ${parity.left}: ${entry?.left} → ${parity.right}: ${entry?.right}`)
+    if (entry?.reason) lines.push(`        reason: ${entry.reason}`)
+  }
+  for (const name of parity.staleDivergences ?? []) {
+    lines.push(`    ! ${name} is registered as a divergence but no longer diverges`)
+  }
   lines.push(
-    `  → ${parity.identical ? (added.length > 0 ? 'SUPERSET — no drift, no loss' : 'IDENTICAL') : 'DIVERGED'}`,
+    `  → ${
+      parity.differences.length > 0
+        ? 'DIVERGED'
+        : added.length > 0 || divergences.length > 0
+          ? 'SUPERSET + REGISTERED DIVERGENCES — no drift, no loss'
+          : 'IDENTICAL'
+    }`,
   )
   return lines
 }
@@ -240,15 +262,28 @@ function main() {
   // the package's own additions, because only the package defines them.
   const pairsFor = (id) => (id === 'prototype' ? CONTRAST_PAIRS : PACKAGE_PAIRS)
 
+  // The renamed tokens are a package fact: the prototype target keeps answering under the names the
+  // frozen contract was transcribed with.
   const results = targets.map((target) =>
-    auditTarget({ id: target.id, entry: target.entry, pairs: pairsFor(target.id) }),
+    auditTarget({
+      id: target.id,
+      entry: target.entry,
+      pairs: pairsFor(target.id),
+      renames: target.id === 'prototype' ? [] : PACKAGE_RENAMES,
+    }),
   )
   // Superset mode: the package started as a byte-identical copy of the frozen
-  // prototype and is now allowed to grow. Dropped tokens and value drift still
-  // fail; additions are surfaced by renderParity and pinned by the test suite.
+  // prototype and is now allowed to grow *and*, where the prototype's value is wrong
+  // for the component, to differ deliberately. Dropped tokens and unregistered drift
+  // still fail; additions and divergences are surfaced by renderParity and pinned by
+  // the test suite, and a register entry that stopped diverging fails too.
   const parity =
     results.length > 1
-      ? compareTargets(targets[0], targets[1], { allowAdditions: true })
+      ? compareTargets(targets[0], targets[1], {
+          allowAdditions: true,
+          allowedDivergences: PACKAGE_DIVERGENCES,
+          allowedRenames: PACKAGE_RENAMES,
+        })
       : null
 
   const diagnostics = options.diagnostics
@@ -258,6 +293,11 @@ function main() {
           entry: result.entry,
           profiles: DIAGNOSTIC_PROFILES,
           pairs: pairsFor(result.id),
+          // The diagnostics run has to resolve renamed tokens too. Without this the neutral-accent
+          // report listed `--focus-ring`, `--info-fg` and friends as unresolved references: a
+          // non-gating run, so the exit code stayed green while the output showed errors that were not
+          // errors — which is exactly how a diagnostic loses its credibility.
+          renames: result.id === 'prototype' ? [] : PACKAGE_RENAMES,
         }),
       )
     : []
@@ -277,9 +317,30 @@ function main() {
           )
       : []
 
+  // Architecture rules only mean anything for the repository's own package (an ad-hoc `--target`
+  // points somewhere else entirely), so they run on the default full audit.
+  const architecture =
+    specs === DEFAULT_TARGETS ? checkTokenArchitecture({ repoRoot: REPO_ROOT }) : null
+  // Phase 4 gates: naming grammar, and renamed-away names still alive in a stylesheet.
+  const grammar = specs === DEFAULT_TARGETS ? checkTokenGrammar({ repoRoot: REPO_ROOT }) : null
+  const residue =
+    specs === DEFAULT_TARGETS
+      ? checkRenameResidue({ repoRoot: REPO_ROOT, renames: PACKAGE_RENAMES })
+      : null
+
   const gatingOk = results.every((result) => result.ok)
-  const parityOk = parity === null || parity.identical
-  const ok = gatingOk && parityOk
+  // Registered divergences are not failures; an *unregistered* one is, and so is a register entry
+  // that no longer describes reality.
+  const staleDivergences = parity?.staleDivergences ?? []
+  const staleRenames = parity?.staleRenames ?? []
+  const parityOk =
+    parity === null ||
+    (parity.identical && staleDivergences.length === 0 && staleRenames.length === 0)
+  const architectureOk = architecture === null || architecture.problems.length === 0
+  const namingOk =
+    (grammar === null || grammar.problems.length === 0) &&
+    (residue === null || residue.problems.length === 0)
+  const ok = gatingOk && parityOk && architectureOk && namingOk
 
   if (options.json) {
     process.stdout.write(
@@ -288,6 +349,7 @@ function main() {
           ok,
           gating: results.map(({ resolver, ...rest }) => rest),
           parity,
+          architecture,
           exempt: exempt.map(({ resolver, ...rest }) => rest),
           diagnostics: diagnostics.map(({ resolver, ...rest }) => rest),
         },
@@ -343,6 +405,29 @@ function main() {
           })`
         out.push(`  [${check.profile}] ${check.label}: ${value}`)
       }
+    }
+  }
+  if (grammar || residue) {
+    out.push('')
+    out.push('▌ naming (grammar §5, and renamed-away names still in use)')
+    for (const note of [...(grammar?.notes ?? []), ...(residue?.notes ?? [])]) out.push(`  ${note}`)
+    for (const problem of [...(grammar?.problems ?? []), ...(residue?.problems ?? [])].slice(0, 25)) {
+      out.push(`  ✗ ${problem}`)
+    }
+  }
+  if (architecture) {
+    out.push('')
+    out.push('▌ architecture (reachability, resolution, one declaration site, layer direction)')
+    for (const note of architecture.notes) out.push(`  ${note}`)
+    if (architecture.problems.length > 0) {
+      for (const problem of architecture.problems.slice(0, 25)) out.push(`  ✗ ${problem}`)
+      if (architecture.problems.length > 25) {
+        out.push(`    … ${architecture.problems.length - 25} more`)
+      }
+    } else {
+      out.push(
+        `  unreachable 0, undeclared 0, duplicates 0, cross-file slots 0, layer violations 0`,
+      )
     }
   }
   out.push('')

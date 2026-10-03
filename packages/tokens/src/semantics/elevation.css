@@ -1,0 +1,28 @@
+/* Yue semantics tokens — shadows and elevation levels
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --shadow-1             : 0 1px 2px rgb(0 0 0/.08), 0 6px 20px rgb(0 0 0/.06);
+
+  --shadow-2             : 0 12px 36px rgb(0 0 0/.16);
+
+  --shadow-3             : 0 18px 56px rgb(0 0 0/.22);
+
+  --elevation-panel      : var(--shadow-1);
+
+  --elevation-popover    : var(--shadow-2);
+
+  --elevation-dialog     : var(--shadow-3);
+}
+
+[data-theme=dark] {
+  --shadow-1          : 0 1px 2px rgb(0 0 0/.28), 0 6px 20px rgb(0 0 0/.16);
+
+  --shadow-2          : 0 12px 36px rgb(0 0 0/.38);
+
+  --shadow-3          : 0 18px 56px rgb(0 0 0/.52);
+}

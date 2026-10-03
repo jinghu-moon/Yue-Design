@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -10,8 +10,10 @@ import {
   DIAGNOSTIC_PROFILES,
   PACKAGE_CONTRAST_PAIRS,
   PACKAGE_DIAGNOSTIC_PAIRS,
+  PACKAGE_DIVERGENCES,
   PACKAGE_ONLY_TOKENS,
   PACKAGE_PAIRS,
+  PACKAGE_RENAMES,
   PROTOTYPE_HTML,
 } from '../tools/token-audit.pairs.mjs'
 
@@ -86,7 +88,7 @@ describe('contrast contract', () => {
 
 describe.each(DEFAULT_TARGETS)('$id target', (spec) => {
   const pairs = pairsFor(spec.id)
-  const result = auditTarget({ ...target(spec), pairs })
+  const result = auditTarget({ ...target(spec), pairs, renames: spec.id === 'prototype' ? [] : PACKAGE_RENAMES })
 
   it('passes every gating check', () => {
     expect(result.pairCount).toBe(pairs.length)
@@ -192,7 +194,7 @@ describe('the exempt contrast contract', () => {
   })
 
   it('is measured, and measured against the composite rather than the raw colour', () => {
-    const result = auditTarget({ ...packageTarget, pairs: PACKAGE_DIAGNOSTIC_PAIRS })
+    const result = auditTarget({ ...packageTarget, pairs: PACKAGE_DIAGNOSTIC_PAIRS, renames: PACKAGE_RENAMES })
     expect(result.unresolved).toEqual([])
     for (const check of result.checks) {
       expect(check.error).toBeUndefined()
@@ -212,7 +214,7 @@ describe('the exempt contrast contract', () => {
   })
 
   it('is not part of the gating contract, so it can never turn the audit red', () => {
-    const pairs = auditTarget({ ...packageTarget, pairs: PACKAGE_PAIRS })
+    const pairs = auditTarget({ ...packageTarget, pairs: PACKAGE_PAIRS, renames: PACKAGE_RENAMES })
     const labels = pairs.checks.map((check) => check.label)
     for (const [label] of PACKAGE_DIAGNOSTIC_PAIRS) {
       expect(labels).not.toContain(label)
@@ -223,16 +225,85 @@ describe('the exempt contrast contract', () => {
 describe('prototype ↔ package parity', () => {
   // Superset mode. The prototype is a byte-frozen visual regression baseline, so
   // the package is expected to have grown; what may never happen is a dropped
-  // token or a shared token resolving differently.
+  // token or a shared token resolving differently *without being registered*.
   const parity = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]), {
     allowAdditions: true,
+    allowedDivergences: PACKAGE_DIVERGENCES,
+    // Renames are registered too: the parity gate compares by name, so without this a rename reads as
+    // a lost token on one side and token sprawl on the other.
+    allowedRenames: PACKAGE_RENAMES,
   })
 
-  it('resolves every shared token to the identical value in every scope', () => {
+  it('resolves every shared token identically, except the registered divergences', () => {
     expect(parity.differences).toEqual([])
     expect(parity.identical).toBe(true)
     expect(parity.compared).toBeGreaterThan(1000)
     expect(parity.profiles).toHaveLength(4)
+    // The register is not a wider allowance: it must describe exactly what diverges.
+    expect(parity.divergentNames).toEqual(
+      PACKAGE_DIVERGENCES.map((entry) => entry.name).sort(),
+    )
+    expect(parity.staleDivergences).toEqual([])
+  })
+
+  it('pins each registered divergence to the value the sheet actually declares', () => {
+    // Without this, a register entry could claim one value while the sheet declares another, and
+    // the reason for the divergence would describe something that is no longer true.
+    //
+    // The sheets are discovered rather than named: the component tokens moved from one file into
+    // `component-tokens/*.css`, and this assertion must keep working across that kind of move.
+    //
+    // Every layer, not just `component-tokens/`: a change to a primitive is transitive, so the register
+    // legitimately holds semantics-layer tokens too (`--list-row-background-hover` resolves differently in
+    // dark because `--opacity-hover` does). Narrowing the lookup to one directory would have made this
+    // assertion reject real entries; widening it keeps the intent — the registered value must be the value
+    // the sheet declares — for every layer.
+    const sheets = ['component-tokens', 'semantics', 'primitives']
+      .map((layer) => resolve(REPO_ROOT, 'packages/tokens/src', layer))
+      .flatMap((dir) =>
+        readdirSync(dir)
+          .filter((name) => name.endsWith('.css') && name !== '_index.css')
+          .map((name) => readFileSync(resolve(dir, name), 'utf8')),
+      )
+      .join('\n')
+    for (const entry of PACKAGE_DIVERGENCES) {
+      // Every declaration of the name, not just the first: a theme-scoped divergence (`--opacity-hover` is
+      // `.08` at `:root` and `.12` under `[data-theme=dark]`) declares the token twice, and the register
+      // states the value that diverges. Accepting any declaration keeps the guard's intent — the registered
+      // value must be one the sheet really declares — while making multi-theme tokens expressible.
+      const declarations = [...sheets.matchAll(new RegExp(`\\${entry.name}\\s*:\\s*([^;]+);`, 'g'))].map((match) =>
+        match[1].trim(),
+      )
+      expect(declarations.length, `${entry.name} is registered but not declared in any token file`).toBeGreaterThan(0)
+      expect(declarations, `${entry.name} pins a value the sheet does not declare`).toContain(entry.package)
+      expect(entry.prototype).toBeTruthy()
+      expect(entry.reason.length).toBeGreaterThan(20)
+    }
+  })
+
+  it('applies exactly the registered renames, and no stale entries', () => {
+    // The parity comparison resolves every token, so it must exercise every registered rename — a
+    // register entry that nothing matches would otherwise sit there looking authoritative.
+    expect(parity.appliedRenames).toEqual(
+      PACKAGE_RENAMES.map((rename) => rename.prototype).sort(),
+    )
+    expect(parity.staleRenames).toEqual([])
+  })
+
+  it('resolves a renamed pair against the package sheet', () => {
+    // The contract names the prototype's token; the package answers under the new one. If the mapping
+    // were missing, the pair would fail as an unresolved reference rather than measuring a colour.
+    const packageRun = auditTarget({
+      ...target(DEFAULT_TARGETS[1]),
+      pairs: PACKAGE_PAIRS,
+      renames: PACKAGE_RENAMES,
+    })
+    // A pair audit reports only the renames its *pairs* name — the contract references
+    // `--focus-ring`, not the width or offset — and every reported name must be registered.
+    const registered = new Set(PACKAGE_RENAMES.map((rename) => rename.prototype))
+    expect(packageRun.appliedRenames.length).toBeGreaterThan(0)
+    for (const name of packageRun.appliedRenames) expect(registered.has(name)).toBe(true)
+    expect(packageRun.unresolved).toEqual([])
   })
 
   it('grows only by the pinned package-only tokens', () => {
@@ -242,24 +313,67 @@ describe('prototype ↔ package parity', () => {
   })
 
   it('still fails closed when additions are not explicitly allowed', () => {
-    const strict = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]))
+    const strict = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]), {
+    allowedRenames: PACKAGE_RENAMES,
+  })
+    // With no register the rename shows up as a lost token plus an addition — which is exactly why
+    // the register exists, and what this assertion documents.
     expect(strict.addedNames).toEqual([])
-    // Strict mode must report the additions as differences, and only as
-    // package-side additions — never as something the prototype lost. One record
-    // is emitted per probed profile, so the names are deduplicated here.
+    // Strict mode reports every difference, and only as package-side kinds: additions
+    // (`missing-on-left`) plus the value divergences that the register normally explains. Nothing
+    // may appear as something the prototype lost.
     expect([...new Set(strict.differences.map((difference) => difference.name))].sort()).toEqual(
-      PACKAGE_ONLY_TOKENS,
+      [...PACKAGE_ONLY_TOKENS, ...PACKAGE_DIVERGENCES.map((entry) => entry.name)].sort(),
     )
-    expect(strict.differences.every((difference) => difference.kind === 'missing-on-left')).toBe(
-      true,
-    )
+    expect(
+      strict.differences.every((difference) =>
+        ['missing-on-left', 'value'].includes(difference.kind),
+      ),
+    ).toBe(true)
     expect(strict.identical).toBe(false)
+  })
+
+  it('still fails closed when divergences are not registered', () => {
+    // The whole point of the register: the same comparison without it reports the Tag geometry as
+    // drift, exactly as it did before the register existed.
+    const unregistered = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]), {
+      allowAdditions: true,
+      allowedRenames: PACKAGE_RENAMES,
+    })
+    const names = [...new Set(unregistered.differences.map((difference) => difference.name))].sort()
+    expect(names).toEqual(PACKAGE_DIVERGENCES.map((entry) => entry.name).sort())
+    expect(unregistered.differences.every((difference) => difference.kind === 'value')).toBe(true)
+    expect(unregistered.identical).toBe(false)
+  })
+
+  it('reports a registered name that no longer diverges', () => {
+    const stale = compareTargets(target(DEFAULT_TARGETS[0]), target(DEFAULT_TARGETS[1]), {
+      allowedRenames: PACKAGE_RENAMES,
+      allowAdditions: true,
+      allowedDivergences: [...PACKAGE_DIVERGENCES, '--button-height-md'],
+    })
+    expect(stale.staleDivergences).toEqual(['--button-height-md'])
   })
 })
 
 describe('non-gating diagnostics', () => {
+  it('resolves renamed tokens in the neutral accent diagnostics', () => {
+    // The diagnostics run is non-gating, so a renamed token it could not resolve showed up as a false
+    // "unresolved reference" in a successful audit's output. A diagnostic that cries wolf is worse than
+    // no diagnostic, so the register is asserted here rather than trusted to be passed.
+    const run = auditTarget({
+      ...target(DEFAULT_TARGETS[1]),
+      profiles: DIAGNOSTIC_PROFILES,
+      pairs: PACKAGE_PAIRS,
+      renames: PACKAGE_RENAMES,
+    })
+    expect(run.unresolved).toEqual([])
+    expect(run.appliedRenames.length).toBeGreaterThan(0)
+  })
+
   it('also clears the neutral accent scopes', () => {
     const diagnostics = auditTarget({
+      renames: PACKAGE_RENAMES,
       ...target(DEFAULT_TARGETS[1]),
       profiles: DIAGNOSTIC_PROFILES,
     })
@@ -278,7 +392,7 @@ describe('the gate can actually fail', () => {
       ':root { --text-primary: #f8f8f8; }\n',
     'utf8',
   )
-  const broken = auditTarget({ id: 'broken', entry: override })
+  const broken = auditTarget({ id: 'broken', entry: override, renames: PACKAGE_RENAMES })
 
   it('fails when a token is driven below its contrast floor', () => {
     expect(broken.ok).toBe(false)

@@ -1,7 +1,11 @@
 # Verification matrix
 
-This is the only source of truth for required gates. During development run the smallest row
-that covers the changed surface; before handoff always run the final row.
+> **Authoritative command list:** `.agent/skills/yue-review/references/verification-commands.md`
+> The table below defines which gates are required; that file defines the actual commands,
+> reporting format, and visual-test prerequisites.
+
+Use the smallest row that covers the changed surface during development; before handoff always
+run the final row via `yue-review`.
 
 | Changed surface | Required gates |
 | --- | --- |

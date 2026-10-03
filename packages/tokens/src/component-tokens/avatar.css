@@ -1,0 +1,28 @@
+/* Yue component tokens — Avatar
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   avatar-   | Avatar component contract | public
+ */
+
+:root {
+  --avatar-size-sm                     : var(--size-24);
+
+  --avatar-size-md                     : var(--size-32);
+
+  --avatar-size-lg                     : var(--size-40);
+
+  --avatar-size-xl                     : var(--size-56);
+
+  --avatar-border-radius               : var(--radius-full);
+
+  --avatar-background                  : var(--surface-component);
+
+  --avatar-color                       : var(--text-secondary);
+
+  --avatar-font-size                   : var(--font-size-sm);
+}

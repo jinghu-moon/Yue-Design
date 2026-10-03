@@ -12,6 +12,9 @@ export const zhCN = {
   input: {
     clear: '清空',
   },
+  tag: {
+    closeLabel: '移除标签',
+  },
 } satisfies YueLocaleMessages
 
 export default zhCN

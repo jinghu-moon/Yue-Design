@@ -1,0 +1,171 @@
+{
+  "generated": "tools/rename-map.mjs",
+  "dictionary": {
+    "fg": "foreground"
+  },
+  "batchP4a": [
+    {
+      "from": "--badge-fg",
+      "to": "--badge-foreground",
+      "layer": "components",
+      "namespace": "badge",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--error-fg",
+      "to": "--error-foreground",
+      "layer": "semantics",
+      "namespace": "error",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--error-fg",
+      "to": "--error-foreground",
+      "layer": "semantics",
+      "namespace": "error",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--info-fg",
+      "to": "--info-foreground",
+      "layer": "semantics",
+      "namespace": "info",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--info-fg",
+      "to": "--info-foreground",
+      "layer": "semantics",
+      "namespace": "info",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--selection-fg",
+      "to": "--selection-foreground",
+      "layer": "semantics",
+      "namespace": "selection",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--success-fg",
+      "to": "--success-foreground",
+      "layer": "semantics",
+      "namespace": "success",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--success-fg",
+      "to": "--success-foreground",
+      "layer": "semantics",
+      "namespace": "success",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--warning-fg",
+      "to": "--warning-foreground",
+      "layer": "semantics",
+      "namespace": "warning",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--warning-fg",
+      "to": "--warning-foreground",
+      "layer": "semantics",
+      "namespace": "warning",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    }
+  ],
+  "pending": [],
+  "all": [
+    {
+      "from": "--badge-fg",
+      "to": "--badge-foreground",
+      "layer": "components",
+      "namespace": "badge",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--error-fg",
+      "to": "--error-foreground",
+      "layer": "semantics",
+      "namespace": "error",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--error-fg",
+      "to": "--error-foreground",
+      "layer": "semantics",
+      "namespace": "error",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--info-fg",
+      "to": "--info-foreground",
+      "layer": "semantics",
+      "namespace": "info",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--info-fg",
+      "to": "--info-foreground",
+      "layer": "semantics",
+      "namespace": "info",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--selection-fg",
+      "to": "--selection-foreground",
+      "layer": "semantics",
+      "namespace": "selection",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--success-fg",
+      "to": "--success-foreground",
+      "layer": "semantics",
+      "namespace": "success",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--success-fg",
+      "to": "--success-foreground",
+      "layer": "semantics",
+      "namespace": "success",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--warning-fg",
+      "to": "--warning-foreground",
+      "layer": "semantics",
+      "namespace": "warning",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    },
+    {
+      "from": "--warning-fg",
+      "to": "--warning-foreground",
+      "layer": "semantics",
+      "namespace": "warning",
+      "batch": "P4-a",
+      "reason": "property \"fg\" must be spelled out per §5 (no abbreviations)"
+    }
+  ]
+}

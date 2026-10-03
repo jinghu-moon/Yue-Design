@@ -1,0 +1,520 @@
+实际上就是说 token 包架构是有问题的。正好深度研读这个包，对比 refer 文件夹中主流组件库的 token 设计，给出建议
+
+先把现有的 token 包架构摸透，再对照 refer 里的参考库：
+
+  Searched for 1 pattern, listed 1 directory
+
+先把现有架构完整摸透，再读 refer 里的参考材料：
+
+● 2 background agents launched (↓ to manage)
+Deep-read token package architecture
+Read reference library token designs
+
+两个调研 agent 还在运行，等通知到来前我先梳理一下现有架构里我已知的问题，这样结论到了可以直接合并。
+
+---
+
+现有 token 包架构已知问题（基于这次修复经历）
+
+1. 双轨 token 体系并行存在
+
+- packages/tokens/src/components.css — :root {} 直接定义 token，进入 layer(components)，实际生效
+- packages/tokens/src/components/ 目录 — 每组件一个文件，通过 components/index.css 进入 layer(implementations)，但 index.css
+  根本没有导入这个目录，所以整个目录对外是死的
+
+两套系统同时存在，维护者需要知道"往哪里写才真正生效"，这个知识是隐性的，没有任何编译期检查。
+
+2. components/tag.css 的 geometry token 和 components.css 里的同名 token 冲突
+
+prototype 也有 --tag-height-* 等名字，parity 测试要求值完全一致。这不是一个孤立 bug，而是架构上"谁是 source of truth"不清楚的直接后果。
+
+3. 颜色 token 和 geometry token 混在同一个 :root {} 块里
+
+--button-default-border-color 和 --button-border-radius-full 放在一起，无法区分"跨主题共享的结构"和"主题相关的颜色"。暗色模式支持时必须拆开这两类。
+
+4. package.json 的 export 有误导性
+
+"./components.css": "./src/components/index.css"
+
+这个 export 指向的是 components/index.css（那个没有被 token index 引入的目录入口），而不是
+src/components.css（实际生效的文件）。名字和路径对不上，消费者容易用错。
+
+---
+
+等 agent 完成后综合参考库的分析一起给出完整建议。
+
+✻ Sautéed for 1m 1s · done 18:12
+
+› Message from @aaca1e50cbe2c350e (ctrl+o to expand)
+
+另一个 agent 关于参考库的结论还没回来，但 token 包架构的分析已经很完整了。先把现有包的深度分析结合进来，等参考库报告到了再补充对比结论。
+
+---
+
+Yue Design Token 包架构评估
+
+当前架构的核心问题
+
+问题一：两套 token 体系并行，source of truth 不明
+
+packages/tokens/src/
+├── components.css          ← 实际生效，进入 layer(components)
+└── components/
+    ├── tag.css             ← 定义在 layer(implementations)
+    ├── button.css          ← 同上
+    └── index.css           ← 被 package.json 导出，但不被 index.css 引入
+
+components.css 是真正生效的文件，但 components/ 目录下每个组件文件也有自己的 token block，两边同名 token 并存，值不同。这次 Tag 颜色消失的 bug
+就是这个架构缺陷的直接后果——没有任何编译期检查告诉你"你的 token 根本没被加载"。
+
+问题二：package.json 的 export 有误导
+
+"./components.css": "./src/components/index.css"
+
+这个 export 名叫 components.css，但指向的是那个"没有被 token index 引入"的目录入口。消费者按 export 名来用，拿到的是一个孤立的 implementations 层样式，而不是
+:root token 变量——这是合同和实现的背离。
+
+问题三：semantics → components 的跨层前向引用
+
+/* semantics.css */
+--list-row-background-hover: var(--button-ghost-background-hover);
+
+--button-ghost-background-hover 是 components 层的 token。在 CSS 里这在运行时能工作（自定义属性懒解析），但架构上 semantics 依赖了
+components，破坏了单向依赖关系。如果 components.css 未加载，这个 token 静默失效。
+
+问题四：geometry token 在两个地方定义，覆盖关系隐性
+
+components.css 里的 tag geometry：
+--tag-height-sm: var(--control-height-sm);  /* = 28px，用 control 抽象 */
+
+components/tag.css 里的 tag geometry：
+--tag-height-sm: 20px;  /* tag 自己的紧凑尺寸 */
+
+implementations 层优先级高于 components，所以后者赢——但这个覆盖关系完全不可见，components.css 里那段 tag geometry 是死代码。
+
+问题五：--tag-opacity-disabled: 0.45 与系统不一致
+
+系统里其他禁用状态用 --opacity-disabled-content: 0.38（来自 primitives），tag 用了 0.45。小问题，但是"不一致"的信号——组件作者没有查阅 primitives
+就写了一个魔法数字。
+
+问题六：input focus ring 实现绕过了自己的 token
+
+/* form.css */
+box-shadow: 0 0 0 var(--space-4) color-mix(...);
+/* 但 components.css 里明明有 */
+--input-focus-ring-width: var(--focus-width);
+--input-focus-ring-offset: var(--focus-offset);
+
+定义了 token 但实现没用它——如果要调整 focus ring 大小，需要改实现文件而不是改 token，这和 token 系统的整个目的背道而驰。
+
+---
+
+参考库调研结论到来前的初步建议
+
+基于现有分析，核心建议是：
+
+建议一：消灭双轨，确立单一 source of truth
+
+两个选项：
+- A：components/tag.css（以及所有 components/*.css）里的 token block 全部迁移进 components.css，components/*.css 只保留 CSS 规则（不再定义 :root 变量）
+- B：反过来，把 components.css 里的 token 全部拆分进各自的 components/*.css，然后让 index.css 正确地把这些文件 import 进 layer(components)（而不是
+  layer(implementations)）
+
+选项 A 更接近现状，改动小。选项 B 更符合"每个组件自包含"的理想，但需要修改 index.css 的层声明逻辑。推荐 B，但需要把 layer 分开：token 部分进
+layer(components)，rule 部分进 layer(implementations)，用同一个文件里的两个 @layer 块实现，而不是靠两个不同的入口文件。
+
+建议二：修复 semantics → components 的前向引用
+
+/* 现在的坏代码 */
+--list-row-background-hover: var(--button-ghost-background-hover);
+
+/* 修法：在 semantics 层直接表达意图 */
+--list-row-background-hover: color-mix(in srgb, currentColor calc(var(--opacity-hover) * 100%), transparent);
+/* 或者更简单，接受这是个 component-level 决策，把它移到 list 组件的 token 里 */
+
+建议三：统一禁用状态 opacity
+
+把 --tag-opacity-disabled: 0.45 改成 var(--opacity-disabled-content)（.38），或者在 primitives 里显式定义一个 --opacity-disabled-overlay: 0.45
+作为第二档禁用透明度，统一管理。
+
+建议四：input focus ring 实现要用自己的 token
+
+/* form.css 里改成 */
+box-shadow: 0 0 0 var(--input-focus-ring-width) color-mix(in srgb, var(--input-border-color-focus) 24%, transparent);
+
+---
+
+等参考库 agent 的结论回来后，我会补充 TDesign/Ant Design/Vuetify 的对比分析，看看主流方案是怎么解决这些同类问题的。
+
+✻ Brewed for 31s · done 18:16
+
+› Message from @aa7cfa5c6ca9f111d (ctrl+o to expand)
+
+两份报告都到了，现在可以给出完整的对比分析和建议。
+
+---
+
+Yue Design Token 包架构深度评估
+
+一、现有架构的核心问题汇总
+
+问题 1：双轨 token 体系，没有单一 source of truth
+
+packages/tokens/src/
+├── components.css          ← 真正生效（layer(components)），~260 个变量
+└── components/
+    ├── tag.css             ← 定义了 70 个变量在 :root，但从未被导入
+    ├── button.css          ← 只有 CSS 规则，无 token 定义（正确）
+    └── index.css           ← package.json 导出为 "./components.css"，但不在主链路上
+
+tag.css 在 :root 里定义了 geometry token（20px, 12px...），components.css 里也有同名 token（用 var(--control-height-sm) 语义引用）。tag.css 从未被 index.css
+引入，所以这 70 个变量是死代码——但 VitePress 渲染的时候 Tag 样式依赖它们，导致颜色全部消失。这就是这次 bug 的根源，也是架构缺陷的直接后果。
+
+问题 2：package.json 的 export 有误导性
+
+"./components.css": "./src/components/index.css"
+
+export 名叫 components.css，但指向的是那个死入口（components/index.css），而非真正生效的 src/components.css。消费者按 export 路径使用会拿到一个孤立的
+implementations 层样式，而不是 :root token 变量。
+
+问题 3：semantics → components 的跨层前向引用
+
+/* semantics.css */
+--list-row-background-hover: var(--button-ghost-background-hover);
+
+--button-ghost-background-hover 定义在 components 层。语义层不应该依赖组件层——这破坏了单向依赖关系。CSS 运行时懒解析，所以它"能工作"，但一旦 components.css
+未加载就静默失效，且完全无法被工具静态检查。
+
+问题 4：input focus ring 绕过了自己的 token
+
+/* form.css 实现 */
+box-shadow: 0 0 0 var(--space-4) color-mix(...);
+/* 但 components.css 里明明有 */
+--input-focus-ring-width: var(--focus-width);
+--input-focus-ring-offset: var(--focus-offset);
+
+定义了 token 但实现没用它。如果要调 focus ring 大小，必须改实现文件，token 改了没用。
+
+问题 5：禁用透明度不一致
+
+--tag-opacity-disabled: 0.45;      /* tag.css 里 */
+--opacity-disabled-content: 0.38;  /* primitives.css 里，其他组件用这个 */
+
+Tag 用了魔法数字，没有查阅 primitives 的约定。
+
+问题 6：--tag-border-radius: var(--radius-full) 的设计意图矛盾
+
+components.css 里 tag 的 --tag-border-radius: var(--radius-full)（= 9999px，圆角），但 components/tag.css 里是 --tag-border-radius:
+4px（方角）。这两个值的设计意图完全相反，没有任何注释说明为什么，令维护者困惑。
+
+---
+
+二、参考库对比
+
+┌────────────┬────────────────────────────────────────┬──────────────────────────────┬────────────────────────────────┬───────────────────────────────────┐
+│    维度    │                TDesign                 │         Ant Design 5         │           Vuetify 4            │            Yue（现状）            │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ token 层级 │ 3层：primitive → semantic → component  │ 3层：seed → map（算法生成）→ │ 2轨并行：SCSS（构建时）+ JS    │ 3层结构存在，但 components        │
+│            │                                        │  alias                       │ theme（运行时）                │ 层分裂为两套                      │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ 组件 token │ 每组件独立 _var.less，纯别名           │ 每组件通过 useToken() 消费   │ 每组件 _variables.scss         │ 混在 components.css 巨文件里      │
+│  位置      │                                        │ AliasToken                   │ !default                       │                                   │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ source of  │ 一套：CSS vars（运行时）               │ 一套：TypeScript 对象        │ 两套各司其职，边界清晰         │ 不清晰，两处定义同名 token        │
+│ truth      │                                        │                              │                                │                                   │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ 暗色模式   │ :root[theme-mode=dark] 全量重定义      │ 独立颜色算法，重新推导       │ 独立 JS theme 对象，生成       │ [data-theme=dark] 块，手写 hex    │
+│            │                                        │                              │ .v-theme--dark                 │                                   │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ 状态变体   │ 每个语义颜色有                         │ 算法生成（step 5=hover, step │ opacity 变量 + color-mix()     │ color-mix() + opacity             │
+│ token      │ hover/focus/active/disabled 显式 token │  7=active...）               │                                │ primitives（设计好）              │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ 几何 token │ comp-size-xs..xxxxxl，语义化尺寸       │ sizeUnit: 4 算法推导         │ SCSS !default，消费者可覆盖    │ --control-*                       │
+│            │                                        │                              │                                │ 抽象（设计好），但组件有时绕过    │
+├────────────┼────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────┼───────────────────────────────────┤
+│ 可覆盖性   │ CSS var，运行时可覆盖                  │ React ConfigProvider         │ SCSS !default（构建时）+ CSS   │ CSS var，但分裂架构让覆盖点不确定 │
+│            │                                        │                              │ var（运行时）                  │                                   │
+└────────────┴────────────────────────────────────────┴──────────────────────────────┴────────────────────────────────┴───────────────────────────────────┘
+
+从参考库可以学到的最有价值的决策：
+
+TDesign 的亮点：--td-bg-color-specialcomponent 这个 token 专门处理"亮色模式是 #fff，暗色模式是 transparent（继承父背景）"的场景——这是一个在 Button/Input
+等场景极其常见的需求，Yue 目前没有这个概念，导致实现里会出现 background: #fff 这样的硬编码。
+
+Vuetify 的亮点：颜色用 RGB 通道格式存储（--v-theme-primary: 24,103,192），然后用 rgb(var(--v-theme-primary) / 0.5) 做 opacity 合成，不需要额外的 opacity
+token。Yue 用 color-mix() 实现了同样效果，这点做法是对的。
+
+Ant Design 的亮点：Token 级别的文档是 TypeScript interface，每个 token 都有中英文 JSDoc。Yue 的 token 文档是 CSS 注释，可读性差很多，也没有工具约束。
+
+---
+
+三、具体建议（优先级排序）
+
+P0 — 必须修，影响正确性
+
+1. 确立 source of truth：components token 全部迁入 components.css，components/*.css 只放 CSS 规则
+
+components/tag.css     → 删掉 :root {} 块，只保留 CSS 规则
+components/button.css  → 已经是对的，继续保持
+components.css         → 接收所有 token 定义
+
+同时修复 package.json 的 export：
+"./components.css": "./src/components.css"   ← 改成指向真正的 token 文件
+
+2. 修复 input focus ring 的实现要用自己的 token
+
+/* form.css */
+box-shadow: 0 0 0 var(--input-focus-ring-width)
+            color-mix(in srgb, var(--input-border-color-focus) 24%, transparent);
+
+---
+
+P1 — 架构债，影响可维护性
+
+3. 断掉 semantics → components 的前向引用
+
+/* 现在 */
+--list-row-background-hover: var(--button-ghost-background-hover);
+
+/* 改成在 semantics 层自己定义，不依赖 components */
+--list-row-background-hover: color-mix(
+  in srgb,
+  var(--text-primary) calc(var(--opacity-hover) * 100%),
+  transparent
+);
+
+4. 统一 disabled opacity
+
+/* components/tag.css 里 */
+--tag-opacity-disabled: var(--opacity-disabled-content);  /* 不要硬写 0.45 */
+
+5. 解决 --tag-border-radius 的设计矛盾
+
+components.css 里 tag 的 --tag-border-radius: var(--radius-full)（来自 prototype，圆角）和设计意图（方角 4px）相反。应该在 components.css
+里明确改成方角，并加注释说明为什么不跟 prototype 走：
+
+/* Tag 使用紧凑方角，与 Button/Input 的圆角策略不同；
+   prototype 里 --tag-border-radius 是 --radius-full（圆形），
+   但 Yue Tag 的默认形状是 square，round 通过 --tag-border-radius-round 实现。 */
+--tag-border-radius: var(--radius-xs);   /* 4px */
+
+---
+
+P2 — 值得借鉴，提升系统完整性
+
+6. 借鉴 TDesign 的 specialcomponent 概念
+
+加一个 --surface-on-fill 或 --bg-on-background token，处理"亮色 #fff，暗色 transparent"这个极常见的场景：
+
+/* semantics.css */
+--surface-invert-aware: #fff;            /* light */
+[data-theme=dark] {
+  --surface-invert-aware: transparent;  /* dark: 继承父背景 */
+}
+
+7. 给 token 建目录文档
+
+参考 Ant Design 的 TypeScript interface 做法，在 components.css 开头加一个机器可读的 token 目录注释块，说明每个 token
+的用途、允许消费者覆盖、还是内部实现细节。这不需要改架构，只是补文档，但对 LLM 和 IDE 都友好。
+
+---
+
+总结
+
+Yue 的 token 架构主干是健康的——三层分离、color-mix() 状态变体、--control-* 几何抽象，这些决策都是对的，和 TDesign 的思路高度一致。核心问题是 components/
+目录游离在主链路之外，造成了 source of truth 的混乱。修掉这个，再补上 focus ring 的 token 穿透，架构就基本清晰了。其余的是可以逐步清理的技术债。
+
+✻ Churned for 52s · done 18:17
+
+● Agent "Deep-read token package architecture" finished · 3m 45s
+
+参考库报告已到，现在可以给出完整的对比分析。
+
+---
+
+Yue Token 包架构：深度评估与建议
+
+参考库核心结论
+
+三个主流库各自代表了一种主流路线：
+
+TDesign：纯 CSS 方案，Less 是 CSS var 的别名层，运行时 theming 不需要 JS。组件 token 放在独立的 _var.less 文件里，是对语义 token 的纯别名，不掺逻辑。最接近 Yue
+现在的方向，也是最值得对标的。
+
+Ant Design 5：完全算法化——一个 seed color 展开整个 10 步色阶，没有手写 hex。缺点是设计师失去对每一步的控制权。TypeScript interface 作为 token spec
+是亮点，有中英双语 JSDoc。
+
+Vuetify 4：最干净的静动分离——空间/排版/圆角在 SCSS 里（构建时），颜色在 JS 里（运行时）。颜色以 RGB 通道存储 (--v-theme-primary: 24,103,192)，让
+rgb(var(--v-theme-primary) / 0.5) 直接完成 opacity 合成，不需要额外 token。
+
+---
+
+现有架构的问题（按严重程度）
+
+P0 — 导致 Bug 的结构性缺陷
+
+1. 双轨 token 体系，source of truth 不明
+
+components.css              ← :root {} 里定义，layer(components)，实际生效
+components/tag.css          ← :root {} 里也定义，但从未被 index.css 引入，死代码
+
+这次 Tag 颜色消失的根本原因。没有任何编译期检查会告诉你"你的 token 根本没被加载"。TDesign、Ant Design、Vuetify 三个库都没有这种问题——它们的 token
+有且只有一条链路。
+
+2. package.json export 的名字和内容背离
+
+"./components.css": "./src/components/index.css"
+
+名叫 components.css 但指向 components/index.css（那个没有被主链路引入的目录入口）。消费者按 export 名用，拿到的是游离的 implementations 层样式，而不是 :root
+token。这和 TDesign 的 --td-* CSS var 直接对外暴露的单一入口完全背道而驰。
+
+---
+
+P1 — 架构债，影响长期可维护性
+
+3. semantics → components 的前向引用
+
+/* semantics.css */
+--list-row-background-hover: var(--button-ghost-background-hover);
+
+--button-ghost-background-hover 定义在 components 层。三个参考库都严格维护了单向依赖：primitives → semantics → components。这个前向引用在 CSS
+运行时能工作（懒解析），但破坏了静态可分析性——如果 components.css 未加载，这个 token 静默失效，没有任何报错。
+
+4. --tag-border-radius 在两处定义，设计意图相反
+
+/* components.css（历史遗留，来自 prototype） */
+--tag-border-radius: var(--radius-full);   /* = 9999px，圆角 */
+
+/* components/tag.css */
+--tag-border-radius: 4px;                  /* 方角 */
+
+implementations 层优先级高，所以 4px 赢——但这个覆盖关系完全不可见。维护者不读两个文件就不知道有冲突。
+
+5. input focus ring 实现绕过了自己的 token
+
+/* form.css 里 */
+box-shadow: 0 0 0 var(--space-4) color-mix(...);
+
+/* components.css 里明明定义了 */
+--input-focus-ring-width: var(--focus-width);
+--input-focus-ring-offset: var(--focus-offset);
+
+定义了 token 但实现没用它。要改 focus ring 大小，必须改实现文件，改 token 没有任何效果——这和 token 系统的整个目的背道而驰。
+
+6. 禁用透明度不统一
+
+--tag-opacity-disabled: 0.45;         /* tag.css，魔法数字 */
+--opacity-disabled-content: 0.38;     /* primitives.css，其他组件用这个 */
+
+组件作者没有查阅 primitives 约定，直接写了一个不同的值。这是小问题，但是更大问题（"没有工具约束 token 消费规则"）的信号。
+
+---
+
+P2 — 参考库有但 Yue 缺少的能力
+
+7. 缺少 TDesign 的 specialcomponent 概念
+
+TDesign 有一个 --td-bg-color-specialcomponent，专门处理"亮色模式是 #fff，暗色模式是 transparent（继承父背景）"这个场景——在 Button、Input 
+的某些状态下极其常见。Yue 没有这个概念，组件实现里容易出现硬编码 background: #fff 而不自知地在暗色模式下显示白块。
+                                                                                                                                         
+8. 没有用 RGB 通道存储颜色（Vuetify 的做法）
+                                                                                                                                         
+Vuetify 用 --v-theme-primary: 24,103,192 存颜色，让 rgb(var(--v-theme-primary) / 0.5) 直接做 opacity 合成。Yue 用 color-mix()
+实现了类似的效果（这个决策是对的），但 color-mix() 语法更冗长，且在某些需要用 JS 读取颜色值的场景不如 RGB 通道灵活。这个不是必须改，只是一
+
+---                                                                                                                                      
+
+具体改造建议                                                                                                                             
+
+改动一：消灭双轨——明确 components/*.css 的职责                                                                                           
+
+每个 components/*.css 文件分为两段：                                                                                                     
+
+/* 1. Token 定义 — 进入 layer(components) */                                                                                             
+@layer components {
+  :root {                                                                                                                                
+    --tag-height-sm: 20px;
+    --tag-height-md: 24px;                                                                                                               
+    /* ... */
+    --tag-default-filled-background: var(--surface-component);                                                                           
+    /* ... */
+  }                                                                                                                                      
+}
+                                                                                                                                         
+/* 2. CSS 规则 — 进入 layer(implementations) */
+@layer implementations {                                                                                                                 
+  .yue-tag {
+    height: var(--tag-height-md);                                                                                                        
+    background-color: var(--tag-default-filled-background);
+    /* ... */                                                                                                                            
+  }
+}                                                                                                                                        
+
+同时 index.css 直接引入每个文件：                                                                                                        
+
+@layer primitives, semantics, components, implementations, demo;                                                                         
+
+@import url('./primitives.css') layer(primitives);                                                                                       
+@import url('./semantics.css') layer(semantics);
+@import url('./components.css') layer(components);          /* 共享 geometry */                                                          
+@import url('./components/button.css');                     /* 自带分层声明 */
+@import url('./components/tag.css');                                                                                                     
+@import url('./components/input.css');
+                                                                                                                                         
+这样每个组件的 token 和规则在同一个文件里，source of truth 唯一，和 TDesign 的 _var.less + _index.less 共存于同一组件目录的思路一致。
+
+改动二：修复 package.json export
+
+"./components.css": "./src/components.css"
+
+改动三：断掉 semantics → components 前向引用
+
+/* semantics.css — 改成在语义层自己定义，不依赖 components */
+--list-row-background-hover: color-mix(
+  in srgb,
+  var(--text-primary) calc(var(--opacity-hover) * 100%),
+  transparent
+);
+
+改动四：统一 --tag-border-radius 的定义
+
+从 components.css 里删掉来自 prototype 的旧定义（var(--radius-full)），只在 components/tag.css 里保留正确的值，加注释：
+
+/* 默认方角；round 形状通过 --tag-border-radius-round 实现。
+   prototype (design-tokens-generic-v4) 里此 token 是 --radius-full，
+   Yue Tag 的设计选择是 square-first，故在此显式覆盖。 */
+--tag-border-radius: var(--radius-xs);   /* 4px */
+
+改动五：input focus ring 要用自己的 token
+
+/* form.css */
+box-shadow: 0 0 0 var(--input-focus-ring-width)
+            color-mix(in srgb, var(--input-border-color-focus) 24%, transparent);
+
+改动六：禁用透明度统一
+
+/* components/tag.css */
+--tag-opacity-disabled: var(--opacity-disabled-content);
+
+改动七（可选）：借鉴 TDesign 的 surface-invert-aware
+
+/* semantics.css */
+--surface-invert-aware: #fff;
+
+[data-theme=dark] {
+  --surface-invert-aware: transparent;   /* 暗色模式继承父背景 */
+}
+
+---
+
+总结
+
+Yue 的 token 架构主干是健康的：三层分离、color-mix() 状态变体、--control-* 几何抽象、@media (prefers-reduced-motion) 的语义 motion alias——这些和 TDesign 的思路高度一致，决策正确。
+
+核心问题是 components/ 目录游离在主链路之外，造成了 source of truth 的分裂。这次 Tag bug 是这个缺陷的第一次显现，不会是最后一次。改动一到三是结构性修复，优先级最高；四到六是现有一致性债务；七是锦上添花。
+
+✻ Sautéed for 44s · done 18:18
+
+● Agent "Read reference library token designs" finished · 6m 43s
+
+两份报告都已收到，之前的回复已经整合了完整分析。没有新的用户消息，任务通知已处理完毕。

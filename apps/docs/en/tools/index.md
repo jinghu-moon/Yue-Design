@@ -6,11 +6,12 @@
 corepack pnpm audit:tokens
 ```
 
-## It checks three things
+## It checks four things
 
-1. **Contrast** — 32 foreground/background pairs × light/dark = 64 items per target; failing any single item below the threshold fails the run (4.5:1 for body text, 3:1 for borders and focus rings).
+1. **Contrast** — the 32 foreground/background pairs migrated from the prototype, run for light and dark (the prototype target: **64 items**); the package target additionally runs its own 23 pairs on top (**110 items**). Failing any single item below the threshold fails the run (4.5:1 for body text, 3:1 for borders and focus rings).
 2. **Resolvability** — every Token must resolve successfully in every mode. Dangling references, circular references, selectors that cannot be modelled, or `!important` all raise an error directly instead of being skipped.
-3. **Consistency** — when auditing multiple targets, all targets must resolve to exactly the same result in every mode.
+3. **Consistency** — when auditing multiple targets, all targets must resolve to exactly the same result in every mode; deliberate divergences from the prototype must each be registered in `PACKAGE_DIVERGENCES` (currently 10, all of them the Tag's compact ramp and its square corner). An unregistered divergence fails, and so does a registered one that no longer diverges.
+4. **Architecture** — reachability (a declaration in a file the public entry cannot reach fails), resolution (every `var()` in `@yue-ui/vue` must be declared by someone), uniqueness (one token may not be declared in two files), layer direction (`semantics` may not depend on `components`), export honesty (`./component-tokens/*.css` must be tokens, `./implementations.css` must be selectors only) and catalogue completeness (the `@yue-token-catalogue` block in each declaration file's `@yue-token-catalogue` must cover every token in it).
 
 ## Why the auditor implements its own CSS parsing
 
@@ -29,11 +30,11 @@ When it encounters a construct it cannot model, the auditor **fails directly** r
 ```text
 Yue Design · Token Audit
 ──────────────────────────────────────────────────────────────────────────────
-contract: 32 contrast pairs × 2 profiles = 64 gating checks per target
+contract: 32 migrated pairs (+23 package-only) × 2 profiles
 gating profiles: light/azure, dark/azure
 
 ▌ prototype — design-tokens-generic-v4/tokens/index.css
-  files: index.css ← primitives.css ← semantics.css ← components.css
+  files: index.css ← primitives/_index.css ← semantics/_index.css ← component-tokens/_index.css
   layers: primitives < semantics < components < implementations < demo
   tokens: light/azure 451, dark/azure 451 (declared 451)
   ...
@@ -43,7 +44,12 @@ gating profiles: light/azure, dark/azure
   profiles probed: light/azure, dark/azure, light/neutral, dark/neutral
   resolutions compared: 1804
   differences: 0
-  → IDENTICAL
+  registered divergences: 10
+  → SUPERSET + REGISTERED DIVERGENCES — no drift, no loss
+
+▌ architecture (reachability, resolution, one declaration site, layer direction)
+  architecture: 591 declared token(s) across 37 reachable file(s), 17 catalogue group(s) in 17 file(s)
+  unreachable 0, undeclared 0, duplicates 0, cross-file slots 0, layer violations 0
 
 RESULT: PASS
 ```
@@ -54,7 +60,7 @@ The 32 pairs in `tools/token-audit.pairs.mjs` were transcribed verbatim from the
 
 ## Why Accent mode is diagnostic only
 
-The prototype never sampled the `[data-accent=neutral]` mode, so making neutral gating as well would make a "faithful migration" fail over something the prototype itself never checked. The audit reports the neutral results (currently 64/64 for both targets), but does not let them decide the exit code.
+The prototype never sampled the `[data-accent=neutral]` mode, so making neutral gating as well would make a "faithful migration" fail over something the prototype itself never checked. The audit reports the neutral results (currently 64/64 for the prototype and 110/110 for the package), but does not let them decide the exit code.
 
 ## Coming soon
 

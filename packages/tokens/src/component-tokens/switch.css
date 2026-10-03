@@ -1,0 +1,36 @@
+/* Yue component tokens — Switch
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   switch-   | Switch component contract | public
+ */
+
+:root {
+  --switch-width                       : var(--size-40);
+
+  --switch-height                      : var(--size-24);
+
+  --switch-thumb                       : var(--size-16);
+
+  --switch-inset                       : var(--space-4);
+
+  --switch-border-width                : var(--border-1);
+
+  --switch-border-radius               : var(--radius-full);
+
+  --switch-thumb-shift                 : calc(var(--switch-width) - var(--switch-thumb) - 2*var(--switch-inset));
+
+  --switch-background                  : var(--surface-component);
+
+  --switch-background-checked          : var(--control-accent);
+
+  --switch-border-color                : var(--border-control);
+
+  --switch-thumb-color                 : var(--text-secondary);
+
+  --switch-thumb-color-checked         : var(--control-accent-checked);
+}

@@ -1,0 +1,34 @@
+/* Yue semantics tokens — interaction and disabled states, focus ring
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  /* The focus ring as three tokens in one layer. `--focus-ring` was the *colour* — a name that reads
+   * like the whole ring, which is why component tokens then pulled the width and offset from the
+   * primitive layer. Canonical here so a consumer retunes the ring in one place. */
+  --focus-ring-color     : var(--accent-border);
+
+  --focus-ring-width     : var(--border-2);
+
+  --focus-ring-offset    : var(--space-2);
+
+
+  --selection-bg         : var(--accent-solid);
+
+  --selection-foreground         : var(--on-accent);
+
+  --disabled-container   : color-mix(in srgb, var(--text-primary) calc(var(--opacity-disabled-container)*100%), transparent);
+
+  --disabled-content     : color-mix(in srgb, var(--text-primary) calc(var(--opacity-disabled-content)*100%), transparent);
+
+  --selected-background  : var(--accent-subtle);
+
+  --selected-color       : var(--accent-subtle-text);
+
+  --selected-marker-width: var(--border-2);
+
+  --selected-marker-color: var(--accent-solid);
+}

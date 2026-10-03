@@ -1,0 +1,14 @@
+/* Yue semantics tokens — overlay scrims
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --scrim                : rgb(0 0 0/.56);
+}
+
+[data-theme=dark] {
+  --scrim             : rgb(0 0 0/.64);
+}

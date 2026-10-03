@@ -1,0 +1,34 @@
+/* Yue semantics tokens — action colours shared by Button and friends
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --action-primary       : var(--neutral-900);
+
+  --action-on-primary    : var(--neutral-0);
+
+  --action-warning       : var(--amber-700);
+
+  --action-on-warning    : var(--neutral-0);
+
+  --action-danger        : var(--red-700);
+
+  --action-on-danger     : var(--neutral-0);
+}
+
+[data-theme=dark] {
+  --action-primary    : var(--neutral-100);
+
+  --action-on-primary : var(--neutral-950);
+
+  --action-warning    : var(--warning);
+
+  --action-on-warning : var(--neutral-950);
+
+  --action-danger     : var(--error);
+
+  --action-on-danger  : var(--neutral-950);
+}

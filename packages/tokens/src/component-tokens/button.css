@@ -1,0 +1,234 @@
+/* Yue component tokens — Button
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   button-   | Button component contract | public
+ */
+
+:root {
+  --button-height-sm                   : var(--control-height-sm);
+
+  --button-padding-inline-sm           : var(--control-padding-inline-sm);
+
+  --button-font-size-sm                : var(--control-font-size-sm);
+
+  --button-height-md                   : var(--control-height-md);
+
+  --button-padding-inline-md           : var(--control-padding-inline-md);
+
+  --button-font-size-md                : var(--control-font-size-md);
+
+  --button-height-lg                   : var(--control-height-lg);
+
+  --button-padding-inline-lg           : var(--control-padding-inline-lg);
+
+  --button-font-size-lg                : var(--control-font-size-lg);
+
+  --button-padding-block               : var(--space-0);
+
+  --button-gap                         : var(--space-8);
+
+  --button-border-width                : var(--border-1);
+
+  --button-border-radius               : var(--radius-sm);
+
+  --button-default-border-color        : transparent;
+
+  --button-primary-border-color        : transparent;
+
+  --button-ghost-border-color          : transparent;
+
+  --button-danger-border-color         : transparent;
+
+  --button-default-background          : var(--surface-component);
+
+  --button-default-color               : var(--text-primary);
+
+  --button-default-background-hover    : color-mix(in srgb, var(--button-default-color) calc(var(--opacity-hover)*100%), var(--button-default-background));
+
+  --button-default-background-pressed  : color-mix(in srgb, var(--button-default-color) calc(var(--opacity-pressed)*100%), var(--button-default-background));
+
+  --button-primary-background          : var(--action-primary);
+
+  --button-primary-color               : var(--action-on-primary);
+
+  --button-primary-background-hover    : color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-hover)*100%), var(--button-primary-background));
+
+  --button-primary-background-pressed  : color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-pressed)*100%), var(--button-primary-background));
+
+  --button-secondary-background        : var(--surface);
+
+  --button-secondary-color             : var(--text-primary);
+
+  --button-secondary-background-hover  : color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-hover)*100%), var(--button-secondary-background));
+
+  --button-secondary-background-pressed: color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-pressed)*100%), var(--button-secondary-background));
+
+  --button-ghost-background            : transparent;
+
+  --button-ghost-color                 : var(--text-primary);
+
+  --button-ghost-background-hover      : color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-hover)*100%), transparent);
+
+  --button-ghost-background-pressed    : color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-pressed)*100%), transparent);
+
+  --button-danger-background           : var(--action-danger);
+
+  --button-danger-color                : var(--action-on-danger);
+
+  --button-danger-background-hover     : color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-hover)*100%), var(--button-danger-background));
+
+  --button-danger-background-pressed   : color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-pressed)*100%), var(--button-danger-background));
+
+  --button-secondary-border-color      : var(--border-default);
+
+  --button-selected-background         : var(--selected-background);
+
+  --button-selected-color              : var(--selected-color);
+
+  --button-selected-border-color       : transparent;
+
+  --button-selected-background-hover   : color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-hover)*100%), var(--button-selected-background));
+
+  --button-selected-background-pressed : color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-pressed)*100%), var(--button-selected-background));
+
+  --button-selected-marker-width       : var(--selected-marker-width);
+
+  --button-selected-marker-color       : var(--selected-marker-color);
+
+}
+/* Final component mappings keep composite rows on their own semantic contract. */
+/* ------------------------------------------------------------------ *
+ * Button — component token extensions
+ *
+ * The migration already carries the Button geometry and the
+ * default/primary/secondary/ghost/danger colour contracts. The declarations
+ * below are what `YueButton` additionally needs, so that the component can be
+ * written against Button Component Tokens alone — no raw hex, no primitive
+ * token, no reaching into another component's namespace.
+ *
+ * Naming note: `--button-ghost-*` is the migration's name for the *unfilled*
+ * contract — the one a chrome-free button reads. The component's variant for that
+ * look is called `text`, following the reference implementation's vocabulary, but
+ * the token family keeps its migrated name because the prototype's own `.ghost`
+ * rules and an audited contrast pair both depend on it.
+ *
+ * They live in this file, and not in `components/button.css`, because
+ * `index.css` is the entry a consumer loads together with `@yue-ui/vue/button.css`
+ * and it resolves `primitives → semantics → components` only. Declaring them in
+ * the `implementations` sheet would leave every consumer with undefined tokens.
+ *
+ * `design-tokens-generic-v4/` stays byte-frozen: it is the visual regression
+ * baseline. Adding tokens here is a pure superset of it, so the audit's parity
+ * check verifies "nothing dropped, nothing drifted" and reports these additions
+ * as exactly the pinned set in `tools/token-audit.pairs.mjs`.
+ *
+ * Values reference existing semantic and primitive tokens only.
+ * ------------------------------------------------------------------ */
+:root {
+    /* Typography and geometry the migrated geometry set does not cover. */
+  --button-font-weight            : var(--weight-medium);
+
+  --button-line-height            : var(--line-height-md);
+
+  --button-padding-inline-flush   : var(--space-0);
+
+  --button-border-radius-full     : var(--radius-full);
+
+  --button-icon-size-sm           : var(--control-icon-size-sm);
+
+  --button-icon-size-md           : var(--control-icon-size-md);
+
+  --button-icon-size-lg           : var(--control-icon-size-lg);
+
+  --button-spinner-border-width   : var(--border-2);
+
+  --button-spinner-duration       : calc(var(--duration-slow)*3);
+
+  --button-duration               : var(--motion-duration-interaction);
+
+  --button-ease                   : var(--motion-ease-standard);
+
+    /* Focus ring, so `:focus-visible` never hard-codes a width or colour. */
+  --button-focus-ring-color       : var(--focus-ring-color);
+
+  --button-focus-ring-width       : var(--focus-ring-width);
+
+  --button-focus-ring-offset      : var(--focus-ring-offset);
+
+    /* Disabled. */
+  --button-disabled-background    : var(--disabled-container);
+
+  --button-disabled-color         : var(--text-disabled);
+
+  --button-disabled-border-color  : var(--border-default);
+
+    /* The readable "this is the theme's own colour" role. The unfilled variants
+     * (`outline`, `dashed`, `text`) draw their text and border from it, because the
+     * solid fill colour every theme already has (`--button-*-color`) is content *on*
+     * a saturated fill and is unreadable on a plain surface. Each source is a
+     * semantic text role, so every one of them is contrast-gated by the audit. */
+  --button-default-accent         : var(--text-primary);
+
+  --button-primary-accent         : var(--accent-text);
+
+  --button-danger-accent          : var(--error-foreground);
+
+  --button-warning-accent         : var(--warning-foreground);
+
+  --button-success-accent         : var(--success-foreground);
+
+    /* Saturated fills. They follow the danger contract from the migration: the dark
+     * theme flips to a *light* fill, so the content role must flip too — which is
+     * exactly what `--text-inverse` is (white in light, near-black in dark). Warning
+     * reads `--action-warning`, whose light value is one step darker than the
+     * `--warning` status colour: amber-600 with white text is only 3.8:1, which is
+     * below AA for text, and the audit would (correctly) reject it. */
+  --button-warning-background          : var(--action-warning);
+
+  --button-warning-color               : var(--action-on-warning);
+
+  --button-warning-background-hover    : color-mix(in srgb, var(--button-warning-color) calc(var(--opacity-hover)*100%), var(--button-warning-background));
+
+  --button-warning-background-pressed  : color-mix(in srgb, var(--button-warning-color) calc(var(--opacity-pressed)*100%), var(--button-warning-background));
+
+  --button-warning-border-color        : transparent;
+
+  --button-success-background          : var(--success);
+
+  --button-success-color               : var(--text-inverse);
+
+  --button-success-background-hover    : color-mix(in srgb, var(--button-success-color) calc(var(--opacity-hover)*100%), var(--button-success-background));
+
+  --button-success-background-pressed  : color-mix(in srgb, var(--button-success-color) calc(var(--opacity-pressed)*100%), var(--button-success-background));
+
+  --button-success-border-color        : transparent;
+
+    /* The unfilled variants share one hover/pressed overlay. `currentColor` makes
+     * it track whatever accent the active theme set, so five themes do not need
+     * ten more tokens. */
+  --button-subtle-background          : transparent;
+
+  --button-subtle-background-hover    : color-mix(in srgb, currentColor calc(var(--opacity-hover)*100%), transparent);
+
+  --button-subtle-background-pressed  : color-mix(in srgb, currentColor calc(var(--opacity-pressed)*100%), transparent);
+
+    /* Outline and dashed sit on the audited surface role rather than on
+     * `transparent`, so their border and text contrast is the contrast the audit
+     * measures. The two variants share every value except the border style, which is
+     * a token so a consumer can swap `dashed` for `dotted` without touching CSS. */
+  --button-outline-background     : var(--surface);
+
+  --button-dashed-border-style    : dashed;
+
+    /* Link variant: an inline text action, so it borrows the link contract. */
+  --button-link-color             : var(--link-color);
+
+  --button-link-decoration        : var(--link-decoration);
+
+  --button-link-decoration-hover  : underline;
+}

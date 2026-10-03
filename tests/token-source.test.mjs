@@ -1,6 +1,7 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { PACKAGE_RENAMES } from '../tools/token-audit.pairs.mjs'
 
 /**
  * Invariants about the token *source*, as opposed to the values it resolves to.
@@ -11,15 +12,44 @@ import { describe, expect, it } from 'vitest'
  * right colour either way, so nothing fails and nothing points at it.
  */
 
-/** The token sheets the package publishes, relative to the package root. */
-const SOURCES = [
-  'packages/tokens/src/primitives.css',
-  'packages/tokens/src/semantics.css',
-  'packages/tokens/src/components.css',
-]
+/**
+ * The sheets the package publishes, discovered rather than listed.
+ *
+ * Phase 2 of the token refactor splits these files, and a hardcoded list would have stopped covering
+ * the new ones exactly when coverage mattered most — the move itself. Discovery walks the layer
+ * directories, so a file that is added to the layout is checked without editing this test.
+ */
+function discoverSources() {
+  const roots = ['packages/tokens/src/primitives', 'packages/tokens/src/semantics', 'packages/tokens/src/component-tokens']
+  const files = []
+  for (const root of roots) {
+    for (const base of [process.cwd(), resolve(process.cwd(), '..')]) {
+      const dir = resolve(base, root)
+      if (!existsSync(dir)) continue
+      for (const entry of readdirSync(dir)) {
+        if (entry.endsWith('.css') && entry !== '_index.css') files.push(join(dir, entry))
+      }
+      break
+    }
+  }
+  if (files.length > 0) return files
+  // Before the split, each layer was a single file; keep working on both layouts so the test is not
+  // the reason a change has to be atomic.
+  return [
+    'packages/tokens/src/primitives.css',
+    'packages/tokens/src/semantics.css',
+    'packages/tokens/src/components.css',
+  ].map((relativePath) => relativePath)
+}
+
+const SOURCES = discoverSources()
 
 function readSource(relativePath) {
-  // The candidates cover running from the workspace root and from the package dir.
+  // An absolute path is already resolved (the discovery above), a relative one is tried from both the
+  // workspace root and the package dir.
+  if (resolve(relativePath) === relativePath && existsSync(relativePath)) {
+    return readFileSync(relativePath, 'utf8')
+  }
   for (const candidate of [
     resolve(process.cwd(), relativePath),
     resolve(process.cwd(), '..', relativePath),
@@ -90,12 +120,18 @@ describe('the token sources', () => {
         declarations(block.body),
       ),
     )
+    // Every source the package publishes, so the check follows the sheets when the layout changes.
     const packageNames = new Set(
-      blocks(stripComments(readSource('packages/tokens/src/components.css'))).flatMap((block) =>
-        declarations(block.body),
+      SOURCES.flatMap((source) =>
+        blocks(stripComments(readSource(source))).flatMap((block) => declarations(block.body)),
       ),
     )
-    const removed = [...prototypeNames].filter((name) => !packageNames.has(name))
+    // A registered rename removes a name on purpose; anything else disappearing is still a failure.
+    const renamed = new Map(PACKAGE_RENAMES.map((entry) => [entry.prototype, entry.package]))
+    const expected = new Set(
+      [...prototypeNames].map((name) => renamed.get(name) ?? name),
+    )
+    const removed = [...expected].filter((name) => !packageNames.has(name))
     // Removing the *second* declaration of a token leaves the first, so no name may
     // disappear. This is the assertion that makes the cleanup above safe to repeat: a
     // future edit that deletes the last declaration of a token fails here.

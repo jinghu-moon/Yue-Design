@@ -1,0 +1,22 @@
+/* Yue component tokens — Menu
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   menu-     | Menu geometry that is not Box's | public
+ */
+
+:root {
+  --menu-item-border-radius            : max(0px, calc(var(--box-border-radius-popover) - var(--box-padding-popover)));
+
+  --menu-width                         : var(--width-sm);
+
+}
+:root {
+  --menu-item-color           : var(--text-primary);
+
+  --menu-item-background-hover: var(--button-ghost-background-hover);
+}

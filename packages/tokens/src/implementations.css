@@ -1,0 +1,31 @@
+/* Yue prototype implementations (opt-in archive)
+ *
+ * These are the PROTOTYPE's component selectors — `.btn`, `.field`, `.list-row`, `.status`,
+ * `.overlay` — transcribed from `design-tokens-generic-v4/`. They are not Yue's component layer:
+ * that is `@yue-ui/vue`, with the `yue-*` namespace, and it is what an application should use.
+ *
+ * This file exists so the prototype's markup can still be rendered side by side with the Vue
+ * components on the same tokens, which is how the migration is reviewed. It is deliberately NOT
+ * imported by `src/index.css`:
+ *
+ *   - shipping it by default would restyle any host element that happens to be called `.btn`,
+ *     `.input` or `.list-row`, in every consumer application;
+ *   - the package's contract is tokens plus a cascade order, not prototype UI.
+ *
+ * Install it explicitly when you want the prototype's look:
+ *
+ *   import '@yue-ui/design-tokens/index.css'            // tokens first
+ *   import '@yue-ui/design-tokens/implementations.css'  // prototype selectors, optionally
+ *
+ * It declares no tokens: every `--*` this archive consumes comes from `index.css`. That split is
+ * enforced by `tools/lib/token-architecture.mjs` — an earlier arrangement had a component's tokens
+ * living here, in a layer the public entry never loaded, so the reachable values were the
+ * prototype's defaults and the intended ones were dead code.
+ */
+@import url("./prototype/button.css") layer(implementations);
+@import url("./prototype/form.css") layer(implementations);
+@import url("./prototype/list.css") layer(implementations);
+@import url("./prototype/status.css") layer(implementations);
+@import url("./prototype/overlay.css") layer(implementations);
+@import url("./prototype/box.css") layer(implementations);
+@import url("./prototype/misc.css") layer(implementations);

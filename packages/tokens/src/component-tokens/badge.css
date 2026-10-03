@@ -1,0 +1,26 @@
+/* Yue component tokens — Badge
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   badge-    | Badge component contract | public
+ */
+
+:root {
+  --badge-background                   : var(--surface-component);
+
+  --badge-foreground                           : var(--text-primary);
+
+  --badge-height                       : var(--size-20);
+
+  --badge-padding-inline               : var(--space-8);
+
+  --badge-border-radius                : var(--radius-full);
+
+  --badge-color                        : var(--text-secondary);
+
+  --badge-font-size                    : var(--font-size-sm);
+}

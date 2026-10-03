@@ -9,10 +9,10 @@
   "exports": {
     ".": "./src/index.css",
     "./index.css": "./src/index.css",
-    "./components.css": "./src/components/index.css",
-    "./src/*": "./src/*",
+    "./implementations.css": "./src/implementations.css",
     "./assets/*": "./assets/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./component-tokens/*.css": "./src/component-tokens/*.css"
   },
   "files": [
     "src",

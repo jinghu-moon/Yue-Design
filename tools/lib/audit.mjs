@@ -64,17 +64,36 @@ function sweepUnresolved(resolver, profiles) {
  *
  * @returns structured result: checks, failures, unresolved references, counts.
  */
-export function auditTarget({ id, entry, profiles = AUDIT_PROFILES, pairs = CONTRAST_PAIRS }) {
+export function auditTarget({
+  id,
+  entry,
+  profiles = AUDIT_PROFILES,
+  pairs = CONTRAST_PAIRS,
+  renames = [],
+}) {
   const sheet = loadTokenSheet({ entry })
   const resolver = createResolver(sheet)
+
+  // A contrast pair names tokens; a rename means the package answers under a new name while the
+  // contract still speaks the prototype's. Mapping here keeps the transcribed contract byte-faithful
+  // (the transcription guard in the test suite depends on that) and still measures the real sheet.
+  const renamed = new Map(renames.map((entry) => [entry.prototype, entry.package]))
+  const applied = new Set()
+  const mapPair = (pair) =>
+    pair.map((entry) => {
+      if (typeof entry !== 'string' || !renamed.has(entry)) return entry
+      applied.add(entry)
+      return renamed.get(entry)
+    })
 
   const checks = []
   for (const profile of profiles) {
     for (const pair of pairs) {
-      checks.push(evaluatePair(resolver, profile, pair))
+      checks.push(evaluatePair(resolver, profile, mapPair(pair)))
     }
   }
   const unresolved = sweepUnresolved(resolver, profiles)
+  const appliedRenames = [...applied].sort()
   const failed = checks.filter((check) => !check.pass)
 
   return {
@@ -92,6 +111,7 @@ export function auditTarget({ id, entry, profiles = AUDIT_PROFILES, pairs = CONT
     checks,
     failed,
     unresolved,
+    appliedRenames,
     passed: checks.length - failed.length,
     total: checks.length,
     ok: failed.length === 0 && unresolved.length === 0,
@@ -111,23 +131,45 @@ export function auditTarget({ id, entry, profiles = AUDIT_PROFILES, pairs = CONT
  *   - a token the package adds (`missing-on-left`) is growth, not drift. It is
  *     rejected by default, and when `allowAdditions` is set it is returned in
  *     `addedNames` instead, so the caller has to acknowledge it explicitly rather
- *     than let token sprawl pass unnoticed.
+ *     than let token sprawl pass unnoticed;
+ *   - a shared token the package resolves *differently* is drift — unless the name is
+ *     in `allowedDivergences`, in which case it is returned in `divergences` with its
+ *     reason. The register is the only way to differ, and the caller is expected to
+ *     assert that the divergences actually found equal the register, so a stale entry
+ *     (or a new silent divergence) fails instead of quietly widening the allowance.
  *
  * @param {{id: string, entry: string}} left  the prototype sheet
  * @param {{id: string, entry: string}} right the package sheet
- * @param {{allowAdditions?: boolean}} [options]
+ * @param {{allowAdditions?: boolean, allowedDivergences?: Array<string|{name: string, reason?: string}>}} [options]
  */
 export function compareTargets(left, right, options = {}) {
-  const { allowAdditions = false } = options
+  const { allowAdditions = false, allowedDivergences = [], allowedRenames = [] } = options
+  const register = new Map(
+    allowedDivergences.map((entry) =>
+      typeof entry === 'string'
+        ? [entry, { name: entry, reason: '' }]
+        : [entry.name, { reason: '', ...entry }],
+    ),
+  )
+  // A rename maps the prototype's name onto the package's name before anything is compared, so the
+  // shared token is judged — and its value compared — under one name on both sides.
+  const renamed = new Map(
+    allowedRenames.map((entry) => [entry.prototype, entry.package]),
+  )
+  const applied = new Set()
   const profiles = PROBE_PROFILES
   const leftResolver = createResolver(loadTokenSheet({ entry: left.entry }))
   const rightResolver = createResolver(loadTokenSheet({ entry: right.entry }))
   const differences = []
+  const divergences = []
   const additions = []
   let compared = 0
 
   for (const profile of profiles) {
-    const leftNames = new Set(leftResolver.names(profile))
+    // Applied per profile: a rename is a source-level fact, but the gate works on resolved names.
+    const leftNames = new Set(
+      leftResolver.names(profile).map((name) => renamed.get(name) ?? name),
+    )
     const rightNames = new Set(rightResolver.names(profile))
     const union = [...new Set([...leftNames, ...rightNames])].sort()
     for (const name of union) {
@@ -145,7 +187,9 @@ export function compareTargets(left, right, options = {}) {
         }
         continue
       }
-      const leftValue = leftResolver.tryValue(name, profile)
+      const prototypeName = [...renamed].find(([, to]) => to === name)?.[0] ?? name
+      if (prototypeName !== name) applied.add(prototypeName)
+      const leftValue = leftResolver.tryValue(prototypeName, profile)
       const rightValue = rightResolver.tryValue(name, profile)
       compared += 1
       if (!leftValue.ok || !rightValue.ok) {
@@ -161,6 +205,17 @@ export function compareTargets(left, right, options = {}) {
         continue
       }
       if (leftValue.value !== rightValue.value) {
+        const registered = register.get(name)
+        if (registered !== undefined) {
+          divergences.push({
+            profile: profile.id,
+            name,
+            left: leftValue.value,
+            right: rightValue.value,
+            reason: registered.reason,
+          })
+          continue
+        }
         differences.push({
           profile: profile.id,
           name,
@@ -172,6 +227,10 @@ export function compareTargets(left, right, options = {}) {
     }
   }
 
+  const appliedRenames = [...new Set(applied)].sort()
+  const divergentNames = [...new Set(divergences.map((divergence) => divergence.name))].sort()
+  const registeredNames = [...register.keys()].sort()
+
   return {
     left: left.id,
     right: right.id,
@@ -179,8 +238,17 @@ export function compareTargets(left, right, options = {}) {
     compared,
     differences,
     additions,
+    divergences,
     /** Unique, sorted package-only token names — the growth, deduplicated. */
     addedNames: [...new Set(additions.map((addition) => addition.name))].sort(),
+    /** Prototype names whose registered rename was exercised by this comparison. */
+    appliedRenames,
+    /** Register entries that matched nothing: a rename that no longer exists must fail the caller. */
+    staleRenames: [...renamed.keys()].filter((name) => !applied.has(name)).sort(),
+    /** Unique, sorted names that actually diverged and were registered as such. */
+    divergentNames,
+    /** Register entries with nothing to explain: a stale allowance fails the caller. */
+    staleDivergences: registeredNames.filter((name) => !divergentNames.includes(name)),
     identical: differences.length === 0,
   }
 }

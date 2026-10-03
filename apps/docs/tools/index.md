@@ -6,11 +6,13 @@
 corepack pnpm audit:tokens
 ```
 
-## 它检查三件事
+## 它检查四件事
 
-1. **对比度** — 32 组前景/背景配对 × 浅色/深色 = 每个目标 64 项，任何一项低于阈值即失败（正文 4.5:1，边界与焦点环 3:1）。
+1. **对比度** — 迁移自原型的 32 组前景/背景配对，浅色/深色各一遍（原型目标 **64 项**）；
+   包目标在这些之上还跑自己新增的 23 组（**110 项**）。任何一项低于阈值即失败（正文 4.5:1，边界与焦点环 3:1）。
 2. **可解析性** — 每个 Token 在每个模式下都必须解析成功。悬空引用、循环引用、无法建模的选择器或 `!important` 都会直接报错，而不是被跳过。
-3. **一致性** — 当审计多个目标时，所有目标在每个模式下必须解析出完全相同的结果。
+3. **一致性** — 当审计多个目标时，所有目标在每个模式下必须解析出完全相同的结果；与原型**有意的分歧**必须逐条登记在 `PACKAGE_DIVERGENCES` 里（当前 10 条，全部是 Tag 的紧凑尺度与方角），未登记的分歧失败，登记了却不再分歧也失败。
+4. **架构** — 可达性（声明在公共入口取不到的文件里就失败）、解析（`@yue-ui/vue` 里每个 `var()` 都必须有人声明）、唯一性（同一 token 不能在两个文件里各声明一次）、层方向（`semantics` 不得依赖 `components`）、导出诚实（`./component-tokens/*.css` 必须是 token，`./implementations.css` 必须只是选择器，且不得导出内部源码树）与目录完整（每个声明文件顶部的 `@yue-token-catalogue` 必须覆盖自己文件里的每个 token）。
 
 ## 为什么审计器要自己实现 CSS 解析
 
@@ -29,11 +31,11 @@ corepack pnpm audit:tokens
 ```text
 Yue Design · Token Audit
 ──────────────────────────────────────────────────────────────────────────────
-contract: 32 contrast pairs × 2 profiles = 64 gating checks per target
+contract: 32 migrated pairs (+23 package-only) × 2 profiles
 gating profiles: light/azure, dark/azure
 
 ▌ prototype — design-tokens-generic-v4/tokens/index.css
-  files: index.css ← primitives.css ← semantics.css ← components.css
+  files: index.css ← primitives/_index.css ← semantics/_index.css ← component-tokens/_index.css
   layers: primitives < semantics < components < implementations < demo
   tokens: light/azure 451, dark/azure 451 (declared 451)
   ...
@@ -43,7 +45,12 @@ gating profiles: light/azure, dark/azure
   profiles probed: light/azure, dark/azure, light/neutral, dark/neutral
   resolutions compared: 1804
   differences: 0
-  → IDENTICAL
+  registered divergences: 10
+  → SUPERSET + REGISTERED DIVERGENCES — no drift, no loss
+
+▌ architecture (reachability, resolution, one declaration site, layer direction)
+  architecture: 591 declared token(s) across 37 reachable file(s), 17 catalogue group(s) in 17 file(s)
+  unreachable 0, undeclared 0, duplicates 0, cross-file slots 0, layer violations 0
 
 RESULT: PASS
 ```
@@ -58,7 +65,7 @@ RESULT: PASS
 
 原型从未采样 `[data-accent=neutral]` 模式，因此把 neutral 也设为门禁，会让一次
 「忠实的迁移」因为原型本身没检查过的东西而失败。审计会报告 neutral 的结果
-（当前两个目标都是 64/64），但不让它决定退出码。
+（当前原型 64/64、包 110/110），但不让它决定退出码。
 
 ## 即将补充
 

@@ -1,0 +1,22 @@
+/* Yue component tokens — Status
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   status-   | Status/dot component contract | public
+ */
+
+:root {
+  --status-padding-block               : var(--space-8);
+
+  --status-padding-inline              : var(--space-12);
+
+  --status-gap                         : var(--space-8);
+
+  --status-border-width                : var(--border-1);
+
+  --status-border-radius               : var(--radius-md);
+}

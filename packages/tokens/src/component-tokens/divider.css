@@ -1,0 +1,18 @@
+/* Yue component tokens — Divider
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   divider-  | Divider component contract | public
+ */
+
+:root {
+  --divider-border-width               : var(--border-1);
+
+  --divider-border-color               : var(--border-divider);
+
+  --divider-margin-block               : var(--space-12);
+}

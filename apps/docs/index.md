@@ -15,7 +15,7 @@ hero:
 
 features:
   - title: '@yue-ui/design-tokens'
-    details: 纯 CSS 自定义属性，不依赖任何框架。浅色 / 深色 / Accent / 强制颜色模式，四层 @layer 级联契约，64 项对比度门禁。
+    details: 纯 CSS 自定义属性，不依赖任何框架。浅色 / 深色 / Accent / 强制颜色模式，四层 @layer 级联契约，110 项对比度门禁。
   - title: '@yue-ui/vue'
     details: Vue 3 组件包，BEM 类名 + Component Token，不使用 scoped 样式，图标通过插槽传入。
   - title: '@yue-ui/docs'

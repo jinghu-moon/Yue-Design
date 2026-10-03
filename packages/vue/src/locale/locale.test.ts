@@ -31,8 +31,10 @@ type Expect<T extends true> = T
  * The derived key union is what components are allowed to pass, so it is asserted here rather
  * than described in prose: a key that is added to the catalog without appearing in this union
  * (or a key that appears without a catalog leaf) fails the type check.
+ *
+ * Current keys: `input.clear`, `tag.closeLabel`.
  */
-type KeysAreExact = Expect<Equal<YueMessageKey, 'input.clear'>>
+type KeysAreExact = Expect<Equal<YueMessageKey, 'input.clear' | 'tag.closeLabel'>>
 
 /**
  * And the packs *are* the catalog, not merely assignable to it: `satisfies` would allow a
@@ -78,10 +80,10 @@ afterEach(() => {
 
 describe('the catalog', () => {
   it('derives exactly the documented key union', () => {
-    const keys: YueMessageKey[] = ['input.clear']
-    expect(keys).toHaveLength(1)
+    const keys: YueMessageKey[] = ['input.clear', 'tag.closeLabel']
+    expect(keys).toHaveLength(2)
     // The type-level assertion above is the real check; this keeps the runtime half honest.
-    expect(Object.keys(YUE_MESSAGE_META).sort()).toEqual(keys)
+    expect(Object.keys(YUE_MESSAGE_META).sort()).toEqual(keys.sort())
   })
 
   it('documents every key with a purpose, parameters and announcement flag', () => {

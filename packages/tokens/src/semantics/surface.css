@@ -1,0 +1,74 @@
+/* Yue semantics tokens — surfaces and page/row backgrounds
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+/* Yue Semantic Tokens
+ * Theme and interaction roles. Components consume these roles instead of raw palette values.
+ * Layer source for prototypes/design-tokens-generic-v4.html.
+ */
+[data-theme=dark] {
+  color-scheme: dark
+}
+
+:root {
+  --page                 : var(--neutral-100);
+
+  --surface              : var(--neutral-0);
+
+  --surface-subtle       : var(--neutral-50);
+
+  --surface-component    : var(--neutral-200);
+
+  --surface-inverse      : var(--neutral-950);
+
+  --surface-level-2      : var(--neutral-0);
+
+  --surface-level-3      : var(--neutral-0);
+
+  /* Elevated surfaces are white in light mode, so hierarchy cannot come from
+   * the surface fill. These border roles are the non-shadow marker: Level 3
+   * must stay distinguishable from Level 2 even with elevation disabled. */
+  --surface-level-2-border: var(--border-divider);
+
+  --surface-level-3-border: var(--border-default);
+
+  --list-row-color              : var(--text-primary);
+
+  /* Expressed in this layer's own terms rather than as `var(--button-ghost-background-hover)`.
+   *
+   * The row hover used to *forward-reference* a components-layer token. CSS resolves custom
+   * properties lazily, so it worked — right up until the components layer was missing, when the
+   * property silently became invalid instead of failing. A dependency from semantics to components
+   * also inverts the layer order the whole package is built on, and no static check could see it.
+   *
+   * The colour is the same one the ghost button uses (`--text-primary` at the hover opacity), which
+   * is why the two hover states looked identical — now they are identical by construction rather
+   * than by coincidence.
+   */
+  --list-row-background-hover   : color-mix(in srgb, var(--list-row-color) calc(var(--opacity-hover)*100%), transparent);
+
+  --list-row-background-selected: var(--selected-background);
+}
+
+[data-theme=dark] {
+  --page              : #101010;
+
+  --surface           : #181818;
+
+  --surface-subtle    : #202020;
+
+  --surface-component : #2b2b2b;
+
+  --surface-inverse   : var(--neutral-100);
+
+  --surface-level-2   : #202020;
+
+  --surface-level-3   : #2b2b2b;
+
+  --surface-level-2-border: var(--border-divider);
+
+  --surface-level-3-border: var(--border-default);
+}

@@ -1,0 +1,75 @@
+/* Yue primitives tokens — spacing, size and layout canvas scales
+ *
+ * Reached only through `src/index.css` → `primitives/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --space-0                   : 0px;
+
+  --space-2                   : 2px;
+
+  --space-4                   : 4px;
+
+  --space-8                   : 8px;
+
+  --space-12                  : 12px;
+
+  --space-16                  : 16px;
+
+  --space-24                  : 24px;
+
+  --space-32                  : 32px;
+
+  --space-48                  : 48px;
+
+  --space-64                  : 64px;
+
+  --size-12                   : 12px;
+
+  --size-16                   : 16px;
+
+  --size-20                   : 20px;
+
+  --size-24                   : 24px;
+
+  --size-28                   : 28px;
+
+  --size-32                   : 32px;
+
+  --size-40                   : 40px;
+
+  --size-48                   : 48px;
+
+  --size-56                   : 56px;
+
+  --gap-control-group         : var(--space-8);
+
+  --gap-form-field            : var(--space-12);
+
+  --gap-section               : var(--space-24);
+
+  --gap-page-section          : var(--space-32);
+
+   /* Layout contracts: components stay fluid; pages opt into these boundaries. */
+  --breakpoint-sm             : 640px;
+
+  --breakpoint-md             : 768px;
+
+  --breakpoint-lg             : 1024px;
+
+  --breakpoint-xl             : 1280px;
+
+  --layout-page-gutter        : var(--space-16);
+
+  --layout-page-gutter-lg     : var(--space-32);
+
+  --layout-grid-columns       : 12;
+
+  --layout-grid-gap           : var(--space-16);
+
+  --container-text            : 720px;
+
+  --container-page            : 1180px;
+}

@@ -1,0 +1,22 @@
+/* Yue component tokens — Spinner
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   spinner-  | Spinner component contract | public
+ */
+
+:root {
+  --spinner-size                       : var(--size-20);
+
+  --spinner-border-width               : var(--border-2);
+
+  --spinner-color                      : var(--accent-solid);
+
+  --spinner-track                      : var(--surface-component);
+
+  --spinner-duration                   : calc(var(--duration-slow)*3);
+}

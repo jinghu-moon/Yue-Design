@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>色卡对比 · Yue Design System</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #111;
+  color: #e8e8e8;
+  font-family: 'SF Pro Text', 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  padding: 36px 28px 60px;
+  line-height: 1.5;
+}
+body.light { background: #f5f5f5; color: #212121; }
+header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.sub { font-size: 11px; opacity: 0.45; margin-top: 3px; }
+.btn {
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid rgba(128,128,128,0.3);
+  background: rgba(128,128,128,0.1);
+  color: inherit; cursor: pointer; font-size: 12px;
+}
+.btn:hover { opacity: 0.7; }
+.section { margin-bottom: 44px; }
+.section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.4; margin-bottom: 14px;
+}
+.group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.row-label {
+  font-size: 11px; opacity: 0.55; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.badge {
+  display: inline-block; padding: 1px 5px; border-radius: 3px;
+  font-size: 10px; font-weight: 600;
+}
+.badge-cur  { background: rgba(128,128,128,0.2); }
+.badge-cold { background: rgba(80,150,220,0.2); color: #5ab0f0; }
+.badge-warm { background: rgba(220,140,50,0.2); color: #e09040; }
+.badge-alt  { background: rgba(140,100,220,0.2); color: #b080ee; }
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  border-radius: 6px; overflow: hidden;
+}
+.swatches.s12 { grid-template-columns: repeat(12, 1fr); }
+.swatch {
+  aspect-ratio: 1 / 1.3; position: relative; cursor: default;
+  transition: transform 0.12s; flex: 1;
+}
+.swatch:hover { transform: scaleY(1.1); z-index: 2; }
+.step {
+  position: absolute; bottom: 3px; left: 0; right: 0;
+  text-align: center; font-size: 8.5px; font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.hex {
+  position: absolute; top: 3px; left: 0; right: 0;
+  text-align: center; font-size: 7px;
+  font-family: 'SF Mono','Fira Code',monospace;
+  opacity: 0; transition: opacity 0.12s;
+}
+.swatch:hover .hex { opacity: 0.8; }
+.dk { color: rgba(0,0,0,0.6); }
+.lt { color: rgba(255,255,255,0.7); }
+.divider { height: 1px; background: rgba(128,128,128,0.15); margin: 32px 0; }
+.marks { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.mark {
+  width: 28px; height: 28px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; cursor: default;
+}
+.semantic { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.sem {
+  padding: 6px 12px; border-radius: 4px;
+  font-size: 11px; border: 1px solid rgba(128,128,128,0.25);
+}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>色卡对比</h1><div class="sub">悬停色块显示 HEX · 点击右上角切换明暗</div></div>
+  <button class="btn" onclick="document.body.classList.toggle('light')">明 / 暗</button>
+</header>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- NEUTRAL -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Neutral · 中性灰</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前</span> 纯中性灰（无色相，现有色板）</div>
+    <div class="swatches s12">
+      <div class="swatch" style="background:#FFFFFF"><span class="step dk">0</span><span class="hex dk">#FFFFFF</span></div>
+      <div class="swatch" style="background:#FAFAFA"><span class="step dk">50</span><span class="hex dk">#FAFAFA</span></div>
+      <div class="swatch" style="background:#F5F5F5"><span class="step dk">100</span><span class="hex dk">#F5F5F5</span></div>
+      <div class="swatch" style="background:#EEEEEE"><span class="step dk">200</span><span class="hex dk">#EEEEEE</span></div>
+      <div class="swatch" style="background:#E0E0E0"><span class="step dk">300</span><span class="hex dk">#E0E0E0</span></div>
+      <div class="swatch" style="background:#BDBDBD"><span class="step dk">400</span><span class="hex dk">#BDBDBD</span></div>
+      <div class="swatch" style="background:#9E9E9E"><span class="step dk">500</span><span class="hex dk">#9E9E9E</span></div>
+      <div class="swatch" style="background:#757575"><span class="step lt">600</span><span class="hex lt">#757575</span></div>
+      <div class="swatch" style="background:#616161"><span class="step lt">700</span><span class="hex lt">#616161</span></div>
+      <div class="swatch" style="background:#424242"><span class="step lt">800</span><span class="hex lt">#424242</span></div>
+      <div class="swatch" style="background:#212121"><span class="step lt">900</span><span class="hex lt">#212121</span></div>
+      <div class="swatch" style="background:#121212"><span class="step lt">950</span><span class="hex lt">#121212</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前</span> Slate（冷灰，带蓝味）</div>
+    <div class="swatches s12">
+      <div class="swatch" style="background:#FFFFFF"><span class="step dk">0</span><span class="hex dk">#FFFFFF</span></div>
+      <div class="swatch" style="background:#F7FAFF"><span class="step dk">50</span><span class="hex dk">#F7FAFF</span></div>
+      <div class="swatch" style="background:#F0F6FD"><span class="step dk">100</span><span class="hex dk">#F0F6FD</span></div>
+      <div class="swatch" style="background:#E7EFFA"><span class="step dk">200</span><span class="hex dk">#E7EFFA</span></div>
+      <div class="swatch" style="background:#D7E1EF"><span class="step dk">300</span><span class="hex dk">#D7E1EF</span></div>
+      <div class="swatch" style="background:#BDC8D7"><span class="step dk">400</span><span class="hex dk">#BDC8D7</span></div>
+      <div class="swatch" style="background:#99A4B2"><span class="step dk">500</span><span class="hex dk">#99A4B2</span></div>
+      <div class="swatch" style="background:#6A7481"><span class="step lt">600</span><span class="hex lt">#6A7481</span></div>
+      <div class="swatch" style="background:#49535F"><span class="step lt">700</span><span class="hex lt">#49535F</span></div>
+      <div class="swatch" style="background:#28343F"><span class="step lt">800</span><span class="hex lt">#28343F</span></div>
+      <div class="swatch" style="background:#192029"><span class="step lt">900</span><span class="hex lt">#192029</span></div>
+      <div class="swatch" style="background:#0D1219"><span class="step lt">950</span><span class="hex lt">#0D1219</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-warm">暖灰</span> Stone（暖灰，带棕味）</div>
+    <div class="swatches s12">
+      <div class="swatch" style="background:#FFFFFF"><span class="step dk">0</span><span class="hex dk">#FFFFFF</span></div>
+      <div class="swatch" style="background:#FCFAF7"><span class="step dk">50</span><span class="hex dk">#FCFAF7</span></div>
+      <div class="swatch" style="background:#F9F4EF"><span class="step dk">100</span><span class="hex dk">#F9F4EF</span></div>
+      <div class="swatch" style="background:#F3EDE6"><span class="step dk">200</span><span class="hex dk">#F3EDE6</span></div>
+      <div class="swatch" style="background:#E6E0D6"><span class="step dk">300</span><span class="hex dk">#E6E0D6</span></div>
+      <div class="swatch" style="background:#CEC6BC"><span class="step dk">400</span><span class="hex dk">#CEC6BC</span></div>
+      <div class="swatch" style="background:#AAA29A"><span class="step dk">500</span><span class="hex dk">#AAA29A</span></div>
+      <div class="swatch" style="background:#7F7269"><span class="step lt">600</span><span class="hex lt">#7F7269</span></div>
+      <div class="swatch" style="background:#58514A"><span class="step lt">700</span><span class="hex lt">#58514A</span></div>
+      <div class="swatch" style="background:#383228"><span class="step lt">800</span><span class="hex lt">#383228</span></div>
+      <div class="swatch" style="background:#231E18"><span class="step lt">900</span><span class="hex lt">#231E18</span></div>
+      <div class="swatch" style="background:#15100D"><span class="step lt">950</span><span class="hex lt">#15100D</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-alt">紫灰</span> Haze（带轻微紫调，介于冷暖之间）</div>
+    <div class="swatches s12">
+      <div class="swatch" style="background:#FFFFFF"><span class="step dk">0</span><span class="hex dk">#FFFFFF</span></div>
+      <div class="swatch" style="background:#FAF9FF"><span class="step dk">50</span><span class="hex dk">#FAF9FF</span></div>
+      <div class="swatch" style="background:#F5F4FD"><span class="step dk">100</span><span class="hex dk">#F5F4FD</span></div>
+      <div class="swatch" style="background:#EEEED9"><span class="step dk">200</span><span class="hex dk">#EEEED9</span></div>
+      <div class="swatch" style="background:#E0DEEE"><span class="step dk">300</span><span class="hex dk">#E0DEEE</span></div>
+      <div class="swatch" style="background:#CBC5D6"><span class="step dk">400</span><span class="hex dk">#CBC5D6</span></div>
+      <div class="swatch" style="background:#A3A1B2"><span class="step dk">500</span><span class="hex dk">#A3A1B2</span></div>
+      <div class="swatch" style="background:#737181"><span class="step lt">600</span><span class="hex lt">#737181</span></div>
+      <div class="swatch" style="background:#53505F"><span class="step lt">700</span><span class="hex lt">#53505F</span></div>
+      <div class="swatch" style="background:#33323E"><span class="step lt">800</span><span class="hex lt">#33323E</span></div>
+      <div class="swatch" style="background:#1F1E28"><span class="step lt">900</span><span class="hex lt">#1F1E28</span></div>
+      <div class="swatch" style="background:#121119"><span class="step lt">950</span><span class="hex lt">#121119</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ACCENT BLUE -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Accent 蓝系</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前</span> Steel Blue（低饱和蓝灰，H≈210）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#F4F9FC"><span class="step dk">50</span><span class="hex dk">#F4F9FC</span></div>
+      <div class="swatch" style="background:#E3F1F7"><span class="step dk">100</span><span class="hex dk">#E3F1F7</span></div>
+      <div class="swatch" style="background:#C6E2EE"><span class="step dk">200</span><span class="hex dk">#C6E2EE</span></div>
+      <div class="swatch" style="background:#A1CCDE"><span class="step dk">300</span><span class="hex dk">#A1CCDE</span></div>
+      <div class="swatch" style="background:#7AB3CB"><span class="step dk">400</span><span class="hex dk">#7AB3CB</span></div>
+      <div class="swatch" style="background:#5B9AB2"><span class="step lt">500</span><span class="hex lt">#5B9AB2</span></div>
+      <div class="swatch" style="background:#477894"><span class="step lt">600</span><span class="hex lt">#477894</span></div>
+      <div class="swatch" style="background:#3B647A"><span class="step lt">700</span><span class="hex lt">#3B647A</span></div>
+      <div class="swatch" style="background:#323E64"><span class="step lt">800</span><span class="hex lt">#323E64</span></div>
+      <div class="swatch" style="background:#2B4335"><span class="step lt">900</span><span class="hex lt">#2B4335</span></div>
+      <div class="swatch" style="background:#192A35"><span class="step lt">950</span><span class="hex lt">#192A35</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cold">当前 Azure</span> Azure（高饱和蓝，H≈215，清澈）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#F4F8FE"><span class="step dk">50</span><span class="hex dk">#F4F8FE</span></div>
+      <div class="swatch" style="background:#E6F0FF"><span class="step dk">100</span><span class="hex dk">#E6F0FF</span></div>
+      <div class="swatch" style="background:#CAE0FF"><span class="step dk">200</span><span class="hex dk">#CAE0FF</span></div>
+      <div class="swatch" style="background:#A1C9F7"><span class="step dk">300</span><span class="hex dk">#A1C9F7</span></div>
+      <div class="swatch" style="background:#7ADDFF"><span class="step dk">400</span><span class="hex dk">#7ADDFF</span></div>
+      <div class="swatch" style="background:#35C8F7"><span class="step dk">500</span><span class="hex dk">#35C8F7</span></div>
+      <div class="swatch" style="background:#1175D8"><span class="step lt">600</span><span class="hex lt">#1175D8</span></div>
+      <div class="swatch" style="background:#125F8B"><span class="step lt">700</span><span class="hex lt">#125F8B</span></div>
+      <div class="swatch" style="background:#044C97"><span class="step lt">800</span><span class="hex lt">#044C97</span></div>
+      <div class="swatch" style="background:#013076"><span class="step lt">900</span><span class="hex lt">#013076</span></div>
+      <div class="swatch" style="background:#0A2B40"><span class="step lt">950</span><span class="hex lt">#0A2B40</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ACCENT VIOLET / INDIGO / PURPLE -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Accent 紫系</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-alt">当前 Violet</span> Violet（蓝紫，H≈270，Figma 风）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#F8F7FE"><span class="step dk">50</span><span class="hex dk">#F8F7FE</span></div>
+      <div class="swatch" style="background:#EDECFE"><span class="step dk">100</span><span class="hex dk">#EDECFE</span></div>
+      <div class="swatch" style="background:#D9D5FE"><span class="step dk">200</span><span class="hex dk">#D9D5FE</span></div>
+      <div class="swatch" style="background:#BE85FE"><span class="step dk">300</span><span class="hex dk">#BE85FE</span></div>
+      <div class="swatch" style="background:#A28FFE"><span class="step dk">400</span><span class="hex dk">#A28FFE</span></div>
+      <div class="swatch" style="background:#8568EE"><span class="step lt">500</span><span class="hex lt">#8568EE</span></div>
+      <div class="swatch" style="background:#6A4FC4"><span class="step lt">600</span><span class="hex lt">#6A4FC4</span></div>
+      <div class="swatch" style="background:#5A42A2"><span class="step lt">700</span><span class="hex lt">#5A42A2</span></div>
+      <div class="swatch" style="background:#493986"><span class="step lt">800</span><span class="hex lt">#493986</span></div>
+      <div class="swatch" style="background:#3C316C"><span class="step lt">900</span><span class="hex lt">#3C316C</span></div>
+      <div class="swatch" style="background:#281F48"><span class="step lt">950</span><span class="hex lt">#281F48</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-alt">扩展 Purple</span> Purple（红紫，H≈290）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#FCF6FE"><span class="step dk">50</span><span class="hex dk">#FCF6FE</span></div>
+      <div class="swatch" style="background:#F9EBFF"><span class="step dk">100</span><span class="hex dk">#F9EBFF</span></div>
+      <div class="swatch" style="background:#F2D4FE"><span class="step dk">200</span><span class="hex dk">#F2D4FE</span></div>
+      <div class="swatch" style="background:#E9B3FF"><span class="step dk">300</span><span class="hex dk">#E9B3FF</span></div>
+      <div class="swatch" style="background:#D9BEF6"><span class="step dk">400</span><span class="hex dk">#D9BEF6</span></div>
+      <div class="swatch" style="background:#C80CEB"><span class="step lt">500</span><span class="hex lt">#C80CEB</span></div>
+      <div class="swatch" style="background:#A053C5"><span class="step lt">600</span><span class="hex lt">#A053C5</span></div>
+      <div class="swatch" style="background:#8A4AB5"><span class="step lt">700</span><span class="hex lt">#8A4AB5</span></div>
+      <div class="swatch" style="background:#7B3287"><span class="step lt">800</span><span class="hex lt">#7B3287</span></div>
+      <div class="swatch" style="background:#582A09"><span class="step lt">900</span><span class="hex lt">#582A09</span></div>
+      <div class="swatch" style="background:#391B45"><span class="step lt">950</span><span class="hex lt">#391B45</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SUCCESS GREEN -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Success · 绿</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前 Green</span> Green（翡翠绿，H≈150）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#F3FAF6"><span class="step dk">50</span><span class="hex dk">#F3FAF6</span></div>
+      <div class="swatch" style="background:#E0F2E7"><span class="step dk">100</span><span class="hex dk">#E0F2E7</span></div>
+      <div class="swatch" style="background:#C1E6CF"><span class="step dk">200</span><span class="hex dk">#C1E6CF</span></div>
+      <div class="swatch" style="background:#98D2AE"><span class="step dk">300</span><span class="hex dk">#98D2AE</span></div>
+      <div class="swatch" style="background:#6FBD89"><span class="step dk">400</span><span class="hex dk">#6FBD89</span></div>
+      <div class="swatch" style="background:#509B71"><span class="step lt">500</span><span class="hex lt">#509B71</span></div>
+      <div class="swatch" style="background:#408865"><span class="step lt">600</span><span class="hex lt">#408865</span></div>
+      <div class="swatch" style="background:#37674C"><span class="step lt">700</span><span class="hex lt">#37674C</span></div>
+      <div class="swatch" style="background:#2F523E"><span class="step lt">800</span><span class="hex lt">#2F523E</span></div>
+      <div class="swatch" style="background:#274234"><span class="step lt">900</span><span class="hex lt">#274234</span></div>
+      <div class="swatch" style="background:#122418"><span class="step lt">950</span><span class="hex lt">#122418</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cold">扩展 Teal</span> Teal（青绿，偏冷，H≈175）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#EAF8F8"><span class="step dk">50</span><span class="hex dk">#EAF8F8</span></div>
+      <div class="swatch" style="background:#D5F5EF"><span class="step dk">100</span><span class="hex dk">#D5F5EF</span></div>
+      <div class="swatch" style="background:#B2E9D0"><span class="step dk">200</span><span class="hex dk">#B2E9D0</span></div>
+      <div class="swatch" style="background:#7ED6C7"><span class="step dk">300</span><span class="hex dk">#7ED6C7</span></div>
+      <div class="swatch" style="background:#38BEAC"><span class="step dk">400</span><span class="hex dk">#38BEAC</span></div>
+      <div class="swatch" style="background:#0AA0BF"><span class="step lt">500</span><span class="hex lt">#0AA0BF</span></div>
+      <div class="swatch" style="background:#0B8577"><span class="step lt">600</span><span class="hex lt">#0B8577</span></div>
+      <div class="swatch" style="background:#056061"><span class="step lt">700</span><span class="hex lt">#056061</span></div>
+      <div class="swatch" style="background:#02504E"><span class="step lt">800</span><span class="hex lt">#02504E</span></div>
+      <div class="swatch" style="background:#02463E"><span class="step lt">900</span><span class="hex lt">#02463E</span></div>
+      <div class="swatch" style="background:#002E28"><span class="step lt">950</span><span class="hex lt">#002E28</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- WARNING -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Warning · 警告色</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前 Amber</span> Amber（土黄，H≈45）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#FFFAED"><span class="step dk">50</span><span class="hex dk">#FFFAED</span></div>
+      <div class="swatch" style="background:#FFF4D3"><span class="step dk">100</span><span class="hex dk">#FFF4D3</span></div>
+      <div class="swatch" style="background:#FFE397"><span class="step dk">200</span><span class="hex dk">#FFE397</span></div>
+      <div class="swatch" style="background:#FFD65C"><span class="step dk">300</span><span class="hex dk">#FFD65C</span></div>
+      <div class="swatch" style="background:#FBC435"><span class="step dk">400</span><span class="hex dk">#FBC435</span></div>
+      <div class="swatch" style="background:#D69D29"><span class="step dk">500</span><span class="hex dk">#D69D29</span></div>
+      <div class="swatch" style="background:#B37E22"><span class="step lt">600</span><span class="hex lt">#B37E22</span></div>
+      <div class="swatch" style="background:#905A1D"><span class="step lt">700</span><span class="hex lt">#905A1D</span></div>
+      <div class="swatch" style="background:#75471B"><span class="step lt">800</span><span class="hex lt">#75471B</span></div>
+      <div class="swatch" style="background:#623A1A"><span class="step lt">900</span><span class="hex lt">#623A1A</span></div>
+      <div class="swatch" style="background:#381D09"><span class="step lt">950</span><span class="hex lt">#381D09</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-warm">扩展 Orange</span> Orange（橙，H≈28，更有力）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#FEF6F2"><span class="step dk">50</span><span class="hex dk">#FEF6F2</span></div>
+      <div class="swatch" style="background:#FFECE1"><span class="step dk">100</span><span class="hex dk">#FFECE1</span></div>
+      <div class="swatch" style="background:#FFD6BE"><span class="step dk">200</span><span class="hex dk">#FFD6BE</span></div>
+      <div class="swatch" style="background:#FFB68A"><span class="step dk">300</span><span class="hex dk">#FFB68A</span></div>
+      <div class="swatch" style="background:#F99354"><span class="step dk">400</span><span class="hex dk">#F99354</span></div>
+      <div class="swatch" style="background:#DC711C"><span class="step lt">500</span><span class="hex lt">#DC711C</span></div>
+      <div class="swatch" style="background:#B85802"><span class="step lt">600</span><span class="hex lt">#B85802</span></div>
+      <div class="swatch" style="background:#9A4483"><span class="step lt">700</span><span class="hex lt">#9A4483</span></div>
+      <div class="swatch" style="background:#7E3D02"><span class="step lt">800</span><span class="hex lt">#7E3D02</span></div>
+      <div class="swatch" style="background:#692C00"><span class="step lt">900</span><span class="hex lt">#692C00</span></div>
+      <div class="swatch" style="background:#4D1801"><span class="step lt">950</span><span class="hex lt">#4D1801</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ERROR RED -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Error · 错误红</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cur">当前 Red</span> Red（暖红，H≈5-10）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#FFF6F7"><span class="step dk">50</span><span class="hex dk">#FFF6F7</span></div>
+      <div class="swatch" style="background:#FFECEA"><span class="step dk">100</span><span class="hex dk">#FFECEA</span></div>
+      <div class="swatch" style="background:#FFD5D1"><span class="step dk">200</span><span class="hex dk">#FFD5D1</span></div>
+      <div class="swatch" style="background:#FF8A8B"><span class="step dk">300</span><span class="hex dk">#FF8A8B</span></div>
+      <div class="swatch" style="background:#FF687E"><span class="step dk">400</span><span class="hex dk">#FF687E</span></div>
+      <div class="swatch" style="background:#FF6A5E"><span class="step lt">500</span><span class="hex lt">#FF6A5E</span></div>
+      <div class="swatch" style="background:#F7546E"><span class="step lt">600</span><span class="hex lt">#F7546E</span></div>
+      <div class="swatch" style="background:#C83D38"><span class="step lt">700</span><span class="hex lt">#C83D38</span></div>
+      <div class="swatch" style="background:#8C4933"><span class="step lt">800</span><span class="hex lt">#8C4933</span></div>
+      <div class="swatch" style="background:#532124"><span class="step lt">900</span><span class="hex lt">#532124</span></div>
+      <div class="swatch" style="background:#3C1714"><span class="step lt">950</span><span class="hex lt">#3C1714</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-alt">扩展 Rose</span> Rose（玫瑰红，偏冷，H≈345）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#FEF6F7"><span class="step dk">50</span><span class="hex dk">#FEF6F7</span></div>
+      <div class="swatch" style="background:#FFEAEE"><span class="step dk">100</span><span class="hex dk">#FFEAEE</span></div>
+      <div class="swatch" style="background:#FED4DC"><span class="step dk">200</span><span class="hex dk">#FED4DC</span></div>
+      <div class="swatch" style="background:#FFB1C3"><span class="step dk">300</span><span class="hex dk">#FFB1C3</span></div>
+      <div class="swatch" style="background:#FE85A6"><span class="step dk">400</span><span class="hex dk">#FE85A6</span></div>
+      <div class="swatch" style="background:#E85E88"><span class="step lt">500</span><span class="hex lt">#E85E88</span></div>
+      <div class="swatch" style="background:#CC4370"><span class="step lt">600</span><span class="hex lt">#CC4370</span></div>
+      <div class="swatch" style="background:#AB345C"><span class="step lt">700</span><span class="hex lt">#AB345C</span></div>
+      <div class="swatch" style="background:#8C28A4"><span class="step lt">800</span><span class="hex lt">#8C28A4</span></div>
+      <div class="swatch" style="background:#602238"><span class="step lt">900</span><span class="hex lt">#602238</span></div>
+      <div class="swatch" style="background:#481626"><span class="step lt">950</span><span class="hex lt">#481626</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- INFO / CYAN -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Info · 信息色</div>
+  <div class="group">
+    <div class="row-label"><span class="badge badge-cold">扩展 Cyan</span> Cyan（青色，H≈190，与蓝 accent 有足够色距）</div>
+    <div class="swatches">
+      <div class="swatch" style="background:#E0FAFC"><span class="step dk">50</span><span class="hex dk">#E0FAFC</span></div>
+      <div class="swatch" style="background:#D8F5F9"><span class="step dk">100</span><span class="hex dk">#D8F5F9</span></div>
+      <div class="swatch" style="background:#A8EBF3"><span class="step dk">200</span><span class="hex dk">#A8EBF3</span></div>
+      <div class="swatch" style="background:#72D5E5"><span class="step dk">300</span><span class="hex dk">#72D5E5</span></div>
+      <div class="swatch" style="background:#21BCE1"><span class="step dk">400</span><span class="hex dk">#21BCE1</span></div>
+      <div class="swatch" style="background:#0CC9E1"><span class="step lt">500</span><span class="hex lt">#0CC9E1</span></div>
+      <div class="swatch" style="background:#0A8291"><span class="step lt">600</span><span class="hex lt">#0A8291</span></div>
+      <div class="swatch" style="background:#056077"><span class="step lt">700</span><span class="hex lt">#056077</span></div>
+      <div class="swatch" style="background:#015661"><span class="step lt">800</span><span class="hex lt">#015661</span></div>
+      <div class="swatch" style="background:#004540"><span class="step lt">900</span><span class="hex lt">#004540</span></div>
+      <div class="swatch" style="background:#002033"><span class="step lt">950</span><span class="hex lt">#002033</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MARK COLORS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Mark · 内容标注色</div>
+  <div class="marks">
+    <div class="mark" style="background:#F83E3E;color:#fff" title="#F83E3E">红</div>
+    <div class="mark" style="background:#FF922B;color:#fff" title="#FF922B">橙</div>
+    <div class="mark" style="background:#FCC419;color:#212121" title="#FCC419">黄</div>
+    <div class="mark" style="background:#40C057;color:#fff" title="#40C057">绿</div>
+    <div class="mark" style="background:#339AF0;color:#fff" title="#339AF0">蓝</div>
+    <div class="mark" style="background:#9775FA;color:#fff" title="#9775FA">紫</div>
+    <div class="mark" style="background:#212529;color:#fff" title="#212529">黑</div>
+    <div class="mark" style="background:#FFFFFF;color:#212121;border:1px solid #ccc" title="#FFFFFF">白</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SEMANTIC ROLES -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Semantic Roles · 当前语义角色</div>
+  <div class="semantic">
+    <div class="sem" style="background:#F5F5F5;color:#212121">--page #F5F5F5</div>
+    <div class="sem" style="background:#FFFFFF;color:#212121;border-color:#ddd">--surface #FFFFFF</div>
+    <div class="sem" style="background:#EEEEEE;color:#212121">--surface-component #EEEEEE</div>
+    <div class="sem" style="background:#121212;color:#e8e8e8">--surface-inverse #121212</div>
+  </div>
+</div>
+
+</body>
+</html>

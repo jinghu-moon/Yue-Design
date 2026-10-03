@@ -1,0 +1,95 @@
+/* Yue primitives tokens — font families, sizes, weights, tracking and line heights
+ *
+ * Reached only through `src/index.css` → `primitives/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+@font-face {
+   font-family : HarmonyOS;
+   src         : url('../../assets/HarmonyOS_SansSC_Medium.woff2') format('woff2');
+   font-weight : 500;
+   font-display: swap
+}
+
+@font-face {
+   font-family : HarmonyOS;
+   src         : url('../../assets/HarmonyOS_SansSC_Semibold.woff2') format('woff2');
+   font-weight : 600;
+   font-display: swap
+}
+
+@font-face {
+   font-family : HarmonyOS;
+   src         : url('../../assets/HarmonyOS_SansSC_Bold.woff2') format('woff2');
+   font-weight : 700;
+   font-display: swap
+}
+
+@font-face {
+   font-family : FiraCode;
+   src         : url('../../assets/FiraCode-Regular.woff2') format('woff2');
+   font-weight : 400;
+   font-display: swap
+}
+
+@font-face {
+   font-family : TCloudNumber;
+   src         : url('../../assets/TCloudNumber-Regular.woff2') format('woff2');
+   font-weight : 400;
+   font-display: swap
+}
+
+:root {
+  --font-ui                   : HarmonyOS, system-ui, sans-serif;
+
+  --font-mono                 : FiraCode, ui-monospace, Consolas, monospace;
+
+  --font-number               : TCloudNumber, var(--font-mono);
+
+  --weight-regular            : 400;
+
+  --weight-medium             : 500;
+
+  --weight-semibold           : 600;
+
+  --weight-display            : 700;
+
+  --font-size-sm              : 12px;
+
+  --font-size-md              : 14px;
+
+  --font-size-lg              : 16px;
+
+  --font-size-xl              : 20px;
+
+  --font-size-2xl             : 24px;
+
+  --font-size-3xl             : 32px;
+
+  --font-size-display         : 40px;
+
+  --line-height-sm            : 16px;
+
+  --line-height-md            : 20px;
+
+  --line-height-lg            : 24px;
+
+  --line-height-xl            : 28px;
+
+  --line-height-2xl           : 32px;
+
+  --line-height-3xl           : 40px;
+
+  --line-height-display       : 48px;
+
+  --leading-tight             : 1.25;
+
+  --leading-normal            : 1.5;
+
+  --leading-relaxed           : 1.65;
+
+  --tracking-normal           : 0;
+
+  --tracking-wide             : .04em;
+}

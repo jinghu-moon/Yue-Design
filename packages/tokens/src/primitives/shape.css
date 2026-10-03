@@ -1,0 +1,47 @@
+/* Yue primitives tokens — radii, border widths and focus-ring geometry
+ *
+ * Reached only through `src/index.css` → `primitives/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --radius-base               : 8px;
+
+  --radius-none               : 0px;
+
+  --radius-xs                 : calc(var(--radius-base)/4);
+
+  --radius-sm                 : calc(var(--radius-base)/2);
+
+  --radius-md                 : var(--radius-base);
+
+  --radius-lg                 : calc(var(--radius-base)*1.5);
+
+  --radius-xl                 : calc(var(--radius-base)*2);
+
+  --radius-full               : 9999px;
+
+  --border-0                  : 0px;
+
+  --border-1                  : 1px;
+
+  --border-2                  : 2px;
+
+  --border-3                  : 3px;
+
+  --border-4                  : 4px;
+
+  --border-5                  : 5px;
+
+  /* The ring geometry lives in `semantics/interaction.css` with its colour: a ring is a semantic
+   * decision, and splitting it across layers let a theme change the colour but not the width. */
+
+  --width-sm                  : 192px;
+
+  --width-md                  : 320px;
+
+  --width-lg                  : 480px;
+
+  --width-xl                  : 640px;
+}

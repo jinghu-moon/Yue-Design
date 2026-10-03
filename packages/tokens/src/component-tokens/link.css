@@ -1,0 +1,16 @@
+/* Yue component tokens — Link
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   link-     | Link component contract | public
+ */
+
+:root {
+  --link-decoration                    : none;
+
+  --link-color                         : var(--text-link);
+}

@@ -1,0 +1,20 @@
+/* Yue component tokens — Progress
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   progress- | Progress component contract | public
+ */
+
+:root {
+  --progress-fill                      : var(--control-accent);
+
+  --progress-height                    : var(--space-8);
+
+  --progress-border-radius             : var(--radius-full);
+
+  --progress-track                     : var(--surface-component);
+}

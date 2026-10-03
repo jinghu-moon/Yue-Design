@@ -1,0 +1,1958 @@
+{
+  "total": 117,
+  "counts": {
+    "same-file-composition": 13,
+    "prototype-contract": 94,
+    "consumer-facing": 10
+  },
+  "needsDecision": 0,
+  "rows": [
+    {
+      "name": "--accent-100",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-200",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-300",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-400",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-50",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-500",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-600",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css",
+        "D:/100_Projects/110_Daily/Yue-Design-System/tests/token-usage.test.mjs"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-700",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-800",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-900",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--accent-950",
+      "layer": "semantics",
+      "namespace": "accent",
+      "declaredIn": [
+        "packages/tokens/src/semantics/accent.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--amber-200",
+      "layer": "primitives",
+      "namespace": "amber",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--amber-400",
+      "layer": "primitives",
+      "namespace": "amber",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--amber-50",
+      "layer": "primitives",
+      "namespace": "amber",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--amber-500",
+      "layer": "primitives",
+      "namespace": "amber",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-background",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-border-radius",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-color",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-font-size",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-foreground",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": "--badge-fg",
+      "pinnedByParity": true,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-height",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--badge-padding-inline",
+      "layer": "components",
+      "namespace": "badge",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/badge.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--blue-200",
+      "layer": "primitives",
+      "namespace": "blue",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--blue-400",
+      "layer": "primitives",
+      "namespace": "blue",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--blue-50",
+      "layer": "primitives",
+      "namespace": "blue",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--blue-500",
+      "layer": "primitives",
+      "namespace": "blue",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--blue-700",
+      "layer": "primitives",
+      "namespace": "blue",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--border-3",
+      "layer": "primitives",
+      "namespace": "border",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--border-4",
+      "layer": "primitives",
+      "namespace": "border",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--border-5",
+      "layer": "primitives",
+      "namespace": "border",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-background-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-background-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-border-color-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-border-radius-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-border-radius-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-border-width-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-color-dialog",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-color-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-color-popover",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-color-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-padding-block-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-padding-inline-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-shadow-panel",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--box-shadow-toast",
+      "layer": "components",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--breakpoint-lg",
+      "layer": "primitives",
+      "namespace": "breakpoint",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--breakpoint-md",
+      "layer": "primitives",
+      "namespace": "breakpoint",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--breakpoint-sm",
+      "layer": "primitives",
+      "namespace": "breakpoint",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--breakpoint-xl",
+      "layer": "primitives",
+      "namespace": "breakpoint",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--button-selected-marker-color",
+      "layer": "components",
+      "namespace": "button",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/button.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--button-selected-marker-width",
+      "layer": "components",
+      "namespace": "button",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/button.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--container-page",
+      "layer": "primitives",
+      "namespace": "container",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--container-text",
+      "layer": "primitives",
+      "namespace": "container",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--ease-enter",
+      "layer": "primitives",
+      "namespace": "ease",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--ease-exit",
+      "layer": "primitives",
+      "namespace": "ease",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--elevation-panel",
+      "layer": "semantics",
+      "namespace": "elevation",
+      "declaredIn": [
+        "packages/tokens/src/semantics/elevation.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--font-number",
+      "layer": "primitives",
+      "namespace": "font",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/typography.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/typography.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--font-size-2xl",
+      "layer": "primitives",
+      "namespace": "font",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--font-size-display",
+      "layer": "primitives",
+      "namespace": "font",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/typography.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/typography.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--gap-page-section",
+      "layer": "primitives",
+      "namespace": "gap",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--gap-section",
+      "layer": "primitives",
+      "namespace": "gap",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--green-50",
+      "layer": "primitives",
+      "namespace": "green",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--green-500",
+      "layer": "primitives",
+      "namespace": "green",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--green-600",
+      "layer": "primitives",
+      "namespace": "green",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--green-950",
+      "layer": "primitives",
+      "namespace": "green",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--icon-size-lg",
+      "layer": "components",
+      "namespace": "icon",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/icon.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--icon-size-md",
+      "layer": "components",
+      "namespace": "icon",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/icon.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--icon-size-sm",
+      "layer": "components",
+      "namespace": "icon",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/icon.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--info",
+      "layer": "semantics",
+      "namespace": "info",
+      "declaredIn": [
+        "packages/tokens/src/semantics/feedback.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layer-base",
+      "layer": "primitives",
+      "namespace": "layer",
+      "declaredIn": [
+        "packages/tokens/src/primitives/effects.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layer-sticky",
+      "layer": "primitives",
+      "namespace": "layer",
+      "declaredIn": [
+        "packages/tokens/src/primitives/effects.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layer-toast",
+      "layer": "primitives",
+      "namespace": "layer",
+      "declaredIn": [
+        "packages/tokens/src/primitives/effects.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layout-grid-columns",
+      "layer": "primitives",
+      "namespace": "layout",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layout-grid-gap",
+      "layer": "primitives",
+      "namespace": "layout",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layout-page-gutter",
+      "layer": "primitives",
+      "namespace": "layout",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--layout-page-gutter-lg",
+      "layer": "primitives",
+      "namespace": "layout",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/layout.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/layout.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--leading-normal",
+      "layer": "primitives",
+      "namespace": "leading",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--leading-relaxed",
+      "layer": "primitives",
+      "namespace": "leading",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--leading-tight",
+      "layer": "primitives",
+      "namespace": "leading",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-2xl",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-3xl",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-display",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/typography.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/typography.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-lg",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-sm",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/typography.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/typography.md"
+      ],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--line-height-xl",
+      "layer": "primitives",
+      "namespace": "line",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--motion-duration-enter",
+      "layer": "primitives",
+      "namespace": "motion",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--motion-duration-exit",
+      "layer": "primitives",
+      "namespace": "motion",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--neutral-1000",
+      "layer": "primitives",
+      "namespace": "neutral",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--neutral-400",
+      "layer": "primitives",
+      "namespace": "neutral",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--neutral-500",
+      "layer": "primitives",
+      "namespace": "neutral",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--opacity-dragged",
+      "layer": "primitives",
+      "namespace": "opacity",
+      "declaredIn": [
+        "packages/tokens/src/primitives/effects.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--opacity-focus",
+      "layer": "primitives",
+      "namespace": "opacity",
+      "declaredIn": [
+        "packages/tokens/src/primitives/effects.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--radius-base",
+      "layer": "primitives",
+      "namespace": "radius",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/shape.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--radius-none",
+      "layer": "primitives",
+      "namespace": "radius",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--radius-xl",
+      "layer": "primitives",
+      "namespace": "radius",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--radius-xs",
+      "layer": "primitives",
+      "namespace": "radius",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--red-200",
+      "layer": "primitives",
+      "namespace": "red",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--red-400",
+      "layer": "primitives",
+      "namespace": "red",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--red-50",
+      "layer": "primitives",
+      "namespace": "red",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--red-500",
+      "layer": "primitives",
+      "namespace": "red",
+      "declaredIn": [
+        "packages/tokens/src/primitives/color.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--shadow-2",
+      "layer": "semantics",
+      "namespace": "shadow",
+      "declaredIn": [
+        "packages/tokens/src/semantics/elevation.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/elevation.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--shadow-3",
+      "layer": "semantics",
+      "namespace": "shadow",
+      "declaredIn": [
+        "packages/tokens/src/semantics/elevation.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/elevation.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--size-48",
+      "layer": "primitives",
+      "namespace": "size",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--space-32",
+      "layer": "primitives",
+      "namespace": "space",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/space.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--space-48",
+      "layer": "primitives",
+      "namespace": "space",
+      "declaredIn": [
+        "packages/tokens/src/primitives/space.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-background",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/component-tokens/tag.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-background-hover",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-background-selected",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-border-color",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-border-color-selected",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-color",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/component-tokens/tag.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tag-color-selected",
+      "layer": "components",
+      "namespace": "tag",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/tag.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tracking-normal",
+      "layer": "primitives",
+      "namespace": "tracking",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--tracking-wide",
+      "layer": "primitives",
+      "namespace": "tracking",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--weight-display",
+      "layer": "primitives",
+      "namespace": "weight",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--weight-regular",
+      "layer": "primitives",
+      "namespace": "weight",
+      "declaredIn": [
+        "packages/tokens/src/primitives/typography.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--width-lg",
+      "layer": "primitives",
+      "namespace": "width",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--width-xl",
+      "layer": "primitives",
+      "namespace": "width",
+      "declaredIn": [
+        "packages/tokens/src/primitives/shape.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": true,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "prototype-contract",
+      "verdict": "expected"
+    }
+  ]
+}

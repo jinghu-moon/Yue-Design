@@ -1,0 +1,130 @@
+/* Yue component tokens — Box surfaces
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   box-      | Surface box contract (panel, popover, tooltip) | public
+ */
+
+:root {
+  --box-background-popover             : var(--box-background-raised-2);
+
+  --box-border-color-popover           : var(--surface-level-2-border);
+
+  --box-background-tooltip             : var(--box-background-inverse);
+
+  --box-color-tooltip                  : var(--box-color-inverse);
+
+  --box-background-dialog              : var(--box-background-raised-3);
+
+  --box-padding-panel                  : var(--box-padding-md);
+
+  --box-border-width-panel             : var(--border-1);
+
+  --box-border-radius-panel            : var(--box-border-radius-md);
+
+  --box-background-panel               : var(--box-background-raised);
+
+  --box-border-color-panel             : var(--box-border-color);
+
+  --box-shadow-panel                   : var(--box-shadow-1);
+
+  --box-padding-popover                : var(--space-4);
+
+  --box-border-width-popover           : var(--border-1);
+
+  --box-border-radius-popover          : var(--box-border-radius-md);
+
+  --box-shadow-popover                 : var(--box-shadow-2);
+
+  --box-padding-dialog                 : var(--box-padding-lg);
+
+  --box-border-width-dialog            : var(--border-1);
+
+  --box-border-color-dialog            : var(--surface-level-3-border);
+
+  --box-border-radius-dialog           : var(--box-border-radius-lg);
+
+  --box-shadow-dialog                  : var(--box-shadow-3);
+
+  --box-padding-block-tooltip          : var(--space-4);
+
+  --box-padding-inline-tooltip         : var(--space-8);
+
+  --box-border-radius-tooltip          : var(--box-border-radius-sm);
+
+  --box-font-size-tooltip              : var(--font-size-sm);
+
+  --box-padding-block-toast            : var(--space-8);
+
+  --box-padding-inline-toast           : var(--space-12);
+
+  --box-border-radius-toast            : var(--box-border-radius-md);
+
+  --box-background-toast               : var(--box-background-inverse);
+
+  --box-color-toast                    : var(--box-color-inverse);
+
+  --box-shadow-toast                   : var(--box-shadow-2);
+
+  --box-background-plain               : transparent;
+
+  --box-background-subtle              : var(--surface-component);
+
+  --box-background-raised              : var(--surface);
+
+  --box-background-raised-2            : var(--surface-level-2);
+
+  --box-background-raised-3            : var(--surface-level-3);
+
+  --box-border-width-raised-2          : var(--border-1);
+
+  --box-border-color-raised-2          : var(--surface-level-2-border);
+
+  --box-border-width-raised-3          : var(--border-1);
+
+  --box-border-color-raised-3          : var(--surface-level-3-border);
+
+  --box-background-inverse             : var(--surface-inverse);
+
+  --box-color-plain                    : var(--text-primary);
+
+  --box-color-subtle                   : var(--text-primary);
+
+  --box-color-raised                   : var(--text-primary);
+
+  --box-color-inverse                  : var(--text-inverse);
+
+  --box-border-width                   : var(--border-0);
+
+  --box-border-color                   : var(--border-default);
+
+  --box-border-radius-sm               : var(--radius-sm);
+
+  --box-border-radius-md               : var(--radius-md);
+
+  --box-border-radius-lg               : var(--radius-lg);
+
+  --box-padding-sm                     : var(--space-8);
+
+  --box-padding-md                     : var(--space-16);
+
+  --box-padding-lg                     : var(--space-24);
+
+  --box-shadow-0                       : none;
+
+  --box-shadow-1                       : var(--shadow-1);
+
+  --box-shadow-2                       : var(--elevation-popover);
+
+  --box-shadow-3                       : var(--elevation-dialog);
+
+  --box-color-panel                    : var(--box-color-raised);
+
+  --box-color-popover                  : var(--box-color-raised);
+
+  --box-color-dialog                   : var(--box-color-raised);
+}

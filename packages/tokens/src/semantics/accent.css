@@ -1,0 +1,94 @@
+/* Yue semantics tokens — accent roles
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --accent-50            : var(--azure-50);
+
+  --accent-100           : var(--azure-100);
+
+  --accent-200           : var(--azure-200);
+
+  --accent-300           : var(--azure-300);
+
+  --accent-400           : var(--azure-400);
+
+  --accent-500           : var(--azure-500);
+
+  --accent-600           : var(--azure-600);
+
+  --accent-700           : var(--azure-700);
+
+  --accent-800           : var(--azure-800);
+
+  --accent-900           : var(--azure-900);
+
+  --accent-950           : var(--azure-950);
+
+  --accent-solid         : var(--accent-600);
+
+  --accent-text          : var(--accent-700);
+
+  --accent-subtle        : var(--accent-100);
+
+  --accent-subtle-text   : var(--accent-800);
+
+  --accent-border        : var(--accent-600);
+}
+
+[data-theme=dark] {
+  --accent-solid      : var(--accent-600);
+
+  --accent-text       : var(--accent-300);
+
+  --accent-subtle     : var(--accent-950);
+
+  --accent-subtle-text: var(--accent-200);
+
+  --accent-border     : var(--accent-300);
+}
+
+[data-accent=neutral] {
+  --accent-solid      : var(--neutral-900);
+
+  --accent-text       : var(--neutral-900);
+
+  --accent-subtle     : var(--neutral-200);
+
+  --accent-subtle-text: var(--neutral-900);
+
+  --accent-border     : var(--neutral-900);
+
+  /* `--link-decoration: underline` used to sit here, inherited from the prototype's identical
+   * block. It never took effect: the declaration in `components.css` is unconditional and the
+   * components layer outranks semantics, so the value was always `none` regardless of accent. A
+   * declaration that cannot win is worse than no declaration — it reads as an accent behaviour
+   * that a maintainer will one day "fix" by editing the wrong layer. The link's decoration is
+   * declared once, in `components.css`. */
+}
+
+[data-accent=neutral][data-theme=dark] {
+  --accent-solid      : var(--neutral-100);
+
+  --accent-text       : var(--neutral-100);
+
+  --accent-subtle     : var(--neutral-800);
+
+  --accent-subtle-text: var(--neutral-100);
+
+  --accent-border     : var(--neutral-100);
+}
+/* Control accent roles.
+ *
+ * These two came from the prototype's control group, which is why they carry a `control-` prefix — but
+ * their values are `--accent-solid` and `--on-accent`, which live in this layer, so this is where they
+ * belong. They are used by the prototype's check/switch/radio selectors and by `--progress-fill`.
+ * Phase 4 renames them (`--accent-control*`), which is also when the misleading prefix disappears.
+ */
+:root {
+  --control-accent        : var(--accent-solid);
+  --control-accent-checked: var(--on-accent);
+}

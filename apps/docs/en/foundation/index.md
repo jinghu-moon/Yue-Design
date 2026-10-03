@@ -6,10 +6,10 @@ The `@yue-ui/design-tokens` package is pure CSS with no build step. It consists 
 
 | Layer | File | Declarations | Contents |
 | --- | --- | ---: | --- |
-| `primitives` | `src/primitives.css` | 212 | Scales, fonts, motion, raw palette |
-| `semantics` | `src/semantics.css` | 134 | Theme and interaction roles, Accent |
-| `components` | `src/components.css` | 222 | Component geometry and visual contract |
-| `implementations` | `src/components/*.css` | — | Prototype-stage component selectors (`.btn` and others), progressively taken over by `@yue-ui/vue` |
+| `primitives` | `src/primitives/*.css` | 179 | Scales, fonts, motion, raw palettes and the control scale |
+| `semantics` | `src/semantics/*.css` | 81 | Theme and interaction roles, Accent |
+| `components` | `src/component-tokens/*.css` | 331 | Component geometry and visual contract, split by component namespace |
+| `implementations` | `src/prototype/*.css` (via `src/implementations.css`) | — | Prototype-stage component selectors (`.btn` and others), an opt-in entry, progressively taken over by `@yue-ui/vue` |
 
 Grouped by token name:
 
@@ -34,7 +34,7 @@ The token package supports four forms at once, all switched through `data-*` att
 - **Light** — `:root`
 - **Dark** — `[data-theme=dark]`, which also sets `color-scheme: dark`
 - **Accent** — `[data-accent=neutral]` overrides the whole `--accent-*` set; the default azure needs no attribute
-- **Forced colors** — under `forced-colors: active` it preserves hierarchy and state cues (see `src/components/box.css`, `overlay.css`)
+- **Forced colors** — under `forced-colors: active` it preserves hierarchy and state cues (see `src/component-tokens/box.css`, `src/prototype/overlay.css`)
 
 ## How to reference it
 
@@ -48,8 +48,9 @@ The token package supports four forms at once, all switched through `data-*` att
 import '@yue-ui/design-tokens/index.css'
 ```
 
-The package exports two entries, `index.css` (token layers) and `components.css` (implementation layer); the layer order is
-declared by `index.css`, so **tokens must load before component styles**.
+The package exports these entries: `index.css` (the layer order plus the three token layers — **the only one you need to install**), `component-tokens/*.css` (the Component Token declarations, one file per namespace, already pulled in by `index.css`), and the optional `implementations.css` (the prototype-era selector archive, which `index.css` does not reference). The layer order is declared by `index.css`, so **tokens must load before component styles**.
+
+Component Tokens are declared in exactly one place (`src/component-tokens/`, one file per namespace), enforced by the architecture check in `corepack pnpm audit:tokens`: a declaration in an unreachable file, a `var()` nobody declares, the same token declared twice, or a lower layer depending on a higher one all fail the audit.
 
 ## Design guidelines
 

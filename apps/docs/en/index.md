@@ -15,7 +15,7 @@ hero:
 
 features:
   - title: '@yue-ui/design-tokens'
-    details: 'Pure CSS custom properties, with no dependency on any framework. Light / dark / Accent / forced-colors modes, a four-layer @layer cascade contract, and 64 contrast gates.'
+    details: 'Pure CSS custom properties, with no dependency on any framework. Light / dark / Accent / forced-colors modes, a four-layer @layer cascade contract, and 110 contrast gates.'
   - title: '@yue-ui/vue'
     details: 'A Vue 3 component package: BEM class names + Component Tokens, no scoped styles, and icons passed in through slots.'
   - title: '@yue-ui/docs'

@@ -28,4 +28,4 @@ Yue 的颜色分三层：原始色板、语义角色、组件 Token。应用和�
 
 ## 验证
 
-`corepack pnpm audit:tokens` 会对浅色/深色 Azure 配置运行 32 组配对，共 64 项门禁；Neutral Accent 作为诊断配置运行。新增语义角色必须补充配对或明确说明为什么不参与对比度计算。
+`corepack pnpm audit:tokens` 会对浅色/深色 Azure 配置运行 32 组迁移配对（原型 64 项），包目标再加上自己新增的 23 组（110 项）；Neutral Accent 作为诊断配置运行。新增语义角色必须补充配对或明确说明为什么不参与对比度计算。

@@ -1,0 +1,44 @@
+/* Yue semantics tokens — text roles, including text on filled surfaces
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --text-primary         : var(--neutral-900);
+
+  --text-secondary       : var(--neutral-700);
+
+  --text-placeholder     : var(--neutral-600);
+
+  --text-disabled        : color-mix(in srgb, var(--text-primary) calc(var(--opacity-disabled-content)*100%), transparent);
+
+  --text-inverse         : var(--neutral-0);
+
+  --on-accent            : var(--neutral-0);
+
+  --text-link            : var(--accent-text);
+}
+
+[data-theme=dark] {
+  --text-primary      : #f5f5f5;
+
+  --text-secondary    : #b8b8b8;
+
+  --text-placeholder  : #858585;
+
+  --text-disabled     : #707070;
+
+  --text-inverse      : var(--neutral-950);
+
+  --on-accent         : var(--neutral-0);
+}
+
+[data-accent=neutral] {
+  --on-accent         : var(--neutral-0);
+}
+
+[data-accent=neutral][data-theme=dark] {
+  --on-accent         : var(--neutral-950);
+}

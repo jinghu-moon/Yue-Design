@@ -6,10 +6,10 @@ Token 包 `@yue-ui/design-tokens` 是纯 CSS，没有构建步骤。它由三个
 
 | 层 | 文件 | 声明数 | 内容 |
 | --- | --- | ---: | --- |
-| `primitives` | `src/primitives.css` | 212 | 标尺、字体、动效、原始色板 |
-| `semantics` | `src/semantics.css` | 134 | 主题与交互角色、Accent |
-| `components` | `src/components.css` | 222 | 组件几何与视觉契约 |
-| `implementations` | `src/components/*.css` | — | 原型期组件选择器（`.btn` 等），由 `@yue-ui/vue` 逐步接管 |
+| `primitives` | `src/primitives/*.css` | 179 | 标尺、字体、动效、原始色板与控制尺度 |
+| `semantics` | `src/semantics/*.css` | 81 | 主题与交互角色、Accent |
+| `components` | `src/component-tokens/*.css` | 331 | 组件几何与视觉契约，按组件命名空间拆分 |
+| `implementations` | `src/prototype/*.css`（经 `src/implementations.css`） | — | 原型期组件选择器（`.btn` 等），可选入口，由 `@yue-ui/vue` 逐步接管 |
 
 按 Token 名归类：
 
@@ -34,7 +34,7 @@ Token 包同时支持四种形态，全部通过 `data-*` 属性或媒体查询�
 - **浅色** — `:root`
 - **深色** — `[data-theme=dark]`，同时设置 `color-scheme: dark`
 - **Accent** — `[data-accent=neutral]` 覆写整套 `--accent-*`；默认 azure 不需要属性
-- **强制颜色** — `forced-colors: active` 下保留层级与状态线索（见 `src/components/box.css`、`overlay.css`）
+- **强制颜色** — `forced-colors: active` 下保留层级与状态线索（见 `src/component-tokens/box.css`、`src/prototype/overlay.css`）
 
 ## 引用方式
 
@@ -48,8 +48,14 @@ Token 包同时支持四种形态，全部通过 `data-*` 属性或媒体查询�
 import '@yue-ui/design-tokens/index.css'
 ```
 
-包导出了 `index.css`（Token 层）与 `components.css`（实现层）两个入口；层顺序由
-`index.css` 声明，因此 **Token 必须先于组件样式加载**。
+包导出了三个入口：`index.css`（层顺序 + 三个 Token 层，**唯一需要安装的入口**）、
+`component-tokens/*.css`（只有 Component Token 声明，已被 `index.css` 包含）、以及可选的
+`implementations.css`（原型期选择器归档，不被 `index.css` 引用）。层顺序由 `index.css` 声明，
+因此 **Token 必须先于组件样式加载**。
+
+Component Token 只有一处声明（`src/component-tokens/`，每个命名空间一个文件），由 `corepack pnpm audit:tokens` 的架构检查
+强制：声明在不可达文件里、引用未声明的 token、同名 token 声明两次、语义层反向依赖组件层，
+四类问题都会让审计失败。
 
 ## 设计规范
 

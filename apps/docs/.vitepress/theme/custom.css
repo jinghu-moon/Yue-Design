@@ -36,7 +36,7 @@
 .token-chip--pass {
   background: var(--success-bg);
   border-color: var(--success-border);
-  color: var(--success-fg);
+  color: var(--success-foreground);
 }
 
 /* ---------------------------------------------------------------- preview */
@@ -169,8 +169,8 @@
 }
 
 .linkish:focus-visible {
-  outline: var(--focus-width) solid var(--focus-ring);
-  outline-offset: var(--focus-offset);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Density is a consumer override, not a token-contract axis — the token package

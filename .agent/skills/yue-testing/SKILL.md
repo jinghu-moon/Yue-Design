@@ -33,6 +33,30 @@ Testing is layered evidence, not a single green command. Read the routed referen
   restore the code, then rerun the real gate.
 - Test both light/dark profiles and mobile constraints when CSS or responsive behavior changes.
 - Test locale, long text, ARIA and RTL when a user-facing string or direction can change.
+- For components with IME input behavior (text fields, search, textarea): cover both the
+  Chromium event order (compositionend → trailing input) and the Firefox/CDP order (final
+  input while composing → compositionend) as separate test cases.
 
-Run the matrix in `yue-component-design/references/verification-matrix.md` and report actual
-commands. The final handoff requires `corepack pnpm verify:all` plus any new I18N gates.
+## When tests fail
+
+A failing test means the implementation is wrong. Fix the implementation.
+
+**Never do any of the following to make a test pass:**
+- Delete or comment out a failing test.
+- Weaken an assertion (e.g. changing `toBe('exact')` to `toContain` or removing the assertion).
+- Change the expected value to match broken behavior without understanding why the behavior changed.
+- Skip a test with `test.skip` or `describe.skip` without leaving an explicit `TODO` comment
+  and a corresponding tracking note in the handoff.
+
+**When a test fails, diagnose in this order:**
+1. Reproduce the failure in isolation; confirm the test itself is correctly written.
+2. Identify which change caused the regression (use `git bisect` or incremental revert).
+3. Fix the implementation to restore the intended behavior.
+4. If the intended behavior genuinely changed (requirement change), update the test expectation
+   AND document the change in the handoff breaking-changes section.
+
+Run the gate set from `.agent/skills/yue-review/references/verification-commands.md` —
+that file is the single authoritative source for required commands and reporting format.
+Use `yue-component-design/references/verification-matrix.md` to determine which gate row
+applies to the changed surface. The final handoff requires `corepack pnpm verify:all` plus
+any I18N gates; run it through the `yue-review` skill.

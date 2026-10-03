@@ -24,6 +24,10 @@
       "types": "./dist/components/input/index.d.ts",
       "import": "./dist/components/input/index.js"
     },
+    "./tag": {
+      "types": "./dist/components/tag/index.d.ts",
+      "import": "./dist/components/tag/index.js"
+    },
     "./locale": {
       "types": "./dist/locale/index.d.ts",
       "import": "./dist/locale/index.js"
@@ -39,6 +43,7 @@
     "./style.css": "./dist/style.css",
     "./button.css": "./dist/components/button/style.css",
     "./input.css": "./dist/components/input/style.css",
+    "./tag.css": "./dist/components/tag/style.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -63,5 +68,8 @@
     "@yue-ui/hooks": "workspace:^",
     "vitest": "5.0.2",
     "vue": "3.5.43"
+  },
+  "dependencies": {
+    "@tabler/icons-vue": "^3.38.0"
   }
 }

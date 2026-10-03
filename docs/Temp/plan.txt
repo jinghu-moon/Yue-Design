@@ -1,0 +1,269 @@
+Token 重构执行方案
+
+目标
+
+1. 文件树职责清晰——看文件名就知道里面是什么
+2. 命名规则统一——三层之间的引用关系有明确规范
+3. Semantic 层补完——补上分析发现的 P1 缺口
+4. 为后续组件扩展建立可预测的模式
+
+---
+
+第一部分：文件树重组
+
+现状问题
+
+packages/tokens/src/
+  index.css           ← 入口，只有 3 行 @import
+  primitives.css      ← 原始值（色板、间距、字体等全混在一起）
+  semantics.css       ← 语义角色（light + dark 全在一个文件，386 行）
+  components.css      ← 所有组件 token（button + input + tag 全混在一起）
+  implementations.css ← 归档（当前空或废弃）
+  components/         ← 历史残留目录，已停用
+
+问题：primitives.css 膨胀后难以定位；semantics.css 混合 light/dark/accent 难以维护；components.css 随组件增多会变成上千行的大文件。
+
+目标文件树
+
+packages/tokens/src/
+  index.css                    ← 入口，声明层序 + @import 链
+
+  primitives/
+    _index.css                 ← 只做 @import，汇总所有 primitives
+    color.css                  ← 色板：neutral, steel-blue, red, amber, green, azure, violet…
+    typography.css             ← 字体族、字重、字号、行高、字距
+    space.css                  ← --space-* 间距阶梯
+    shape.css                  ← --radius-*, --border-{width}
+    motion.css                 ← --duration-*, --ease-*
+    control.css                ← --control-height-*, --control-padding-*, 跨组件几何基准
+
+  semantics/
+    _index.css                 ← 只做 @import
+    surface.css                ← --page, --surface-*, --overlay-bg
+    text.css                   ← --text-*, --text-link
+    border.css                 ← --border-*
+    feedback.css               ← --info-*, --warning-*, --error-*, --success-*
+    action.css                 ← --action-primary, --action-danger…
+    accent.css                 ← --accent-* 色阶 + --accent-solid/text/border…
+    interaction.css            ← --focus-ring-*, --opacity-hover/pressed, --disabled-*,
+                                  --selection-*, --selected-*, --list-row-*
+    elevation.css              ← --shadow-*, --elevation-*
+    scrim.css                  ← --scrim
+
+  components/
+    _index.css                 ← 只做 @import
+    button.css
+    input.css
+    tag.css
+    # 每新增一个组件，新增一个文件
+
+  index.css  （最终如下）
+
+/* index.css */
+@layer primitives, semantics, components, implementations, demo;
+@import url('./primitives/_index.css') layer(primitives);
+@import url('./semantics/_index.css')  layer(semantics);
+@import url('./components/_index.css') layer(components);
+
+---
+
+第二部分：Semantic 层补完
+
+在现有基础上补充以下 token（全部加进 semantics/ 对应文件）：
+
+interaction.css 补充
+
+/* 把 opacity 提升为可主题化变量，深色模式可覆盖 */
+--opacity-hover:              0.08;
+--opacity-pressed:            0.12;
+--opacity-disabled-container: 0.06;
+--opacity-disabled-content:   0.38;
+
+/* focus ring 三件套，组件不再硬编码 */
+--focus-ring-color:  var(--accent-border);
+--focus-ring-width:  2px;
+--focus-ring-offset: 2px;
+
+深色模式覆盖（叠加更明显）：
+
+[data-theme=dark] {
+  --opacity-hover:   0.12;
+  --opacity-pressed: 0.18;
+}
+
+surface.css 补充
+
+/* 弹出层专属表面，独立于页面 surface */
+--overlay-bg:     var(--surface);
+--overlay-border: var(--border-default);
+
+action.css 补充注释
+
+/* action-primary = 高对比主操作按钮填充色（非 accent）
+   浅色: near-black; 深色: near-white
+   如需 accent 色按钮，使用 --accent-solid */
+--action-primary:    var(--neutral-900);
+--action-on-primary: var(--neutral-0);
+
+text.css 补充
+
+/* 标题用，比 primary 略深或相同，未来深色模式可独立调 */
+--text-heading: var(--neutral-900);
+
+---
+
+第三部分：命名规范统一（Breaking Change）
+
+组件 token 命名规则
+
+--{component}-{variant?}-{property}[-{state?}][-{size?}]
+
+┌────────────────────┬───────────────────────────────────┬─────────────────────────────┐
+│        层级        │               规则                │            示例             │
+├────────────────────┼───────────────────────────────────┼─────────────────────────────┤
+│ 几何（无 variant） │ --{comp}-{dim}-{size}             │ --button-height-sm          │
+├────────────────────┼───────────────────────────────────┼─────────────────────────────┤
+│ 视觉（无 state）   │ --{comp}-{variant}-{prop}         │ --button-primary-fill       │
+├────────────────────┼───────────────────────────────────┼─────────────────────────────┤
+│ 视觉（有 state）   │ --{comp}-{variant}-{prop}-{state} │ --button-primary-fill-hover │
+├────────────────────┼───────────────────────────────────┼─────────────────────────────┤
+│ 单一变体           │ --{comp}-{prop}                   │ --input-background          │
+└────────────────────┴───────────────────────────────────┴─────────────────────────────┘
+
+property 词汇统一：
+
+┌────────────────────┬──────────────┬─────────────┐
+│    旧词（现状）    │     新词     │    说明     │
+├────────────────────┼──────────────┼─────────────┤
+│ background         │ fill         │ 区块填充色  │
+├────────────────────┼──────────────┼─────────────┤
+│ color              │ fg           │ 前景/文字色 │
+├────────────────────┼──────────────┼─────────────┤
+│ border-color       │ border       │ 边框色      │
+├────────────────────┼──────────────┼─────────────┤
+│ background-hover   │ fill-hover   │ 悬停填充    │
+├────────────────────┼──────────────┼─────────────┤
+│ background-pressed │ fill-pressed │ 按下填充    │
+└────────────────────┴──────────────┴─────────────┘
+
+改名示例（button）：
+
+/* 改名前 */
+--button-primary-background
+--button-primary-color
+--button-primary-border-color
+--button-primary-background-hover
+
+/* 改名后 */
+--button-primary-fill
+--button-primary-fg
+--button-primary-border
+--button-primary-fill-hover
+
+tag 改名示例：
+
+/* 改名前 */
+--tag-default-filled-background
+--tag-default-filled-color
+--tag-default-filled-border-color
+
+/* 改名后 */
+--tag-default-filled-fill
+--tag-default-filled-fg
+--tag-default-filled-border
+
+---
+
+第四部分：执行步骤（有序，每步可验证）
+
+Step 1 — 建文件树骨架，不动内容
+
+- 创建 primitives/、semantics/、components/ 子目录及各 _index.css
+- 更新 packages/tokens/package.json exports，保持向外兼容（旧路径暂时保留，后面 Step 5 删除）
+- 验证：pnpm verify:all 绿色（内容未变，只是路径变化）
+
+Step 2 — 迁移 primitives
+
+把 primitives.css 按类型拆分到 primitives/color.css 等文件，_index.css 汇总 @import。
+- 验证：token-audit parity 全绿
+
+Step 3 — 迁移 semantics，同时补完缺口
+
+把 semantics.css 拆分到各子文件，同时加入 Step 2 中补充的新 token。
+- light/dark/accent 每个 selector 都落到正确的文件（如 [data-theme=dark] 中的 surface 覆盖放 surface.css 末尾，interaction 的覆盖放 interaction.css 末尾）
+- 验证：视觉回归（tests/visual/）+ token-audit
+
+Step 4 — 迁移 components，同时统一命名
+
+把 components.css 中的 button / input / tag 各自拆到 components/{name}.css。
+同时做 property 词汇统一（background → fill，color → fg，border-color → border）。
+
+因为是 breaking change，需要同步改：
+- 各 .vue 文件中使用这些 token 的 CSS 变量引用
+- 受影响的测试断言
+- 验证：pnpm verify:all 全绿（测试不能改预期值，只能改实现）
+
+Step 5 — 清理旧文件和旧路径
+
+删除：
+- packages/tokens/src/primitives.css（已拆分）
+- packages/tokens/src/semantics.css（已拆分）
+- packages/tokens/src/components.css（已拆分）
+- packages/tokens/src/components/（历史残留目录）
+- packages/tokens/package.json 中已废弃的旧 exports
+- 验证：pnpm verify:all + pnpm build 全绿
+
+Step 6 — 更新架构门控
+
+tools/lib/token-architecture.mjs 中的路径检查需要更新，以识别新的目录结构。更新 .spec-workflow/token-architecture/spec.md 中的 PACKAGE_DIVERGENCES 表记录此次重构。
+
+---
+
+第五部分：测试策略
+
+┌───────────────┬─────────────────┬─────────────────────────────────────────────────────┐
+│     阶段      │      测试       │                   不可删减的断言                    │
+├───────────────┼─────────────────┼─────────────────────────────────────────────────────┤
+│ 每步完成后    │ pnpm verify:all │ token-audit parity：所有已有 token 值不变           │
+├───────────────┼─────────────────┼─────────────────────────────────────────────────────┤
+│ Step 4 完成后 │ 视觉回归对比    │ tests/visual/*.png 更新基准图（先更新基准，再提交） │
+├───────────────┼─────────────────┼─────────────────────────────────────────────────────┤
+│ Step 4 完成后 │ 组件单元测试    │ 检查 .vue 文件中 CSS 变量名引用正确                 │
+├───────────────┼─────────────────┼─────────────────────────────────────────────────────┤
+│ Step 5 完成后 │ 构建产物校验    │ tests/tree-shaking/verify.mjs                       │
+└───────────────┴─────────────────┴─────────────────────────────────────────────────────┘
+
+改名是破坏性变更，测试失败就意味着某个 .vue 文件里的 CSS 变量名没改到——修实现，不改断言。
+
+---
+
+完成后的文件树全貌
+
+packages/tokens/src/
+  index.css
+  primitives/
+    _index.css
+    color.css
+    typography.css
+    space.css
+    shape.css
+    motion.css
+    control.css
+  semantics/
+    _index.css
+    surface.css
+    text.css
+    border.css
+    feedback.css
+    action.css
+    accent.css
+    interaction.css
+    elevation.css
+    scrim.css
+  components/
+    _index.css
+    button.css
+    input.css
+    tag.css
+
+每新增一个组件，只需要在 components/ 下建一个文件，在 _index.css 加一行 @import，不需要动其他任何文件。这是当前架构最大的改进点。

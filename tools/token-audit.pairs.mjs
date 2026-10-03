@@ -298,7 +298,358 @@ export const PACKAGE_ONLY_TOKENS = [
   '--input-icon-size-lg',
   '--input-icon-size-md',
   '--input-icon-size-sm',
+  // Tag component tokens added for YueTag + YueCheckTag.
+  // Geometry tokens that also exist in the frozen prototype (--tag-height-*,
+  // --tag-font-size-*, --tag-padding-*, --tag-gap, --tag-border-width,
+  // --tag-border-radius) are shared tokens — they appear in both targets with
+  // the same value — so they are NOT listed here. Only tokens the prototype
+  // never defined are listed as package-only additions.
+  '--tag-border-radius-round',
+  '--tag-close-icon-size',
+  '--tag-danger-filled-background',
+  '--tag-danger-filled-border-color',
+  '--tag-danger-filled-color',
+  '--tag-danger-outline-background',
+  '--tag-danger-outline-border-color',
+  '--tag-danger-outline-color',
+  '--tag-danger-tint-background',
+  '--tag-danger-tint-border-color',
+  '--tag-danger-tint-color',
+  '--tag-danger-tint-outline-background',
+  '--tag-danger-tint-outline-border-color',
+  '--tag-danger-tint-outline-color',
+  '--tag-default-filled-background',
+  '--tag-default-filled-border-color',
+  '--tag-default-filled-color',
+  '--tag-default-outline-background',
+  '--tag-default-outline-border-color',
+  '--tag-default-outline-color',
+  '--tag-default-tint-background',
+  '--tag-default-tint-border-color',
+  '--tag-default-tint-color',
+  '--tag-default-tint-outline-background',
+  '--tag-default-tint-outline-border-color',
+  '--tag-default-tint-outline-color',
+  '--tag-duration',
+  '--tag-ease',
+  '--tag-focus-ring-color',
+  '--tag-focus-ring-offset',
+  '--tag-focus-ring-width',
+  '--tag-font-weight',
+  '--tag-line-height',
+  '--tag-opacity-disabled',
+  '--tag-primary-filled-background',
+  '--tag-primary-filled-border-color',
+  '--tag-primary-filled-color',
+  '--tag-primary-outline-background',
+  '--tag-primary-outline-border-color',
+  '--tag-primary-outline-color',
+  '--tag-primary-tint-background',
+  '--tag-primary-tint-border-color',
+  '--tag-primary-tint-color',
+  '--tag-primary-tint-outline-background',
+  '--tag-primary-tint-outline-border-color',
+  '--tag-primary-tint-outline-color',
+  '--tag-success-filled-background',
+  '--tag-success-filled-border-color',
+  '--tag-success-filled-color',
+  '--tag-success-outline-background',
+  '--tag-success-outline-border-color',
+  '--tag-success-outline-color',
+  '--tag-success-tint-background',
+  '--tag-success-tint-border-color',
+  '--tag-success-tint-color',
+  '--tag-success-tint-outline-background',
+  '--tag-success-tint-outline-border-color',
+  '--tag-success-tint-outline-color',
+  '--tag-warning-filled-background',
+  '--tag-warning-filled-border-color',
+  '--tag-warning-filled-color',
+  '--tag-warning-outline-background',
+  '--tag-warning-outline-border-color',
+  '--tag-warning-outline-color',
+  '--tag-warning-tint-background',
+  '--tag-warning-tint-border-color',
+  '--tag-warning-tint-color',
+  '--tag-warning-tint-outline-background',
+  '--tag-warning-tint-outline-border-color',
+  '--tag-warning-tint-outline-color',
 ].sort()
+
+/**
+ * Shared tokens whose package value is *deliberately* different from the prototype's.
+ *
+ * The prototype is byte-frozen, so its values are the migration baseline; anything the package
+ * resolves differently would normally be drift. But a baseline can also be wrong, and the Tag
+ * proves it: the prototype defines `--tag-height-*` as aliases of the form-control scale and
+ * `--tag-border-radius` as `--radius-full`, which is correct for a 32px-tall control and wrong
+ * for a chip — the Tag rendered as a pill at control height, and its own compact ramp lived in a
+ * file the public entry never loaded.
+ *
+ * So the parity gate gains a register instead of a wider allowance:
+ *
+ *   - a divergence that is not listed here still fails, exactly as before;
+ *   - a listed name that no longer diverges also fails (`staleDivergences`), so the register
+ *     cannot rot into a blanket exemption;
+ *   - `tests/token-audit.test.mjs` asserts the audit's reported divergences equal this register
+ *     *and* that each registered package value matches what `components.css` actually declares,
+ *     so this table cannot drift from the sheet it describes.
+ *
+ * `prototype` and `package` are the declared expressions, kept for review; the gate compares
+ * resolved values.
+ */
+export const PACKAGE_DIVERGENCES = [
+  {
+    name: '--button-danger-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-hover)*100%), var(--button-danger-background))',
+    package: 'color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-hover)*100%), var(--button-danger-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-danger-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-pressed)*100%), var(--button-danger-background))',
+    package: 'color-mix(in srgb, var(--button-danger-color) calc(var(--opacity-pressed)*100%), var(--button-danger-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-default-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-default-color) calc(var(--opacity-hover)*100%), var(--button-default-background))',
+    package: 'color-mix(in srgb, var(--button-default-color) calc(var(--opacity-hover)*100%), var(--button-default-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-default-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-default-color) calc(var(--opacity-pressed)*100%), var(--button-default-background))',
+    package: 'color-mix(in srgb, var(--button-default-color) calc(var(--opacity-pressed)*100%), var(--button-default-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-ghost-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-hover)*100%), transparent)',
+    package: 'color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-hover)*100%), transparent)',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-ghost-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-pressed)*100%), transparent)',
+    package: 'color-mix(in srgb, var(--button-ghost-color) calc(var(--opacity-pressed)*100%), transparent)',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-primary-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-hover)*100%), var(--button-primary-background))',
+    package: 'color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-hover)*100%), var(--button-primary-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-primary-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-pressed)*100%), var(--button-primary-background))',
+    package: 'color-mix(in srgb, var(--button-primary-color) calc(var(--opacity-pressed)*100%), var(--button-primary-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-secondary-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-hover)*100%), var(--button-secondary-background))',
+    package: 'color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-hover)*100%), var(--button-secondary-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-secondary-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-pressed)*100%), var(--button-secondary-background))',
+    package: 'color-mix(in srgb, var(--button-secondary-color) calc(var(--opacity-pressed)*100%), var(--button-secondary-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-selected-background-hover',
+    prototype: 'color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-hover)*100%), var(--button-selected-background))',
+    package: 'color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-hover)*100%), var(--button-selected-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--button-selected-background-pressed',
+    prototype: 'color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-pressed)*100%), var(--button-selected-background))',
+    package: 'color-mix(in srgb, var(--button-selected-color) calc(var(--opacity-pressed)*100%), var(--button-selected-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--list-row-background-hover',
+    prototype: 'var(--button-ghost-background-hover)',
+    package: 'color-mix(in srgb, var(--list-row-color) calc(var(--opacity-hover)*100%), transparent)',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--menu-item-background-hover',
+    prototype: 'var(--button-ghost-background-hover)',
+    package: 'var(--button-ghost-background-hover)',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--tag-background-hover',
+    prototype: 'color-mix(in srgb, var(--tag-color) calc(var(--opacity-hover)*100%), var(--tag-background))',
+    package: 'color-mix(in srgb, var(--tag-color) calc(var(--opacity-hover)*100%), var(--tag-background))',
+    reason:
+      'Derives from --opacity-hover / --opacity-pressed, which dark overrides (registered separately): its resolved dark value differs from the prototype on purpose, while the declared expression is identical.',
+  },
+  {
+    name: '--opacity-hover',
+    prototype: '.08',
+    package: '.12',
+    reason:
+      'Only in dark (\`[data-theme=dark]\`): 8% over a near-black surface is imperceptible. Measured by ' +
+      'the pixel sampler in tools/measure-dark-opacity.mjs.',
+  },
+  {
+    name: '--opacity-pressed',
+    prototype: '.10',
+    package: '.18',
+    reason:
+      'Only in dark (\`[data-theme=dark]\`): pressed feedback was the weakest state in the same measurement.',
+  },
+  {
+    name: '--tag-height-sm',
+    prototype: 'var(--control-height-sm)',
+    package: '20px',
+    reason: 'Tag is a chip, not a form control: 28px is an input height, not a label height.',
+  },
+  {
+    name: '--tag-height-md',
+    prototype: 'var(--control-height-md)',
+    package: '24px',
+    reason: 'Tag is a chip, not a form control: 32px made a label as tall as a button.',
+  },
+  {
+    name: '--tag-height-lg',
+    prototype: 'var(--control-height-lg)',
+    package: '30px',
+    reason: 'Tag is a chip, not a form control: 40px is an input height, not a label height.',
+  },
+  {
+    name: '--tag-padding-inline-sm',
+    prototype: 'var(--control-padding-inline-sm)',
+    package: '6px',
+    reason: 'Chip padding: the control scale pads for a click target, not for a label.',
+  },
+  {
+    name: '--tag-padding-inline-md',
+    prototype: 'var(--control-padding-inline-md)',
+    package: '8px',
+    reason: 'Chip padding: 12px of inline padding stretches a 24px label into a control.',
+  },
+  {
+    name: '--tag-padding-inline-lg',
+    prototype: 'var(--control-padding-inline-lg)',
+    package: '10px',
+    reason: 'Chip padding: the control scale pads for a click target, not for a label.',
+  },
+  {
+    name: '--tag-font-size-sm',
+    prototype: 'var(--control-font-size-sm)',
+    package: '11px',
+    reason: 'Chip type: label text sits one step below control text so a chip never reads as a field.',
+  },
+  {
+    name: '--tag-font-size-md',
+    prototype: 'var(--control-font-size-md)',
+    package: '12px',
+    reason: 'Chip type: 14px leaves no breathing room inside a 24px chip.',
+  },
+  {
+    name: '--tag-font-size-lg',
+    prototype: 'var(--control-font-size-lg)',
+    package: '13px',
+    reason: 'Chip type: label text sits one step below control text so a chip never reads as a field.',
+  },
+  {
+    name: '--tag-border-radius',
+    prototype: 'var(--radius-full)',
+    package: 'var(--radius-sm)',
+    reason:
+      'The default Tag shape is square; a pill is the `round` variant, expressed by ' +
+      '`--tag-border-radius-round`. With the prototype value the two shapes rendered identically, ' +
+      'so the shape axis was decorative.',
+  },
+]
+
+/**
+ * Tokens the package renamed, with the prototype name they replace.
+ *
+ * The prototype is a byte-frozen baseline that the parity gate compares by *name*: a rename would look
+ * exactly like a lost token on one side and token sprawl on the other, when it is neither. The register
+ * is the only way to rename, and it is the mechanism Phase 4 needs for the full component-token
+ * migration — so it is built here, with the three focus tokens as its first entries.
+ *
+ * A rename is not an alias: the old name is gone from the package, and a consumer that overrode it must
+ * move to the new one (recorded in the breaking-change table).
+ */
+export const PACKAGE_RENAMES = [
+  {
+    prototype: '--badge-fg',
+    package: '--badge-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--info-fg',
+    package: '--info-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--warning-fg',
+    package: '--warning-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--error-fg',
+    package: '--error-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--success-fg',
+    package: '--success-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--selection-fg',
+    package: '--selection-foreground',
+    reason:
+      'Property names are spelled out; `fg` is not a documented abbreviation (§5).',
+  },
+  {
+    prototype: '--focus-ring',
+    package: '--focus-ring-color',
+    reason:
+      'The old name was the ring *colour*, which read like the whole ring; the trio is now ' +
+      'colour/width/offset and lives in the semantic layer.',
+  },
+  {
+    prototype: '--focus-width',
+    package: '--focus-ring-width',
+    reason: 'Ring geometry is a semantic decision, not a primitive, and belongs to the named trio.',
+  },
+  {
+    prototype: '--focus-offset',
+    package: '--focus-ring-offset',
+    reason: 'Ring geometry is a semantic decision, not a primitive, and belongs to the named trio.',
+  },
+]
 
 /** Default audit targets, resolved from the repository root. */
 export const DEFAULT_TARGETS = [

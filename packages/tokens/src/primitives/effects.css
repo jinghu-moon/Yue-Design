@@ -1,0 +1,43 @@
+/* Yue primitives tokens — opacity and stacking-order scales
+ *
+ * Reached only through `src/index.css` → `primitives/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --opacity-hover             : .08;
+
+  --opacity-focus             : .10;
+
+  --opacity-pressed           : .10;
+
+  --opacity-dragged           : .16;
+
+  --opacity-disabled-content  : .38;
+
+  --opacity-disabled-container: .12;
+
+  --layer-base                : 0;
+
+  --layer-sticky              : 10;
+
+  --layer-dialog              : 20;
+
+  --layer-popover             : 30;
+
+  --layer-tooltip             : 40;
+
+  --layer-toast               : 50;
+}
+
+/* Dark needs a stronger tint: 8% of the text colour over a near-black surface is barely perceptible, and the
+ * state feedback is the whole point of these two tokens. Measured, not guessed — the pixel sampler in
+ * `node tools/measure-dark-opacity.mjs` reports the state separation rising from 1.21 to 1.34 (hover) and
+ * 1.27 to 1.65 (pressed) on the text variants, with the tightest text contrast moving 5.66:1 → 4.92:1:
+ * narrower, still above AA. The prototype keeps the light values, so this is a registered divergence. */
+[data-theme=dark] {
+  --opacity-hover  : .12;
+
+  --opacity-pressed: .18;
+}

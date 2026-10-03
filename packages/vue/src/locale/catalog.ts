@@ -30,6 +30,15 @@ export type YueLocaleMessages = {
      */
     clear: string
   }
+  tag: {
+    /**
+     * Accessible name of `YueTag`'s close button.
+     *
+     * The close button is icon-only; this label is the only name a screen reader has.
+     * A missing translation silences the button entirely.
+     */
+    closeLabel: string
+  }
 }
 
 /** Every key a Yue component may pass to `t()`. Derived, never hand-written. */
@@ -61,6 +70,11 @@ export interface YueMessageMeta {
 export const YUE_MESSAGE_META: Readonly<Record<YueMessageKey, YueMessageMeta>> = {
   'input.clear': {
     purpose: "Accessible name of YueInput's clear control.",
+    params: [],
+    announced: true,
+  },
+  'tag.closeLabel': {
+    purpose: "Accessible name of YueTag's close button (icon-only).",
     params: [],
     announced: true,
   },

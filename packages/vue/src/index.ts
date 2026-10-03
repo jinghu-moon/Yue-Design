@@ -24,6 +24,8 @@ export { default as YueButtonGroup } from './components/button/YueButtonGroup.vu
 export { default as YueButtonToggle } from './components/button/YueButtonToggle.vue'
 export { default as YueButtonToggleItem } from './components/button/YueButtonToggleItem.vue'
 export { default as YueInput } from './components/input/YueInput.vue'
+export { default as YueTag } from './components/tag/YueTag.vue'
+export { default as YueCheckTag } from './components/tag/YueCheckTag.vue'
 
 export type {
   YueButtonEmits,
@@ -52,6 +54,21 @@ export type {
   YueInputSlots,
   YueInputType,
 } from './components/input/types'
+
+export type {
+  YueCheckTagEmits,
+  YueCheckTagProps,
+  YueCheckTagSlots,
+  YueCheckTagValue,
+  YueTagEmits,
+  YueTagProps,
+  YueTagShape,
+  YueTagSize,
+  YueTagSlots,
+  YueTagTag,
+  YueTagTheme,
+  YueTagVariant,
+} from './components/tag/types'
 
 /**
  * The shared control-size contract, re-exported so a consumer can name the type their

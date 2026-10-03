@@ -1,0 +1,37 @@
+/* Yue primitives tokens — durations and easings
+ *
+ * Reached only through `src/index.css` → `primitives/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --duration-fast             : 100ms;
+
+  --duration-normal           : 200ms;
+
+  --duration-slow             : 300ms;
+
+  --ease-standard             : cubic-bezier(.2, 0, .38, .9);
+
+  --ease-enter                : cubic-bezier(0, 0, .38, .9);
+
+  --ease-exit                 : cubic-bezier(.2, 0, 1, .9);
+
+   /* Semantic motion aliases give consumers one place to honor reduced motion. */
+  --motion-duration-interaction: var(--duration-fast);
+
+  --motion-duration-enter     : var(--duration-normal);
+
+  --motion-duration-exit      : var(--duration-fast);
+
+  --motion-ease-standard      : var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce)|:root {
+  :root {
+  --motion-duration-interaction: 0ms;
+  --motion-duration-enter      : 0ms;
+  --motion-duration-exit       : 0ms;
+  }
+}

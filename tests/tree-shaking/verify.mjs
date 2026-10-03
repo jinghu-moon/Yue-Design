@@ -145,7 +145,8 @@ const LOCALE_JS_MUST_NOT = [
 const BUDGET = {
   button: { js: 10_000, css: 20_000 },
   input: { js: 15_000, css: 14_000 },
-  plugin: { js: 26_000, css: 36_000 },
+  // plugin budget raised when YueTag + YueCheckTag were added (Tag family: +775B js, +3822B css).
+  plugin: { js: 27_500, css: 41_000 },
   // Rolldown preserves fixture comments in this unminified consumer build; 750B
   // covers the measured output without making the budget follow future growth.
   locale: { js: 750, css: 0 },

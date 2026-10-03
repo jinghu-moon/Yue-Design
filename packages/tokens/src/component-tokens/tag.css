@@ -1,0 +1,226 @@
+/* Yue component tokens — Tag
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   tag-      | Tag component contract (compact chip ramp) | public
+ */
+
+:root {
+    /* Tag uses its own compact ramp rather than the control scale.
+     *
+     * A Tag is a chip, not a form control: `--control-*` sizes (28/32/40px tall, 8/12/16px
+     * inline padding, 12/14/16px type) exist so an *input* can be clicked, and a label
+     * inheriting them reads as a button. These values are deliberately off that scale — `lg`
+     * is 30px, not 32px — and are registered as intentional divergences from the frozen
+     * prototype in `tools/token-audit.pairs.mjs` (`PACKAGE_DIVERGENCES`), so the difference
+     * is reviewed rather than silent.
+     */
+  --tag-height-sm                      : 20px;
+
+  --tag-padding-inline-sm              : 6px;
+
+  --tag-font-size-sm                   : 11px;
+
+  --tag-height-md                      : 24px;
+
+  --tag-padding-inline-md              : 8px;
+
+  --tag-font-size-md                   : 12px;
+
+  --tag-height-lg                      : 30px;
+
+  --tag-padding-inline-lg              : 10px;
+
+  --tag-font-size-lg                   : 13px;
+
+  --tag-padding-block                  : var(--space-0);
+
+  --tag-gap                            : var(--space-4);
+
+  --tag-border-width                   : var(--border-1);
+
+  --tag-border-radius                  : var(--radius-sm);
+
+  --tag-background                     : var(--surface);
+
+  --tag-background-selected            : var(--selection-bg);
+
+  --tag-color                          : var(--text-secondary);
+
+  --tag-color-selected                 : var(--selection-foreground);
+
+  --tag-border-color                   : var(--border-default);
+
+  --tag-border-color-selected          : var(--selection-bg);
+
+  --tag-background-hover               : color-mix(in srgb, var(--tag-color) calc(var(--opacity-hover)*100%), var(--tag-background));
+
+  /* ╔══════════════════════════════════════════════════════════════════
+     ║  Tag component tokens
+     ║
+     ║  This is the ONLY place `--tag-*` is declared. There used to be a
+     ║  second copy in `src/components/tag.css`, inside the prototype-era
+     ║  `layer(implementations)` entry that the public `src/index.css` does
+     ║  not import — so the reachable declarations were the prototype's
+     ║  control-scale aliases and the intended compact ramp was dead code.
+     ║  That file is gone; the architecture gate now fails on any token that
+     ║  is declared but unreachable, or referenced but undeclared.
+     ║
+     ║  All values reference semantic tokens from semantics.css, except the
+     ║  compact size ramp above, which is Tag's own scale by design.
+     ╚══════════════════════════════════════════════════════════════════ */
+  /* ── non-prototype geometry ────────────────────────────────────── */
+  --tag-font-weight:        500;
+
+  --tag-line-height:        1;
+
+  --tag-border-radius-round: 999px;
+
+  --tag-close-icon-size:    12px;
+
+  /* ── motion ────────────────────────────────────────────────────── */
+  --tag-duration:           var(--duration-fast, 120ms);
+
+  --tag-ease:               var(--ease-standard, ease);
+
+  /* ── disabled ──────────────────────────────────────────────────── */
+  /* The shared primitive, not a local number: disabled opacity is a system decision, and two
+   * different values on one page is how a design system stops looking designed. */
+  --tag-opacity-disabled:   var(--opacity-disabled-content);
+
+  /* ── focus ring (CheckTag) ─────────────────────────────────────── */
+  --tag-focus-ring-color:   var(--focus-ring-color);
+
+  --tag-focus-ring-width:   2px;
+
+  --tag-focus-ring-offset:  2px;
+
+  /* ── default ──────────────────────────────────────────────────── */
+  --tag-default-filled-background:    var(--surface-component);
+
+  --tag-default-filled-color:         var(--text-primary);
+
+  --tag-default-filled-border-color:  transparent;
+
+  --tag-default-tint-background:      var(--surface-subtle);
+
+  --tag-default-tint-color:           var(--text-secondary);
+
+  --tag-default-tint-border-color:    transparent;
+
+  --tag-default-outline-background:   transparent;
+
+  --tag-default-outline-color:        var(--text-secondary);
+
+  --tag-default-outline-border-color: var(--border-default);
+
+  --tag-default-tint-outline-background:   var(--surface-subtle);
+
+  --tag-default-tint-outline-color:        var(--text-secondary);
+
+  --tag-default-tint-outline-border-color: var(--border-default);
+
+  /* ── primary ──────────────────────────────────────────────────── */
+  --tag-primary-filled-background:    var(--accent-solid);
+
+  --tag-primary-filled-color:         var(--on-accent);
+
+  --tag-primary-filled-border-color:  transparent;
+
+  --tag-primary-tint-background:      var(--accent-subtle);
+
+  --tag-primary-tint-color:           var(--accent-subtle-text);
+
+  --tag-primary-tint-border-color:    transparent;
+
+  --tag-primary-outline-background:   transparent;
+
+  --tag-primary-outline-color:        var(--accent-text);
+
+  --tag-primary-outline-border-color: var(--accent-border);
+
+  --tag-primary-tint-outline-background:   var(--accent-subtle);
+
+  --tag-primary-tint-outline-color:        var(--accent-subtle-text);
+
+  --tag-primary-tint-outline-border-color: var(--accent-border);
+
+  /* ── success ──────────────────────────────────────────────────── */
+  --tag-success-filled-background:    var(--success);
+
+  --tag-success-filled-color:         var(--success-foreground);
+
+  --tag-success-filled-border-color:  transparent;
+
+  --tag-success-tint-background:      var(--success-bg);
+
+  --tag-success-tint-color:           var(--success-foreground);
+
+  --tag-success-tint-border-color:    transparent;
+
+  --tag-success-outline-background:   transparent;
+
+  --tag-success-outline-color:        var(--success);
+
+  --tag-success-outline-border-color: var(--success-border);
+
+  --tag-success-tint-outline-background:   var(--success-bg);
+
+  --tag-success-tint-outline-color:        var(--success-foreground);
+
+  --tag-success-tint-outline-border-color: var(--success-border);
+
+  /* ── warning ──────────────────────────────────────────────────── */
+  --tag-warning-filled-background:    var(--warning);
+
+  --tag-warning-filled-color:         var(--warning-foreground);
+
+  --tag-warning-filled-border-color:  transparent;
+
+  --tag-warning-tint-background:      var(--warning-bg);
+
+  --tag-warning-tint-color:           var(--warning-foreground);
+
+  --tag-warning-tint-border-color:    transparent;
+
+  --tag-warning-outline-background:   transparent;
+
+  --tag-warning-outline-color:        var(--warning);
+
+  --tag-warning-outline-border-color: var(--warning-border);
+
+  --tag-warning-tint-outline-background:   var(--warning-bg);
+
+  --tag-warning-tint-outline-color:        var(--warning-foreground);
+
+  --tag-warning-tint-outline-border-color: var(--warning-border);
+
+  /* ── danger ───────────────────────────────────────────────────── */
+  --tag-danger-filled-background:    var(--error);
+
+  --tag-danger-filled-color:         var(--error-foreground);
+
+  --tag-danger-filled-border-color:  transparent;
+
+  --tag-danger-tint-background:      var(--error-bg);
+
+  --tag-danger-tint-color:           var(--error-foreground);
+
+  --tag-danger-tint-border-color:    transparent;
+
+  --tag-danger-outline-background:   transparent;
+
+  --tag-danger-outline-color:        var(--error);
+
+  --tag-danger-outline-border-color: var(--error-border);
+
+  --tag-danger-tint-outline-background:   var(--error-bg);
+
+  --tag-danger-tint-outline-color:        var(--error-foreground);
+
+  --tag-danger-tint-outline-border-color: var(--error-border);
+}

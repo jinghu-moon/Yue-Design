@@ -1755,6 +1755,177 @@ async function checkBilingualSite(page, origin) {
   )
 }
 
+/**
+ * Phase 3 of the token refactor: the semantic tokens must *drive* what renders.
+ *
+ * A contrast number proves a state is legible; it does not prove the number came from the token. Every
+ * one of these checks overrides a semantic token at runtime and asserts the rendered result follows —
+ * which is the difference between "the focus ring looks right" and "the focus ring is the token".
+ * Restoring the override afterwards keeps the rest of the run measuring the shipped values.
+ *
+ * The three surfaces are exactly the ones `docs/05-yue-token-refactor-plan.md` §7 Phase 3 requires:
+ * the focus ring, disabled opacity, and the hover/pressed tint.
+ */
+async function checkTokenDrivenStates(page, origin) {
+  const read = (selector, properties) =>
+    page.$eval(
+      selector,
+      (element, names) => {
+        const style = getComputedStyle(element)
+        return Object.fromEntries(names.map((name) => [name, style[name]]))
+      },
+      properties,
+    )
+
+  const withOverride = async (declaration, run) => {
+    await page.evaluate((css) => {
+      const style = document.createElement('style')
+      style.id = 'token-override-probe'
+      style.textContent = `:root { ${css} }`
+      document.head.append(style)
+    }, declaration)
+    try {
+      return await run()
+    } finally {
+      await page.evaluate(() => document.getElementById('token-override-probe')?.remove())
+      await page.waitForTimeout(80)
+    }
+  }
+
+  await page.goto(`${origin}/components/button`, { waitUntil: 'load' })
+  await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
+
+  // Matrix keys are ${variant}- — see `apps/docs/components/button.md`.
+  const focusSelector = '[data-matrix="solid-primary"]'
+  const ringProperties = ['outlineWidth', 'outlineColor', 'outlineOffset']
+
+  // Enter `:focus-visible` the way a keyboard user does, then read the ring.
+  await page.keyboard.press('Tab')
+  await page.$eval(focusSelector, (element) => element.focus())
+  const ring = await read(focusSelector, ringProperties)
+  if (ring.outlineWidth === '0px') {
+    fail(`token-driven: the focused button renders no outline (${JSON.stringify(ring)})`)
+  }
+
+  // 1 — the ring's width comes from `--focus-ring-width`.
+  const widerRing = await withOverride('--focus-ring-width: 6px', () =>
+    read(focusSelector, ringProperties),
+  )
+  if (widerRing.outlineWidth !== '6px') {
+    fail(
+      `token-driven: overriding --focus-ring-width to 6px rendered ` +
+        `"${widerRing.outlineWidth}" — the component is not reading the token`,
+    )
+  } else {
+    notes.push(`token-driven: --focus-ring-width 2px→6px moved the rendered outline to 6px`)
+  }
+
+  // 2 — the ring's colour comes from `--focus-ring-color`.
+  const recoloured = await withOverride('--focus-ring-color: rgb(1, 2, 3)', () =>
+    read(focusSelector, ringProperties),
+  )
+  if (recoloured.outlineColor !== 'rgb(1, 2, 3)') {
+    fail(
+      `token-driven: overriding --focus-ring-color rendered "${recoloured.outlineColor}" — the ` +
+        'component is not reading the token',
+    )
+  }
+
+  // 3 — the offset comes from `--focus-ring-offset`.
+  const offsetRing = await withOverride('--focus-ring-offset: 5px', () =>
+    read(focusSelector, ringProperties),
+  )
+  if (offsetRing.outlineOffset !== '5px') {
+    fail(
+      `token-driven: overriding --focus-ring-offset rendered "${offsetRing.outlineOffset}" — the ` +
+        'component is not reading the token',
+    )
+  } else {
+    notes.push('token-driven: the focus trio (colour, width, offset) all reach the rendered outline')
+  }
+  await page.$eval(focusSelector, (element) => element.blur())
+
+  // 4 — disabled opacity comes from `--opacity-disabled-content`.
+  //
+  // The probe target is the element that actually consumes it: the Tag's disabled rule sets
+  // `opacity: var(--tag-opacity-disabled)` → `--opacity-disabled-content`. The Input's disabled state
+  // is expressed through the `--disabled-content` *colour* mix instead, so reading its `opacity` would
+  // assert the wrong thing — the first version of this check did exactly that and reported a failure
+  // that was really a mis-targeted probe.
+  const disabledSelector = '.yue-tag.is-disabled'
+  await page.goto(`${origin}/components/tag`, { waitUntil: 'load' })
+  await page.waitForSelector('.yue-tag', { state: 'visible', timeout: 15_000 })
+  if ((await page.locator(disabledSelector).count()) > 0) {
+    const shipped = await read(disabledSelector, ['opacity'])
+    // The shipped value must be the token's value, not a magic number: this is the claim the plan asks
+    // for on disabled opacity, and it holds (0.38 = `--opacity-disabled-content`).
+    const declared = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--opacity-disabled-content').trim(),
+    )
+    if (Number.parseFloat(shipped.opacity) !== Number.parseFloat(declared)) {
+      fail(
+        `token-driven: the disabled control renders opacity ${shipped.opacity} while ` +
+          `--opacity-disabled-content is ${declared} — the component is not using the token`,
+      )
+    } else {
+      notes.push(
+        `token-driven: disabled rendering takes its opacity from --opacity-disabled-content (${shipped.opacity})`,
+      )
+    }
+
+    // The override has to wait for the element's `transition: opacity` to settle. Reading immediately
+    // after the style landed returned the pre-transition value and looked exactly like "the component
+    // ignores the token" — the finding recorded in round 1 was this timing artifact, not a defect.
+    const dimmer = await withOverride('--opacity-disabled-content: 0.1', async () => {
+      await page.waitForTimeout(400)
+      return read(disabledSelector, ['opacity'])
+    })
+    if (Number.parseFloat(dimmer.opacity) >= Number.parseFloat(shipped.opacity)) {
+      fail(
+        `token-driven: lowering --opacity-disabled-content did not dim the disabled control ` +
+          `(${shipped.opacity} → ${dimmer.opacity}) — the disabled state is not token-driven`,
+      )
+    } else {
+      notes.push(
+        `token-driven: --opacity-disabled-content drives disabled rendering (${shipped.opacity} → ${dimmer.opacity})`,
+      )
+    }
+  } else {
+    fail(`token-driven: no disabled control on the page (${disabledSelector} matched nothing)`)
+  }
+
+  // 5 — the hover tint comes from `--opacity-hover`: a text button's hover background is a
+  // `color-mix` of that opacity, so raising it must visibly move the composited colour.
+  await page.goto(`${origin}/components/button`, { waitUntil: 'load' })
+  await page.waitForSelector('.yue-button', { state: 'visible', timeout: 15_000 })
+  const textSelector = '[data-matrix="text-default"]'
+  if ((await page.locator(textSelector).count()) > 0) {
+    await page.mouse.move(0, 0)
+    await page.hover(textSelector)
+    await page.waitForTimeout(250)
+    const hovered = await read(textSelector, ['backgroundColor', 'color'])
+    const strong = await withOverride('--opacity-hover: 0.9', async () => {
+      await page.mouse.move(0, 0)
+      await page.hover(textSelector)
+      await page.waitForTimeout(250)
+      return read(textSelector, ['backgroundColor', 'color'])
+    })
+    if (strong.backgroundColor === hovered.backgroundColor) {
+      fail(
+        `token-driven: raising --opacity-hover did not change the hover tint ` +
+          `(${hovered.backgroundColor}) — the hover state is not token-driven`,
+      )
+    } else {
+      notes.push(
+        `token-driven: --opacity-hover drives the hover tint (${hovered.backgroundColor} → ${strong.backgroundColor})`,
+      )
+    }
+    // Contrast of the shipped hover state is measured by the theme × variant matrix earlier in this
+    // file (which composites the colour the way the browser paints it). This block's job is the claim
+    // the matrix cannot make: that the value comes from the token at all.
+  }
+}
+
 async function main() {
   if (!existsSync(SITE_DIR)) {
     process.stderr.write(
@@ -2071,7 +2242,11 @@ async function main() {
     notes.push(`code panels: first is ${codeText.split('\n')[0].trim().slice(0, 40)}…`)
     await codeToggle.click()
 
-    // 6 — the bilingual site, driven through the switcher rather than by URL.
+    // 6 — Phase 3 of the token refactor: the semantic tokens must drive what renders. It loads its own
+    // pages, so it runs before the bilingual pass moves away from them.
+    await checkTokenDrivenStates(page, origin)
+
+    // 7 — the bilingual site, driven through the switcher rather than by URL.
     // Runs with the wide viewport, because it reads nav chrome; the mobile pass below is a
     // separate concern.
     await checkBilingualSite(page, origin)

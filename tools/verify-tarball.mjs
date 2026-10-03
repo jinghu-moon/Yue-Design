@@ -130,6 +130,34 @@ function writeConsumer(consumer) {
 `,
   )
 
+  // A second page for the prototype-era selector archive (`implementations.css`). The audit of the
+  // Phase 6 handoff found that nothing rendered this file: it was asserted to be parseable and
+  // declaration-free, but no browser ever proved the archive produces the styles it promises — and the
+  // archive is an opt-in entry precisely so that a consumer can rely on it deliberately.
+  write(
+    'prototype.html',
+    '<!doctype html><html><head><link rel="icon" href="data:,"></head><body>' +
+      '<button class="btn" id="archive-btn" data-size="md">Save</button>' +
+      '<div class="field" id="archive-field"><label for="archive-input">Name</label>' +
+      '<input class="input" id="archive-input" /></div>' +
+      '<div class="list"><div class="list-row" id="archive-list">Row</div></div>' +
+      '<div class="overlay" id="archive-overlay"></div>' +
+      '<div class="box" id="archive-box" data-tone="subtle"></div>' +
+      '<div class="status" id="archive-status"><span>OK</span></div>' +
+      '<a class="link" id="archive-link" href="#">Link</a>' +
+      '<button class="btn" id="archive-hover-btn">Hover</button>' +
+      '<button class="btn" id="archive-disabled-btn" disabled>Disabled</button>' +
+      '<div class="box" id="archive-bordered-box" data-bordered></div>' +
+      '<script type="module" src="/prototype-entry.ts"></script></body></html>\n',
+  )
+
+  write(
+    'prototype-entry.ts',
+    `import '@yue-ui/design-tokens/index.css'
+import '@yue-ui/design-tokens/implementations.css'
+`,
+  )
+
   write(
     'entry.ts',
     `import { createApp, h, resolveComponent } from 'vue'
@@ -399,7 +427,8 @@ const specifiers = {
   hooks: '@yue-ui/hooks',
   hooksPackageJson: '@yue-ui/hooks/package.json',
   tokens: '@yue-ui/design-tokens/index.css',
-  tokenComponents: '@yue-ui/design-tokens/components.css',
+  tokenComponents: '@yue-ui/design-tokens/component-tokens/button.css',
+  tokenImplementations: '@yue-ui/design-tokens/implementations.css',
 }
 
 const paths = {}
@@ -471,7 +500,12 @@ process.stdout.write(
     'vite.config.mjs',
     `export default {
   root: ${JSON.stringify(consumer.replaceAll('\\', '/'))},
-  build: { outDir: 'dist', emptyOutDir: true, minify: false },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    minify: false,
+    rollupOptions: { input: { main: 'index.html', archive: 'prototype.html' } },
+  },
 }
 `,
   )
@@ -702,6 +736,156 @@ async function renderBuiltConsumer(dist) {
       }
     })
 
+    // The prototype-era archive, rendered by a browser from the installed tarball. Its values are
+    // compared against the tokens the browser itself resolves, so this is the token contract rather
+    // than a colour copied into the test.
+    await page.goto(`http://127.0.0.1:${server.address().port}/prototype.html`, { waitUntil: 'load' })
+    await page.waitForSelector('#archive-btn', { timeout: 15_000 })
+    const archive = await page.evaluate(() => {
+      const button = document.querySelector('#archive-btn')
+      const resolve = (token, property) => {
+        const probe = document.createElement('div')
+        probe.style[property] = `var(${token})`
+        document.body.appendChild(probe)
+        const value = getComputedStyle(probe)[property]
+        probe.remove()
+        return value
+      }
+      const style = getComputedStyle(button)
+      // Each archive namespace exposes at least one token-driven property. Comparing against the value
+      // the browser resolves for that token is what makes this about the contract rather than a copy.
+      const probes = {
+        // Each pair is "the property the rule sets" → "the token the rule sets it from", taken from the
+        // archive's own declarations. Guessing these is how the first version of this check failed:
+        // `.field` sets `gap`, not a border, and `--overlay-bg` was never a token.
+        field: { gap: '--gap-form-field' },
+        // `.list-row` deliberately reuses the Button's control scale for its row height.
+        list: { minHeight: '--button-height-md' },
+        overlay: { background: '--surface-level-2' },
+        box: { background: '--box-background-subtle' },
+        status: { gap: '--status-gap' },
+        link: { color: '--link-color' },
+      }
+      const measure = (selector, entries) => {
+        const element = document.querySelector(selector)
+        if (element === null) return { selector, missing: true }
+        const computed = getComputedStyle(element)
+        const readings = {}
+        for (const [property, token] of Object.entries(entries)) {
+          readings[property] = {
+            actual: computed[property],
+            expected: resolve(token, property),
+          }
+        }
+        return { selector, readings }
+      }
+      return {
+        button: {
+          height: style.height,
+          expectedHeight: resolve('--button-height-md', 'height'),
+          background: style.backgroundColor,
+          expectedBackground: resolve('--button-default-background', 'backgroundColor'),
+          borderColor: style.borderTopColor,
+          expectedBorderColor: resolve('--button-default-border-color', 'borderTopColor'),
+        },
+        archive: {
+          field: measure('#archive-field', probes.field),
+          list: measure('#archive-list', probes.list),
+          overlay: measure('#archive-overlay', probes.overlay),
+          box: measure('#archive-box', probes.box),
+          status: measure('#archive-status', probes.status),
+          link: measure('#archive-link', probes.link),
+        },
+      }
+    })
+
+    if (archive.button.height !== archive.button.expectedHeight) {
+      fail(
+        `implementations.css: .btn rendered height ${archive.button.height} but --button-height-md is ` +
+          `${archive.button.expectedHeight} — the archive is not reading the component tokens`,
+      )
+    }
+    if (archive.button.background !== archive.button.expectedBackground) {
+      fail(
+        `implementations.css: .btn rendered background ${archive.button.background} but ` +
+          `--button-default-background is ${archive.button.expectedBackground}`,
+      )
+    }
+    if (archive.button.borderColor !== archive.button.expectedBorderColor) {
+      fail(
+        `implementations.css: .btn rendered border ${archive.button.borderColor} but ` +
+          `--button-default-border-color is ${archive.button.expectedBorderColor}`,
+      )
+    }
+    notes.push(
+      `implementations.css: .btn renders from the tokens (height ${archive.button.height}, ` +
+        `background ${archive.button.background}, border ${archive.button.borderColor})`,
+    )
+
+    // Every other archive namespace: one element, one token-driven property each. A namespace whose
+    // property did not resolve to the token value fails here rather than silently rendering unstyled.
+    const covered = []
+    for (const [namespace, result] of Object.entries(archive.archive)) {
+      if (result.missing) {
+        fail(`implementations.css: no ${namespace} element on the archive page (${result.selector})`)
+        continue
+      }
+      for (const [property, reading] of Object.entries(result.readings)) {
+        if (reading.actual !== reading.expected) {
+          fail(
+            `implementations.css: ${namespace} ${property} is ${reading.actual} but the token resolves ` +
+              `to ${reading.expected} — that archive rule is not reading the tokens`,
+          )
+        }
+      }
+      covered.push(namespace)
+    }
+    if (covered.length > 0) {
+      notes.push(`implementations.css: ${covered.length} further namespace(s) render from tokens (${covered.join(', ')})`)
+    }
+
+    // Rule families rather than base rules: hover and disabled are where a token is most likely to be
+    // wired to the wrong variable, and they are the states the audit asked to cover.
+    await page.hover('#archive-hover-btn')
+    await page.waitForTimeout(250)
+    const states = await page.evaluate(() => {
+      const resolve = (token, property) => {
+        const probe = document.createElement('div')
+        probe.style[property] = `var(${token})`
+        document.body.appendChild(probe)
+        const value = getComputedStyle(probe)[property]
+        probe.remove()
+        return value
+      }
+      const hovered = getComputedStyle(document.querySelector('#archive-hover-btn'))
+      const disabled = getComputedStyle(document.querySelector('#archive-disabled-btn'))
+      const bordered = getComputedStyle(document.querySelector('#archive-bordered-box'))
+      return {
+        hover: { actual: hovered.backgroundColor, expected: resolve('--button-default-background-hover', 'backgroundColor') },
+        disabledBackground: { actual: disabled.backgroundColor, expected: resolve('--disabled-container', 'backgroundColor') },
+        disabledColor: { actual: disabled.color, expected: resolve('--disabled-content', 'color') },
+        bordered: {
+          actual: bordered.borderTopWidth,
+          expected: getComputedStyle(document.documentElement).getPropertyValue('--border-1').trim(),
+        },
+      }
+    })
+    for (const [name, reading] of Object.entries(states)) {
+      if (reading.actual !== reading.expected) {
+        fail(
+          `implementations.css: ${name} is ${reading.actual} but its token resolves to ${reading.expected} ` +
+            '— that archive rule is not reading the token it names',
+        )
+      }
+    }
+    notes.push(
+      `implementations.css: state families render from tokens (hover ${states.hover.actual}, ` +
+        `disabled ${states.disabledBackground.actual}/${states.disabledColor.actual}, bordered ${states.bordered.actual})`,
+    )
+
+    await page.goto(`http://127.0.0.1:${server.address().port}`, { waitUntil: 'load' })
+    await page.waitForSelector('.yue-button', { timeout: 15_000 })
+
     if (consoleErrors.length > 0) fail(`consumer console errors: ${consoleErrors.join(' | ')}`)
 
     // A real IME composition, driven through CDP so the event order is Chromium's own rather
@@ -895,8 +1079,16 @@ async function main() {
         join(consumer, 'node_modules/@yue-ui/design-tokens/src/index.css'),
       ],
       [
-        '@yue-ui/design-tokens/components.css',
-        join(consumer, 'node_modules/@yue-ui/design-tokens/src/components/index.css'),
+        // Component tokens are a directory now, addressed by the export subpath rather than by the
+        // single-sheet name that used to exist. This entry also proves the new export is installed.
+        '@yue-ui/design-tokens/component-tokens/button.css',
+        join(consumer, 'node_modules/@yue-ui/design-tokens/src/component-tokens/button.css'),
+      ],
+      [
+        // The prototype archive is opt-in and honestly named; it must still ship, and it must not
+        // be reachable from the entry a consumer installs.
+        '@yue-ui/design-tokens/implementations.css',
+        join(consumer, 'node_modules/@yue-ui/design-tokens/src/implementations.css'),
       ],
     ]) {
       if (!existsSync(file)) {

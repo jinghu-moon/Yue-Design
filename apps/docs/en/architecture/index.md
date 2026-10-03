@@ -22,9 +22,9 @@ The Token package entry declares the layer order, which gives the component styl
 /* packages/tokens/src/index.css */
 @layer primitives, semantics, components, implementations, demo;
 
-@import url('./primitives.css') layer(primitives);
-@import url('./semantics.css') layer(semantics);
-@import url('./components.css') layer(components);
+@import url('./primitives/_index.css') layer(primitives);
+@import url('./semantics/_index.css') layer(semantics);
+@import url('./component-tokens/_index.css') layer(components);
 ```
 
 **The loading order is part of the contract**: the Token entry must come before `@yue-ui/vue/style.css`.

@@ -14,6 +14,9 @@ export const enUS = {
   input: {
     clear: 'Clear',
   },
+  tag: {
+    closeLabel: 'Remove tag',
+  },
 } satisfies YueLocaleMessages
 
 export default enUS

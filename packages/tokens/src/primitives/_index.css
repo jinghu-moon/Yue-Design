@@ -1,0 +1,12 @@
+/* Yue primitives tokens — directory entry
+ *
+ * Imported by `src/index.css` with `layer(primitives)`; the layer lives on that import only, so these
+ * files carry no layer wrapper of their own.
+ */
+@import url('./color.css');
+@import url('./typography.css');
+@import url('./space.css');
+@import url('./shape.css');
+@import url('./motion.css');
+@import url('./effects.css');
+@import url('./control.css');

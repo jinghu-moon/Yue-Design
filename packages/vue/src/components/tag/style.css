@@ -1,0 +1,272 @@
+/* YueTag / YueCheckTag — Tag component implementation.
+ *
+ * Contract (same as YueButton):
+ *
+ *   1. Loaded after `@yue-ui/design-tokens/index.css`.
+ *   2. Global, never scoped. BEM: `.yue-tag` / `.yue-tag__icon` / `.yue-tag--primary`.
+ *   3. Every value is a Tag Component Token (`--tag-*`): no raw hex, no primitive token,
+ *      no other component's namespace.
+ *
+ * Private composition slots:
+ *
+ *   --_fill           background colour
+ *   --_color          text colour
+ *   --_border         border colour
+ *   --_height / --_padding-inline / --_font-size   size ramp
+ *   --_radius         corner radius
+ */
+
+.yue-tag {
+  /* ── default theme colour slots ─────────────────────────────────── */
+  --_fill:   var(--tag-default-filled-background);
+  --_color:  var(--tag-default-filled-color);
+  --_border: var(--tag-default-filled-border-color);
+
+  /* ── default size slots ──────────────────────────────────────────── */
+  --_height:          var(--tag-height-md);
+  --_padding-inline:  var(--tag-padding-inline-md);
+  --_font-size:       var(--tag-font-size-md);
+  --_radius:          var(--tag-border-radius);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tag-gap);
+  height: var(--_height);
+  padding: var(--tag-padding-block) var(--_padding-inline);
+  border: var(--tag-border-width) solid var(--_border);
+  border-radius: var(--_radius);
+  background-color: var(--_fill);
+  color: var(--_color);
+  font-family: inherit;
+  font-size: var(--_font-size);
+  font-weight: var(--tag-font-weight);
+  line-height: var(--tag-line-height);
+  white-space: nowrap;
+  vertical-align: middle;
+  transition:
+    background-color var(--tag-duration) var(--tag-ease),
+    border-color     var(--tag-duration) var(--tag-ease),
+    color            var(--tag-duration) var(--tag-ease),
+    opacity          var(--tag-duration) var(--tag-ease);
+}
+
+/* ---------------------------------------------------------------- size ramp */
+
+.yue-tag--sm {
+  --_height:         var(--tag-height-sm);
+  --_padding-inline: var(--tag-padding-inline-sm);
+  --_font-size:      var(--tag-font-size-sm);
+}
+
+.yue-tag--lg {
+  --_height:         var(--tag-height-lg);
+  --_padding-inline: var(--tag-padding-inline-lg);
+  --_font-size:      var(--tag-font-size-lg);
+}
+
+/* -------------------------------------------------------------------- shape */
+
+.yue-tag--round {
+  --_radius: var(--tag-border-radius-round);
+}
+
+/* ------------------------------------------------------------------ themes */
+
+.yue-tag--primary {
+  --_fill:   var(--tag-primary-filled-background);
+  --_color:  var(--tag-primary-filled-color);
+  --_border: var(--tag-primary-filled-border-color);
+}
+
+.yue-tag--success {
+  --_fill:   var(--tag-success-filled-background);
+  --_color:  var(--tag-success-filled-color);
+  --_border: var(--tag-success-filled-border-color);
+}
+
+.yue-tag--warning {
+  --_fill:   var(--tag-warning-filled-background);
+  --_color:  var(--tag-warning-filled-color);
+  --_border: var(--tag-warning-filled-border-color);
+}
+
+.yue-tag--danger {
+  --_fill:   var(--tag-danger-filled-background);
+  --_color:  var(--tag-danger-filled-color);
+  --_border: var(--tag-danger-filled-border-color);
+}
+
+/* ---------------------------------------------------------------- variants
+ *
+ * Variant overrides run after theme overrides so a `.yue-tag--primary.yue-tag--tint`
+ * combination resolves correctly: theme sets the palette, variant picks the painting.
+ */
+
+.yue-tag--tint {
+  --_fill:   var(--tag-default-tint-background);
+  --_color:  var(--tag-default-tint-color);
+  --_border: var(--tag-default-tint-border-color);
+}
+.yue-tag--primary.yue-tag--tint {
+  --_fill:   var(--tag-primary-tint-background);
+  --_color:  var(--tag-primary-tint-color);
+  --_border: var(--tag-primary-tint-border-color);
+}
+.yue-tag--success.yue-tag--tint {
+  --_fill:   var(--tag-success-tint-background);
+  --_color:  var(--tag-success-tint-color);
+  --_border: var(--tag-success-tint-border-color);
+}
+.yue-tag--warning.yue-tag--tint {
+  --_fill:   var(--tag-warning-tint-background);
+  --_color:  var(--tag-warning-tint-color);
+  --_border: var(--tag-warning-tint-border-color);
+}
+.yue-tag--danger.yue-tag--tint {
+  --_fill:   var(--tag-danger-tint-background);
+  --_color:  var(--tag-danger-tint-color);
+  --_border: var(--tag-danger-tint-border-color);
+}
+
+.yue-tag--outline {
+  --_fill:   var(--tag-default-outline-background);
+  --_color:  var(--tag-default-outline-color);
+  --_border: var(--tag-default-outline-border-color);
+}
+.yue-tag--primary.yue-tag--outline {
+  --_fill:   var(--tag-primary-outline-background);
+  --_color:  var(--tag-primary-outline-color);
+  --_border: var(--tag-primary-outline-border-color);
+}
+.yue-tag--success.yue-tag--outline {
+  --_fill:   var(--tag-success-outline-background);
+  --_color:  var(--tag-success-outline-color);
+  --_border: var(--tag-success-outline-border-color);
+}
+.yue-tag--warning.yue-tag--outline {
+  --_fill:   var(--tag-warning-outline-background);
+  --_color:  var(--tag-warning-outline-color);
+  --_border: var(--tag-warning-outline-border-color);
+}
+.yue-tag--danger.yue-tag--outline {
+  --_fill:   var(--tag-danger-outline-background);
+  --_color:  var(--tag-danger-outline-color);
+  --_border: var(--tag-danger-outline-border-color);
+}
+
+.yue-tag--tint-outline {
+  --_fill:   var(--tag-default-tint-outline-background);
+  --_color:  var(--tag-default-tint-outline-color);
+  --_border: var(--tag-default-tint-outline-border-color);
+}
+.yue-tag--primary.yue-tag--tint-outline {
+  --_fill:   var(--tag-primary-tint-outline-background);
+  --_color:  var(--tag-primary-tint-outline-color);
+  --_border: var(--tag-primary-tint-outline-border-color);
+}
+.yue-tag--success.yue-tag--tint-outline {
+  --_fill:   var(--tag-success-tint-outline-background);
+  --_color:  var(--tag-success-tint-outline-color);
+  --_border: var(--tag-success-tint-outline-border-color);
+}
+.yue-tag--warning.yue-tag--tint-outline {
+  --_fill:   var(--tag-warning-tint-outline-background);
+  --_color:  var(--tag-warning-tint-outline-color);
+  --_border: var(--tag-warning-tint-outline-border-color);
+}
+.yue-tag--danger.yue-tag--tint-outline {
+  --_fill:   var(--tag-danger-tint-outline-background);
+  --_color:  var(--tag-danger-tint-outline-color);
+  --_border: var(--tag-danger-tint-outline-border-color);
+}
+
+/* ---------------------------------------------------------------- disabled */
+
+.yue-tag.is-disabled {
+  opacity: var(--tag-opacity-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- close button */
+
+.yue-tag__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tag-close-icon-size);
+  height: var(--tag-close-icon-size);
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity var(--tag-duration) var(--tag-ease);
+}
+
+.yue-tag__close:hover {
+  opacity: 1;
+}
+
+.yue-tag__close:focus-visible {
+  outline: var(--tag-focus-ring-width) solid var(--tag-focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------- icon slot */
+
+.yue-tag__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--tag-close-icon-size); /* icon scales with close icon size */
+}
+
+/* ---------------------------------------------------------- maxWidth truncation */
+
+.yue-tag__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   YueCheckTag
+   ============================================================ */
+
+.yue-tag--check {
+  cursor: pointer;
+  user-select: none;
+  /* Unselected state: default/outline */
+  --_fill:   var(--tag-default-outline-background);
+  --_color:  var(--tag-default-outline-color);
+  --_border: var(--tag-default-outline-border-color);
+}
+
+.yue-tag--check:hover:not(.is-disabled) {
+  --_fill:   var(--tag-default-tint-background);
+}
+
+.yue-tag--check.is-checked {
+  /* Selected state: primary/filled */
+  --_fill:   var(--tag-primary-filled-background);
+  --_color:  var(--tag-primary-filled-color);
+  --_border: var(--tag-primary-filled-border-color);
+}
+
+.yue-tag--check:focus-visible {
+  outline: var(--tag-focus-ring-width) solid var(--tag-focus-ring-color);
+  outline-offset: var(--tag-focus-ring-offset);
+}
+
+.yue-tag--check.is-disabled {
+  opacity: var(--tag-opacity-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}

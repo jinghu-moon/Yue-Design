@@ -52,23 +52,29 @@ Read only the routed references needed by the classification:
 
 ## Delivery workflow
 
-1. Establish a baseline with focused tests and `git status`; inspect the nearest Yue
-   component, its tokens, three docs pages, package entry, and consumer tests.
-2. Freeze Props, Slots, Emits, models, exposed methods, defaults, attribute routing, and
-   intentional non-features in `types.ts` and the API page before writing CSS.
-3. Design a token/state matrix. Keep `component token -> semantic token -> primitive token`;
-   component CSS never reads primitives, hard-codes colors, or reads another component's tokens.
-4. Implement the smallest correct architecture. Vue SFCs use `<script setup lang="ts">`; CSS
-   is a separate unlayered BEM entry using the fixed `yue` namespace and `useNamespace`.
-5. Add the three docs pages from the real component, package entry and CSS entry. Do not
-   duplicate API tables across pages.
-6. Test from the black-box contract outward. Unit tests cover state, events, slots, DOM
-   routing and edge cases; browser tests cover geometry/focus/keyboard/IME/Teleport/contrast
-   whenever those are part of the contract. Add SSR coverage when setup can touch the browser.
-7. Run the smallest applicable matrix while iterating, then `corepack pnpm verify:all` before
-   handoff. A skipped or failing gate is reported as such, never as complete.
-8. Review the diff for dead props, stale docs, duplicate contracts, generated probes and
+1. **Establish baseline.** `git status`, focused tests on the nearest Yue component, tokens,
+   three docs pages, package entry, and consumer tests. This confirms what was working before.
+2. **Freeze the API contract.** Props, Slots, Emits, models, exposed methods, defaults,
+   attribute routing, and intentional non-features go into `types.ts` and the API page.
+   The spec from `yue-component-spec` is the source; do not deviate without updating the spec.
+   ⛔ Do not write CSS or component SFC until `types.ts` and the API page draft exist.
+3. **Design the token/state matrix.** Use `references/token-matrix.md`. Write the matrix
+   before writing CSS. Chain: `component token → semantic token → primitive token`;
+   component CSS reads only its own `--{name}-*` tokens and `--_*` private slots.
+4. **Implement.** Vue SFCs use `<script setup lang="ts">`; CSS is a separate unlayered BEM
+   entry using the fixed `yue` namespace and `useNamespace`. Follow the routed module reference.
+5. **Write the three docs pages.** Example, API, and Guide from the real component. No
+   duplicated API tables across pages. API page must include DOM/attribute routing.
+6. **Test from the contract outward.** Unit tests cover state, events, slots, DOM routing,
+   and edge cases; browser tests cover geometry/focus/keyboard/IME/Teleport/contrast when
+   those are part of the contract. SSR coverage when setup can touch the browser.
+7. **Run verification gates.** Use the smallest applicable matrix row while iterating.
+   Gate set and commands are in
+   [`yue-review/references/verification-commands.md`](../yue-review/references/verification-commands.md).
+8. **Review the diff.** Check for dead props, stale docs, duplicate contracts, probes, and
    compatibility branches that are not part of the final design.
+9. ⛔ **Hand off via `yue-review`.** Do not mark the task complete here. Use the `yue-review`
+   skill to run the acceptance checklist and produce the handoff report.
 
 ## Yue hard constraints
 
@@ -110,9 +116,12 @@ component. The audit is a structural check, not a substitute for design judgment
 
 ## Handoff
 
-Use [references/handoff-template.md](references/handoff-template.md) as the single report
-format. It must include classification, reference decisions, API and non-features, token and
-accessibility matrices, changed entries/docs, actual command results, regression impact,
-limitations and deliberate breaking changes. Use
-[references/verification-matrix.md](references/verification-matrix.md) as the single source
-for which gates are required. Release/versioning belongs to a separate release workflow.
+This skill's job ends at implementation and testing. After implementation is done, use the
+`yue-review` skill to run the acceptance checklist and produce the handoff report. The
+handoff template and acceptance checklist live in
+`.agent/skills/yue-review/references/`.
+
+Use [references/verification-matrix.md](references/verification-matrix.md) as the gate-set
+reference while iterating; the single authoritative command list is in
+`.agent/skills/yue-review/references/verification-commands.md`.
+Release/versioning belongs to a separate release workflow.

@@ -33,6 +33,8 @@ import YueButtonGroup from './components/button/YueButtonGroup.vue'
 import YueButtonToggle from './components/button/YueButtonToggle.vue'
 import YueButtonToggleItem from './components/button/YueButtonToggleItem.vue'
 import YueInput from './components/input/YueInput.vue'
+import YueTag from './components/tag/YueTag.vue'
+import YueCheckTag from './components/tag/YueCheckTag.vue'
 import YueLocaleProvider from './locale/YueLocaleProvider.vue'
 
 /**
@@ -46,6 +48,8 @@ const components = {
   YueButtonToggle,
   YueButtonToggleItem,
   YueInput,
+  YueTag,
+  YueCheckTag,
   YueLocaleProvider,
 }
 

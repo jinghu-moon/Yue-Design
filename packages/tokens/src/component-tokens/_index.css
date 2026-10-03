@@ -1,0 +1,22 @@
+/* Yue component tokens — directory entry
+ *
+ * Imported by `src/index.css` with `layer(components)`; the layer lives on that import only, so
+ * these files carry no layer wrapper of their own. Adding a component means adding its file here.
+ */
+@import url('./button.css');
+@import url('./input.css');
+@import url('./tag.css');
+@import url('./box.css');
+@import url('./menu.css');
+@import url('./status.css');
+@import url('./badge.css');
+@import url('./avatar.css');
+@import url('./switch.css');
+@import url('./checkbox.css');
+@import url('./radio.css');
+@import url('./progress.css');
+@import url('./spinner.css');
+@import url('./divider.css');
+@import url('./icon.css');
+@import url('./link.css');
+@import url('./textarea.css');

@@ -33,14 +33,26 @@ read [references/review-checklist.md](references/review-checklist.md) for review
 
 ## Route the task
 
-| Task | Read | Main evidence |
-| --- | --- | --- |
-| Runtime/types/provider | `architecture.md` | hooks unit + SSR + cross-package tests |
-| New/changed message or language pack | `catalogs.md` | key/parameter parity + one-locale tree shaking |
-| Component consumes internal text | `architecture.md`, `catalogs.md` | component unit + browser locale switch |
-| vue-i18n/Intlayer/Paraglide/Tolgee integration | `architecture.md` | optional adapter and tarball test |
-| VitePress English/Chinese site | `docs-site.md` | static build + deep links + browser switch |
-| Review or acceptance | `review-checklist.md`, `verification-matrix.md` | actual gate results |
+| Task | Read | Main evidence | Minimum work |
+| --- | --- | --- | --- |
+| Runtime/types/provider | `architecture.md` | hooks unit + SSR + cross-package tests | Full workflow |
+| New/changed message or language pack | `catalogs.md` | key/parameter parity + one-locale tree shaking | Full workflow |
+| Adding, renaming, or removing a locale key | `catalogs.md`, `key-change-process.md` | typecheck + audit:i18n | Full workflow |
+| **Single new aria-label or tooltip text** | `catalogs.md` | typecheck + audit:i18n | Add key to catalog + all locales; run `audit:i18n` |
+| Component consumes internal text | `architecture.md`, `catalogs.md` | component unit + browser locale switch | Full workflow |
+| vue-i18n/Intlayer/Paraglide/Tolgee integration | `architecture.md` | optional adapter and tarball test | Full workflow |
+| VitePress English/Chinese site | `docs-site.md` | static build + deep links + browser switch | Full workflow |
+| Review or acceptance | `review-checklist.md`, `verification-matrix.md` | actual gate results | Full workflow |
+
+**Single aria-label / tooltip path** (e.g. adding one `aria-label` like `tag.closeLabel`):
+1. Add the key to the typed catalog in `packages/vue/src/locale/catalog.ts`.
+2. Add the value to every supported language pack (`zh-CN.ts`, `en-US.ts`, …) in the same commit.
+3. Use `useLocale().t('ns.key')` in the component — never a hard-coded string.
+4. Run `corepack pnpm audit:i18n` and confirm it passes.
+5. No docs-site update needed unless the label is public API (documented in the API page).
+
+This path is the minimum. If the component adds more than one key, or if it also changes
+user-visible example text or guide copy, use the full workflow instead.
 
 ## Workflow
 

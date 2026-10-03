@@ -1,0 +1,18 @@
+/* Yue component tokens — Icon
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   icon-     | Icon sizing contract | public
+ */
+
+:root {
+  --icon-size-sm                       : var(--size-16);
+
+  --icon-size-md                       : var(--size-20);
+
+  --icon-size-lg                       : var(--size-24);
+}

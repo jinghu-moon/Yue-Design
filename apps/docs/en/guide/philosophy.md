@@ -42,7 +42,7 @@ The benefit is that state colors always follow the background and foreground the
 
 ## 4. Contrast is a gate, not a suggestion
 
-32 foreground/background pairs × light/dark = 64 checks, and if any single one falls below the threshold the build fails. This set of pairs was not reinvented: it was extracted verbatim from the audit embedded in the prototype HTML and is verified in reverse by tests, ensuring it does not quietly drift during migration. See [Token audit](/en/tools/).
+32 migrated pairs × light/dark = 64 checks for the prototype (the package target adds its own 23 pairs, 110 in total), and if any single one falls below the threshold the build fails. This set of pairs was not reinvented: it was extracted verbatim from the audit embedded in the prototype HTML and is verified in reverse by tests, ensuring it does not quietly drift during migration. See [Token audit](/en/tools/).
 
 ## 5. The theme switch is an attribute, not a branch
 

@@ -1,0 +1,26 @@
+/* Yue semantics tokens — border and divider roles
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none. Declarations are grouped by role, not by namespace: a namespace
+ * says what a token is made of, this file says what it is for.
+ */
+
+:root {
+  --border-divider       : var(--neutral-200);
+
+  --border-default       : var(--neutral-300);
+
+  --border-strong        : var(--neutral-800);
+
+  --border-control       : var(--neutral-600);
+}
+
+[data-theme=dark] {
+  --border-divider    : #2b2b2b;
+
+  --border-default    : #383838;
+
+  --border-control    : #7a7a7a;
+
+  --border-strong: #9a9a9a;
+}

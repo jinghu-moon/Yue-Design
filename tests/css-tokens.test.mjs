@@ -163,7 +163,7 @@ describe('parser strictness', () => {
 })
 
 describe('the real token package', () => {
-  it('loads all four sheets in declared cascade order', () => {
+  it('loads the layer entries in declared cascade order', () => {
     const sheet = loadTokenSheet({ entry: TOKENS_ENTRY })
     expect(sheet.layerOrder).toEqual([
       'primitives',
@@ -172,12 +172,17 @@ describe('the real token package', () => {
       'implementations',
       'demo',
     ])
-    expect(sheet.files.map((file) => file.split(/[\\/]/).pop())).toEqual([
-      'index.css',
-      'primitives.css',
-      'semantics.css',
-      'components.css',
-    ])
+    // The entry file comes first, and every layer is reached through its own entry — a flat sheet
+    // before the split, a directory entry after it. The exact file list is deliberately *not*
+    // asserted: Phase 2 of the token refactor splits the sheets into per-namespace and per-category
+    // files, and a test that pins the list has to be edited at the same moment the files move — which
+    // is how a layout change starts looking like a behaviour change.
+    const fromSrc = sheet.files.map((file) => file.replaceAll('\\', '/').split('/src/')[1] ?? file)
+    expect(fromSrc[0]).toBe('index.css')
+    expect(fromSrc).toContain('component-tokens/_index.css')
+    for (const file of fromSrc.slice(1)) {
+      expect(file).toMatch(/^(primitives|semantics|component-tokens)(\/|\.css$)/)
+    }
   })
 
   it('exposes every token in both themes with nothing unresolved', () => {

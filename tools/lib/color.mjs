@@ -25,7 +25,76 @@ export function parseColor(input) {
   if (value.startsWith('#')) return parseHex(value)
   if (value.startsWith('rgb')) return parseRgbFunction(value)
   if (value.startsWith('color-mix(')) return parseColorMix(value)
+  // Modern serialisations the browser returns for computed values. Needed by anything that reads a colour
+  // out of a live page: the docs theme authors colours in `oklab()`, and Chrome serialises `color-mix()`
+  // results as `color(srgb …)`, so a measurement script could not otherwise compare what it rendered.
+  if (value.startsWith('color(')) return parseColorFunction(value)
+  if (value.startsWith('oklab(')) return parseOklabFunction(value)
+  if (value.startsWith('oklch(')) return parseOklchFunction(value)
   throw new Error(`parseColor: unsupported colour value "${input}"`)
+}
+
+/** `color(srgb r g b / a)`, channels in 0..1. */
+function parseColorFunction(value) {
+  const body = value.slice(value.indexOf('(') + 1, -1).trim()
+  const [space, alphaText] = body.split('/').map((part) => part.trim())
+  const parts = space.split(/\s+/)
+  if (parts[0] !== 'srgb' || parts.length < 4) {
+    throw new Error(`parseColor: unsupported colour space in "${value}"`)
+  }
+  const channel = (text) => {
+    const number = Number.parseFloat(text)
+    if (Number.isNaN(number)) throw new Error(`parseColor: bad channel "${text}"`)
+    return Math.max(0, Math.min(255, Math.round(number * 255)))
+  }
+  return { r: channel(parts[1]), g: channel(parts[2]), b: channel(parts[3]), a: alphaOf(alphaText) }
+}
+
+function alphaOf(text) {
+  if (text === undefined || text === '') return 1
+  const number = Number.parseFloat(text.endsWith('%') ? text.slice(0, -1) : text)
+  return Math.max(0, Math.min(1, text.endsWith('%') ? number / 100 : number))
+}
+
+/** Linear-light sRGB → 0..255, the standard Oklab inverse. */
+function linearToSrgb(value) {
+  const clamped = Math.max(0, Math.min(1, value))
+  return Math.max(0, Math.min(255, Math.round(255 * (clamped <= 0.0031308 ? 12.92 * clamped : 1.055 * clamped ** (1 / 2.4) - 0.055))))
+}
+
+/** Oklab (and Oklch) → sRGB, so a browser-returned `oklab()` value can be compared like any other. */
+function oklabToSrgb(lightness, a, b, alpha) {
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3
+  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3
+  return {
+    r: linearToSrgb(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+    a: alpha,
+  }
+}
+
+function parseOklabFunction(value) {
+  const body = value.slice(value.indexOf('(') + 1, -1).trim()
+  const [space, alphaText] = body.split('/').map((part) => part.trim())
+  const parts = space.split(/\s+/)
+  if (parts.length < 3) throw new Error(`parseColor: incomplete oklab() in "${value}"`)
+  const [lightness, a, b] = parts.slice(0, 3).map((text) => Number.parseFloat(text))
+  if ([lightness, a, b].some(Number.isNaN)) throw new Error(`parseColor: bad oklab channel in "${value}"`)
+  return oklabToSrgb(lightness, a, b, alphaOf(alphaText))
+}
+
+function parseOklchFunction(value) {
+  const body = value.slice(value.indexOf('(') + 1, -1).trim()
+  const [space, alphaText] = body.split('/').map((part) => part.trim())
+  const parts = space.split(/\s+/)
+  if (parts.length < 3) throw new Error(`parseColor: incomplete oklch() in "${value}"`)
+  const lightness = Number.parseFloat(parts[0])
+  const chroma = Number.parseFloat(parts[1])
+  const hue = (Number.parseFloat(parts[2]) * Math.PI) / 180
+  if ([lightness, chroma, hue].some(Number.isNaN)) throw new Error(`parseColor: bad oklch channel in "${value}"`)
+  return oklabToSrgb(lightness, chroma * Math.cos(hue), chroma * Math.sin(hue), alphaOf(alphaText))
 }
 
 function parseHex(value) {

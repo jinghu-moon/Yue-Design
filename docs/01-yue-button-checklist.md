@@ -157,7 +157,8 @@ packages/tokens/assets/
 ```
 @yue-ui/design-tokens
 @yue-ui/design-tokens/index.css
-@yue-ui/design-tokens/components.css
+@yue-ui/design-tokens/component-tokens/*.css  # Component Token 声明（index.css 已包含）
+@yue-ui/design-tokens/implementations.css   # 可选：原型期选择器归档，不被 index.css 引用
 ```
 
 包配置要求：
@@ -167,7 +168,8 @@ packages/tokens/assets/
   "exports": {
     ".": "./src/index.css",
     "./index.css": "./src/index.css",
-    "./components.css": "./src/components/index.css"
+    "./component-tokens/*.css": "./src/component-tokens/*.css",
+    "./implementations.css": "./src/implementations.css"
   },
   "sideEffects": ["**/*.css"]
 }
@@ -348,7 +350,7 @@ packages/vue/src/components/button/
 如现有 Token 不足，在：
 
 ```
-packages/tokens/src/components/button.css
+packages/tokens/src/prototype/button.css
 ```
 
 补充：

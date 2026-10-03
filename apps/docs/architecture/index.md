@@ -22,9 +22,10 @@ Token 包的入口声明层顺序，组件样式因此有了确定的位置：
 /* packages/tokens/src/index.css */
 @layer primitives, semantics, components, implementations, demo;
 
-@import url('./primitives.css') layer(primitives);
-@import url('./semantics.css') layer(semantics);
-@import url('./components.css') layer(components);
+@import url('./primitives/_index.css') layer(primitives);
+@import url('./semantics/_index.css') layer(semantics);
+@import url('./component-tokens/_index.css') layer(components);
+@import url('./component-tokens/_index.css') layer(components);
 ```
 
 **加载顺序是契约的一部分**：Token 入口必须先于 `@yue-ui/vue/style.css`。

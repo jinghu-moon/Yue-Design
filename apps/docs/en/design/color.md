@@ -28,4 +28,4 @@ Yue's colors are split into three layers: the raw palette, semantic roles, and c
 
 ## Validation
 
-`corepack pnpm audit:tokens` runs 32 pairs against the light/dark Azure profiles, 64 gating checks in total; Neutral Accent runs as a diagnostic profile. A new semantic role must add a pair, or explicitly explain why it does not take part in the contrast computation.
+`corepack pnpm audit:tokens` runs the 32 migrated pairs against the light/dark Azure profiles (64 checks for the prototype), and the package target adds its own 23 pairs (110 checks) in total; Neutral Accent runs as a diagnostic profile. A new semantic role must add a pair, or explicitly explain why it does not take part in the contrast computation.

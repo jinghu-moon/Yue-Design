@@ -30,14 +30,17 @@
     "verify:tarball": "node tools/verify-tarball.mjs",
     "new:component": "node .agent/skills/yue-component-design/scripts/new-component.mjs",
     "audit:component": "node .agent/skills/yue-component-design/scripts/audit-component.mjs",
-    "verify": "corepack pnpm typecheck && corepack pnpm build && corepack pnpm test && corepack pnpm audit:tokens && corepack pnpm audit:docs && corepack pnpm audit:i18n && corepack pnpm audit:docs:i18n && corepack pnpm verify:dist",
+    "verify": "pnpm verify:dark-opacity && corepack pnpm typecheck && corepack pnpm build && corepack pnpm test && corepack pnpm audit:tokens && corepack pnpm audit:docs && corepack pnpm audit:i18n && corepack pnpm audit:docs:i18n && corepack pnpm verify:dist",
     "verify:all": "corepack pnpm verify && corepack pnpm verify:treeshaking && corepack pnpm verify:visual && corepack pnpm verify:tarball",
-    "clean": "corepack pnpm -r exec rimraf dist && rimraf apps/docs/.vitepress/dist apps/docs/.vitepress/cache tests/tree-shaking/dist"
+    "clean": "corepack pnpm -r exec rimraf dist && rimraf apps/docs/.vitepress/dist apps/docs/.vitepress/cache tests/tree-shaking/dist",
+    "sync:handoff": "node tools/sync-handoff.mjs",
+    "verify:dark-opacity": "node tools/measure-dark-opacity.mjs --assert"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "6.0.9",
     "@vue/test-utils": "^2.4.11",
     "@yue-ui/vue": "workspace:^",
+    "fast-png": "^8.0.0",
     "happy-dom": "20.14.5",
     "playwright-core": "^1.63.0",
     "rimraf": "6.1.3",

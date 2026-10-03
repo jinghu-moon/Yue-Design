@@ -1,0 +1,14 @@
+/* Yue semantics tokens — directory entry
+ *
+ * Imported by `src/index.css` with `layer(semantics)`; the layer lives on that import only, so these
+ * files carry no layer wrapper of their own.
+ */
+@import url('./surface.css');
+@import url('./text.css');
+@import url('./border.css');
+@import url('./feedback.css');
+@import url('./action.css');
+@import url('./accent.css');
+@import url('./interaction.css');
+@import url('./elevation.css');
+@import url('./scrim.css');

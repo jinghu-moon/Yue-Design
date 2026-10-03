@@ -1,0 +1,16 @@
+/* Yue component tokens — Radio
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   radio-    | Radio component contract | public
+ */
+
+:root {
+  --radio-size                         : var(--size-16);
+
+  --radio-accent-color                 : var(--control-accent);
+}

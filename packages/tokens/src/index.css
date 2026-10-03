@@ -13,6 +13,6 @@
  */
 @layer primitives, semantics, components, implementations, demo;
 
-@import url('./primitives.css') layer(primitives);
-@import url('./semantics.css') layer(semantics);
-@import url('./components.css') layer(components);
+@import url('./primitives/_index.css') layer(primitives);
+@import url('./semantics/_index.css') layer(semantics);
+@import url('./component-tokens/_index.css') layer(components);
