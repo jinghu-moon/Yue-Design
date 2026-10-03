@@ -224,7 +224,7 @@ Intl、SSR 无浏览器对象、重新导入后的 Symbol 一致性；原生 Nod
 | --- | --- | --- |
 | RTL 语言包 | 无 `ar` / `he` / `fa` 等语言包；运行时、逻辑属性、方向透传与浏览器镜像断言都在 | 第一个 RTL 语言包发布，并且它的语言包审计、浏览器门禁与文档镜像一起通过 |
 | 独立发布的 adapter 包 | 只有 `vue-i18n` 参考实现，位于 `apps/docs/.vitepress/theme/adapters/vue-i18n.ts`，不随 `@yue-ui/vue` 发布，`vue-i18n` 也不在包的依赖里 | 出现真实消费场景后，为该引擎建独立入口 + 独立 peer dependency + 独立 tarball 测试；在此之前文档不把它写成「已支持」 |
-| canonical 域名 | 当前为 Cloudflare Pages 地址 `https://yue-design-7s0.pages.dev`（canonical / hreflang / sitemap 都指向它） | 绑定自定义域名后同步更新 `SITE_HOSTNAME`，再重新构建并运行发布前审计 |
+| canonical 域名 | 当前为 Cloudflare Pages 地址 `https://yue-design.pages.dev`（canonical / hreflang / sitemap 都指向它） | 绑定自定义域名后同步更新 `SITE_HOSTNAME`，再重新构建并运行发布前审计 |
 
 ## 3. 明确不做
 

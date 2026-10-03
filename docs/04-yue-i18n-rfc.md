@@ -124,7 +124,7 @@ interface YueLocaleInstance<TTree, TKey> {
 | 404 | 覆盖主题的 `not-found` 插槽：一个 `404.html` 同时列出两种语言与两个入口（VitePress 只生成一个 404 页，双语比「假装本地化」诚实） |
 | 部署重定向 | 不做 `/zh/` 重定向：中文就在根路径。`/en/` 深链接由静态主机的 history fallback 处理 |
 
-当前文档站部署在 Cloudflare Pages（`https://yue-design-7s0.pages.dev`）。绑定自定义域名后，
+当前文档站部署在 Cloudflare Pages（`https://yue-design.pages.dev`）。绑定自定义域名后，
 应同步更新 `SITE_HOSTNAME`，再重新构建并运行发布前审计——
 一个写死的假域名比「没有 canonical」更容易被发现。
 
