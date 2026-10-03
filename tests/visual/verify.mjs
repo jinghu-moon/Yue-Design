@@ -1926,6 +1926,73 @@ async function checkTokenDrivenStates(page, origin) {
   }
 }
 
+
+/**
+ * A checked CheckTag must keep its selected background on hover.
+ *
+ * The reported defect: hovering a checked tag replaced its fill with the unselected tint while the text kept
+ * the selected colour, so the label vanished — hover *swapped* the variant instead of adjusting the existing
+ * background. The assertions encode that definition: the fill reacts, the text colour does not move, and the
+ * fill keeps its contrast with the text in both states.
+ */
+async function checkCheckedTagHover(page, origin) {
+  await page.goto(`${origin}/components/tag`, { waitUntil: 'load' })
+  await page.waitForSelector('.yue-tag--check', { state: 'visible', timeout: 15_000 })
+  const selector = '.yue-tag--check.is-checked'
+  if ((await page.locator(selector).count()) === 0) {
+    fail('checked tag: the Tag page renders no checked CheckTag, so this check would prove nothing')
+    return
+  }
+
+  const read = () =>
+    page.evaluate((target) => {
+      const element = document.querySelector(target)
+      const style = getComputedStyle(element)
+      const root = getComputedStyle(document.documentElement)
+      return {
+        text: element.textContent?.trim().slice(0, 20) ?? '',
+        fill: style.backgroundColor,
+        color: style.color,
+        fillToken: style.getPropertyValue('--_fill').trim(),
+        colorToken: style.getPropertyValue('--_color').trim(),
+        page: root.getPropertyValue('--page').trim() || getComputedStyle(document.body).backgroundColor,
+      }
+    }, selector)
+
+  await page.mouse.move(0, 0)
+  await page.waitForTimeout(220)
+  const resting = await read()
+  await page.hover(selector)
+  await page.waitForTimeout(320)
+  const hovered = await read()
+  await page.mouse.move(0, 0)
+
+  if (hovered.color !== resting.color) {
+    fail(`checked tag: hover changed the text colour (${resting.color} → ${hovered.color}) — hover must adjust the background, not the state`)
+  }
+  if (hovered.fill === resting.fill) {
+    fail('checked tag: hover produced no visible change, so the tag gives no feedback')
+  }
+  for (const [state, reading] of [['resting', resting], ['hover', hovered]]) {
+    const ratio = contrastRatio(
+      parseColor(reading.color),
+      // bottom-up: the page first, the fill on top of it
+      flatten([parseColor(reading.page), parseColor(reading.fill)]),
+    )
+    if (ratio < 4.5) {
+      fail(
+        `checked tag: the label "${reading.text}" has ${ratio.toFixed(2)}:1 contrast in the ${state} state ` +
+          `(fill ${reading.fill} / ${reading.fillToken}, colour ${reading.color} / ${reading.colorToken}, ` +
+          `page ${reading.page})`,
+      )
+    }
+  }
+  notes.push(
+    `checked tag: hover adjusts the fill and keeps the label legible ` +
+      `(${resting.fill} → ${hovered.fill}, text ${hovered.color})`,
+  )
+}
+
 async function main() {
   if (!existsSync(SITE_DIR)) {
     process.stderr.write(
@@ -2245,6 +2312,9 @@ async function main() {
     // 6 — Phase 3 of the token refactor: the semantic tokens must drive what renders. It loads its own
     // pages, so it runs before the bilingual pass moves away from them.
     await checkTokenDrivenStates(page, origin)
+
+    // The reported checked-tag hover defect, checked against the definition of hover.
+    await checkCheckedTagHover(page, origin)
 
     // 7 — the bilingual site, driven through the switcher rather than by URL.
     // Runs with the wide viewport, because it reads nav chrome; the mobile pass below is a

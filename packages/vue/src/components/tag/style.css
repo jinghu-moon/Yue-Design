@@ -249,8 +249,21 @@
   --_border: var(--tag-default-outline-border-color);
 }
 
-.yue-tag--check:hover:not(.is-disabled) {
+/* Hover emphasises the fill the tag already has; it never swaps in another variant's fill.
+ *
+ * The bug this replaces: `:hover:not(.is-disabled)` (3 classes) outranked `.is-checked` (2 classes), so
+ * hovering a checked tag replaced the selected fill with the unselected tint while `--_color` stayed the
+ * selected colour — the label, chosen to sit on the filled background, disappeared on near-white. */
+.yue-tag--check:hover:not(.is-disabled):not(.is-checked) {
   --_fill:   var(--tag-default-tint-background);
+}
+
+.yue-tag--check.is-checked:hover:not(.is-disabled) {
+  /* Emphasis of the existing background, not a different background. The mix moves the fill toward the
+     accent's *readable* step, which lies on the opposite side of the label colour in both themes: toward the
+     label instead (`--_color`) lightened a white-on-blue label from 4.6:1 to 3.98:1. `--_color` and
+     `--_border` stay untouched, so the label and the shape cannot drift apart from the fill. */
+  --_fill: color-mix(in srgb, var(--accent-text) calc(var(--opacity-hover) * 100%), var(--tag-primary-filled-background));
 }
 
 .yue-tag--check.is-checked {
