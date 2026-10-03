@@ -9,7 +9,7 @@ import type { HeadConfig } from 'vitepress'
  * This is the Pages hostname until a custom domain is bound. Keep the origin in one place so a
  * custom-domain migration updates canonical links, alternates and the sitemap together.
  */
-const SITE_HOSTNAME = 'https://yue-design.pages.dev'
+const SITE_HOSTNAME = 'https://yue-design-7s0.pages.dev'
 
 /** The locale keys VitePress uses: the Chinese tree is the root, English lives under `/en/`. */
 const LOCALE_ROOT = 'root'
