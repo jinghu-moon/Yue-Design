@@ -2016,7 +2016,10 @@ async function checkCheckedTagHover(page, origin) {
     // ── the themed palettes: the selected surface and the ordinary filled one ───
     for (const [probe, surface] of [
       ['check-theme', 'selected check tag'],
-      ['filled-theme', 'filled tag'],
+      ['variant-filled', 'filled tag'],
+      ['variant-tint', 'tint tag'],
+      ['variant-outline', 'outline tag'],
+      ['variant-tint-outline', 'tint-outline tag'],
     ]) {
       const readings = await page.evaluate(
         (attribute) =>
@@ -2027,6 +2030,7 @@ async function checkCheckedTagHover(page, origin) {
               className: element.className,
               fill: style.backgroundColor,
               color: style.color,
+              border: style.borderTopColor,
               page: root.getPropertyValue('--page').trim() || getComputedStyle(document.body).backgroundColor,
             }
           }),
@@ -2036,12 +2040,14 @@ async function checkCheckedTagHover(page, origin) {
         fail(label(`expected four ${surface} examples, found ${readings.length}`))
         continue
       }
-      const fills = new Set(readings.map((entry) => entry.fill))
-      if (fills.size !== readings.length) {
+      // The whole paint, not just the fill: an outline variant is transparent for every theme, so its fill
+      // cannot tell two themes apart while its text and border can.
+      const paints = new Set(readings.map((entry) => `${entry.fill}|${entry.color}|${entry.border}`))
+      if (paints.size !== readings.length) {
         fail(
           label(
-            `${readings.length} ${surface} themes render ${fills.size} distinct fills ` +
-              `(${[...fills].join(', ')}) — the theme is being ignored`,
+            `${readings.length} ${surface} themes render ${paints.size} distinct paints ` +
+              `(${[...paints].join(' / ')}) — the theme is being ignored`,
           ),
         )
       }
@@ -2051,7 +2057,7 @@ async function checkCheckedTagHover(page, origin) {
           fail(label(`${surface} ${reading.className} labels at ${ratio.toFixed(2)}:1`))
         }
       }
-      notes.push(label(`${fills.size} ${surface} themes each paint their own palette at >= 4.5:1`))
+      notes.push(label(`${paints.size} ${surface} themes each paint their own palette at >= 4.5:1`))
     }
   }
   // Leave the media emulation as the rest of the run expects to find it.

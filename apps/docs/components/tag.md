@@ -269,11 +269,34 @@ const checkTags = ref([
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>
 
-### 填充变体的主题（可交互）
+## 变体与主题矩阵（可交互）
 
-同一组配色的常规填充标签，用于验证每个主题的底色与文字在浅色和深色下都达到 4.5:1。
+下面每个标签都是真实渲染的：四个变体 × 四个主题。门禁逐项断言浅色与深色下文字对比度 ≥4.5:1，并断言同一变体内四个主题的配色互不相同（主题被忽略就会失败）。
 
-<span class="yue-tag yue-tag--md yue-tag--primary" data-probe="filled-theme">primary</span>
-<span class="yue-tag yue-tag--md yue-tag--success" data-probe="filled-theme">success</span>
-<span class="yue-tag yue-tag--md yue-tag--warning" data-probe="filled-theme">warning</span>
-<span class="yue-tag yue-tag--md yue-tag--danger" data-probe="filled-theme">danger</span>
+**filled**
+
+<span class="yue-tag yue-tag--md  yue-tag--primary" data-probe="variant-filled">primary</span>
+<span class="yue-tag yue-tag--md  yue-tag--success" data-probe="variant-filled">success</span>
+<span class="yue-tag yue-tag--md  yue-tag--warning" data-probe="variant-filled">warning</span>
+<span class="yue-tag yue-tag--md  yue-tag--danger" data-probe="variant-filled">danger</span>
+
+**tint**
+
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--primary" data-probe="variant-tint">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--success" data-probe="variant-tint">success</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--warning" data-probe="variant-tint">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--danger" data-probe="variant-tint">danger</span>
+
+**outline**
+
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--primary" data-probe="variant-outline">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--success" data-probe="variant-outline">success</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--warning" data-probe="variant-outline">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--danger" data-probe="variant-outline">danger</span>
+
+**tint-outline**
+
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--primary" data-probe="variant-tint-outline">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--success" data-probe="variant-tint-outline">success</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--warning" data-probe="variant-tint-outline">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--danger" data-probe="variant-tint-outline">danger</span>

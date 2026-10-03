@@ -269,11 +269,34 @@ Unselected it is a neutral chip; selected it uses the palette named by `theme` (
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--warning" data-probe="check-theme">warning</span>
 <span class="yue-tag yue-tag--md yue-tag--check is-checked yue-tag--danger" data-probe="check-theme">danger</span>
 
-### Filled variants per theme (live)
+## Variant and theme matrix (live)
 
-The same palettes on ordinary filled tags, verifying that each theme reaches 4.5:1 in light and dark.
+Every tag below is really rendered: four variants × four themes. The gate asserts >= 4.5:1 text contrast for each in both light and dark, and that the four themes within a variant paint distinct colours (a theme-ignoring stylesheet fails).
 
-<span class="yue-tag yue-tag--md yue-tag--primary" data-probe="filled-theme">primary</span>
-<span class="yue-tag yue-tag--md yue-tag--success" data-probe="filled-theme">success</span>
-<span class="yue-tag yue-tag--md yue-tag--warning" data-probe="filled-theme">warning</span>
-<span class="yue-tag yue-tag--md yue-tag--danger" data-probe="filled-theme">danger</span>
+**filled**
+
+<span class="yue-tag yue-tag--md  yue-tag--primary" data-probe="variant-filled">primary</span>
+<span class="yue-tag yue-tag--md  yue-tag--success" data-probe="variant-filled">success</span>
+<span class="yue-tag yue-tag--md  yue-tag--warning" data-probe="variant-filled">warning</span>
+<span class="yue-tag yue-tag--md  yue-tag--danger" data-probe="variant-filled">danger</span>
+
+**tint**
+
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--primary" data-probe="variant-tint">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--success" data-probe="variant-tint">success</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--warning" data-probe="variant-tint">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--tint yue-tag--danger" data-probe="variant-tint">danger</span>
+
+**outline**
+
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--primary" data-probe="variant-outline">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--success" data-probe="variant-outline">success</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--warning" data-probe="variant-outline">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--outline yue-tag--danger" data-probe="variant-outline">danger</span>
+
+**tint-outline**
+
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--primary" data-probe="variant-tint-outline">primary</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--success" data-probe="variant-tint-outline">success</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--warning" data-probe="variant-tint-outline">warning</span>
+<span class="yue-tag yue-tag--md yue-tag--tint-outline yue-tag--danger" data-probe="variant-tint-outline">danger</span>

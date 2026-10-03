@@ -189,7 +189,7 @@
 
   --tag-warning-outline-background:   transparent;
 
-  --tag-warning-outline-color:        var(--warning);
+  --tag-warning-outline-color:        var(--warning-foreground);
 
   --tag-warning-outline-border-color: var(--warning-border);
 
@@ -214,7 +214,7 @@
 
   --tag-danger-outline-background:   transparent;
 
-  --tag-danger-outline-color:        var(--error);
+  --tag-danger-outline-color:         var(--error-foreground);
 
   --tag-danger-outline-border-color: var(--error-border);
 
