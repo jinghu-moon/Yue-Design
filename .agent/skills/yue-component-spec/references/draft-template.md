@@ -1,6 +1,9 @@
 # Component draft template
 
 Use this template to produce the component spec before writing any code. Fill every section.
+This is a draft until the panel's fixed freeze gate is set to **Freeze**, all blocking
+statuses are resolved, and the user confirms the generated spec. Writing this document alone
+does not freeze unresolved decisions.
 Leave no field as "TBD" — if something is unknown, write "Not yet decided: [question to resolve]"
 so the gap is visible.
 

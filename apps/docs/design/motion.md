@@ -11,7 +11,9 @@
 | 离开 | `--motion-duration-exit` |
 | 标准缓动 | `--motion-ease-standard` |
 
-组件可以继续使用自己的 Component Token（例如 `--button-duration`），但它们应映射到这些语义别名，而不是直接散落 `100ms` 或自定义 cubic-bezier。
+时长原语是一条 50ms 步进的阶梯 `--duration-100` / `--duration-150` / `--duration-200` / `--duration-250` / `--duration-300` / `--duration-350` / `--duration-400`；`--duration-fast/normal/slow` 是其中 100/200/300 三档的别名，上表的语义角色再由这些别名组合而成。当某个组件的动作性格明显不同于默认的进入/离开角色时（例如模态对话框比瞬时浮层更沉稳），它的 Component Token 可以直接命名阶梯上的某一档（如 `--dialog-duration-enter: var(--duration-250)`、`--dialog-duration-exit: var(--duration-150)`），而不是散落裸值。
+
+组件可以继续使用自己的 Component Token（例如 `--button-duration`），但它们应映射到一个命名 token——语义别名或时长阶梯的某一档——而不是直接散落 `100ms` 或自定义 cubic-bezier。
 
 ## 取舍规则
 

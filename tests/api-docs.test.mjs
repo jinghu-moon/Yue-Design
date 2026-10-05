@@ -45,12 +45,27 @@ describe('the API ⇄ documentation gate', () => {
       // about an empty loop — and they fail loudly if a reader stops recognising a file.
       const stats = results.map(({ result }) => result.stats)
       expect(stats).toHaveLength(DOC_CONTRACTS.length)
-      for (const entry of stats) {
-        expect(entry.components).toBe(4)
-        expect(entry.props).toBeGreaterThanOrEqual(20)
-        expect(entry.slots).toBe(10)
-        expect(entry.emits).toBe(2)
-        expect(entry.examples).toBeGreaterThan(50)
+      for (const { contract, result } of results) {
+        const entry = result.stats
+        if (contract.id === 'button') {
+          expect(entry.components).toBe(4)
+          expect(entry.props).toBeGreaterThanOrEqual(20)
+          expect(entry.slots).toBe(10)
+          expect(entry.emits).toBe(2)
+          expect(entry.examples).toBeGreaterThan(50)
+        } else if (contract.id === 'popover') {
+          expect(entry.components).toBe(1)
+          expect(entry.props).toBe(14)
+          expect(entry.slots).toBe(2)
+          expect(entry.emits).toBe(5)
+          expect(entry.examples).toBeGreaterThan(0)
+        } else if (contract.id === 'dialog') {
+          expect(entry.components).toBe(1)
+          expect(entry.props).toBe(26)
+          expect(entry.slots).toBe(4)
+          expect(entry.emits).toBe(7)
+          expect(entry.examples).toBeGreaterThan(0)
+        }
       }
     })
 

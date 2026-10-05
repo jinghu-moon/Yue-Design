@@ -40,6 +40,8 @@
 
   --box-shadow-popover                 : var(--box-shadow-2);
 
+  --box-font-size-popover              : var(--font-size-md);
+
   --box-padding-dialog                 : var(--box-padding-lg);
 
   --box-border-width-dialog            : var(--border-1);

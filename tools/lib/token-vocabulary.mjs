@@ -88,6 +88,7 @@ export const PHRASES = {
     'color-subtle',
     'color-toast',
     'color-tooltip',
+    'font-size-popover',
     'font-size-tooltip',
     'padding',
     'padding-block-toast',
@@ -175,6 +176,38 @@ export const PHRASES = {
     'border-width',
     'margin-block',
   ],
+  dialog: [
+    'action-background',
+    'action-border-color',
+    'action-border-radius',
+    'action-border-width',
+    'action-danger-background',
+    'action-danger-border',
+    'action-on-danger',
+    'action-on-primary',
+    'action-primary-background',
+    'action-primary-border',
+    'action-spacing-block',
+    'action-spacing-inline',
+    'action-text-color',
+    'background',
+    'border-color',
+    'border-radius',
+    'border-width',
+    'color',
+    'duration-enter',
+    'duration-exit',
+    'ease',
+    'footer-gap',
+    'header-height',
+    'padding',
+    'scrim-color',
+    'section-padding',
+    'shadow',
+    'spacing',
+    'width',
+    'z-index',
+  ],
   icon: [
     'size',
   ],
@@ -202,6 +235,20 @@ export const PHRASES = {
     'padding-block',
     'padding-inline',
     'placeholder-color',
+  ],
+  popover: [
+    'background',
+    'border-color',
+    'border-radius',
+    'border-width',
+    'color',
+    'duration-enter',
+    'duration-exit',
+    'ease',
+    'font-size',
+    'padding',
+    'shadow',
+    'z-index',
   ],
   link: [
     'color',
@@ -497,6 +544,13 @@ export const LAYER_VOCABULARY = {
       "padding-inline-sm"
     ],
     "duration": [
+      "100",
+      "150",
+      "200",
+      "250",
+      "300",
+      "350",
+      "400",
       "fast",
       "normal",
       "slow"
@@ -725,6 +779,9 @@ export const LAYER_VOCABULARY = {
       "row-background-selected",
       "row-color"
     ],
+    "layer": [
+      "modal"
+    ],
     "on": [
       "accent"
     ],
@@ -732,7 +789,8 @@ export const LAYER_VOCABULARY = {
       ""
     ],
     "scrim": [
-      ""
+      "",
+      "modal"
     ],
     "selected": [
       "background",

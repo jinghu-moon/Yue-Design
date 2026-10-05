@@ -95,7 +95,7 @@ catalogue 17 组 / 17 文件  公共图文件 4 → 37
     层表数量必须等于 inventory、只能提到 package.json 真正声明的导出、README 字体路径必须与 @font-face 一致
   诊断路径接入 PACKAGE_RENAMES：package light/neutral 由 100/110 修正为 110/110，并加回归断言
   tarball 门禁新增 implementations.css 的浏览器渲染断言
-意图变化：无值变化。测试从基线的 597 增至 645（28 文件），增量全部是本方案新增的门禁与断言：
+意图变化：无值变化。测试从基线的 597 增至 696（28 文件），增量全部是本方案新增的门禁与断言：
   架构 17（原 11 + 目标布局夹具）、grammar 18、docs 一致性 6、改名登记 2、Token 驱动渲染 5（并入 verify:visual）、
   tarball 归档渲染 7 个 namespace；期间未删除或削弱任何既有断言
 ```
@@ -133,7 +133,7 @@ catalogue 17 组 / 17 文件  公共图文件 4 → 37
 | Foundation 页仍引用已删除的 `src/components/box.css`、`overlay.css` | 改为 `src/component-tokens/box.css`、`src/prototype/overlay.css`（中英文） | docs 一致性门禁的路径检查扩到**每一个**已删除路径，并允许「曾经/已删除/removed」这类历史句 |
 | 工具页示例输出仍是 4 file / 18 group | 更新为真实的 37 file / 17 group | 门禁现在**从 inventory CLI 计算**该行并要求文档引用与之一致 |
 | 文档测试硬编码 179/81/331 | 改为调用 `tools/token-inventory.mjs --json` 读取 | 新增「提交的 inventory 必须等于 CLI 当前输出」断言 |
-| handoff 的测试数量/文件列表过期 | 按实跑重新统计（645 测试 / 30 文件，逐文件列出） | §1、§5、§9 |
+| handoff 的测试数量/文件列表过期 | 按实跑重新统计（696 测试 / 33 文件，逐文件列出） | §1、§5、§9 |
 | 归档视觉门禁只是代表路径 | 扩展到 7 个 namespace 各一项断言 | `implementations.css: 6 further namespace(s) render from tokens (field, list, overlay, box, status, link)` |
 
 ## 7. §9 完成标准逐条对照
@@ -146,6 +146,6 @@ catalogue 17 组 / 17 文件  公共图文件 4 → 37
 | 4 | 没有旧 Token 名、旧入口或临时兼容层残留 | §3 的 9 条改名 + 残留门禁 0 命中；旧文件/目录/exports 已删除；两个一次性 codemod 已删 |
 | 5 | 新增 Semantic Token 均有真实消费方与验收 | 未新增无消费方 Token；三件套有 Token 驱动渲染断言 + 对比度矩阵 |
 | 6 | Button/Input/Tag 与原型页面无无意回归 | Phase 2 解析 diff 0；verify:visual（主题矩阵 / RTL / 长文案 / 双语）与 tarball（真实 IME）全绿 |
-| 7 | 全部门禁通过 | §5：645 测试 / 30 文件 + `verify:all` 8 项 |
+| 7 | 全部门禁通过 | §5：696 测试 / 33 文件 + `verify:all` 8 项 |
 | 8 | 视觉差异均有登记 | §4：本方案 0 值变化；Tag 的登记在 breaking-changes.md |
 | 9 | handoff 与文件树/exports/测试一致 | 本文件；exports 与 `package.json` 逐条一致，并由 docs 一致性门禁持续核对文档侧 |

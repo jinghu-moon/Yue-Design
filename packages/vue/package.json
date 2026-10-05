@@ -28,6 +28,10 @@
       "types": "./dist/components/tag/index.d.ts",
       "import": "./dist/components/tag/index.js"
     },
+    "./popover": {
+      "types": "./dist/components/popover/index.d.ts",
+      "import": "./dist/components/popover/index.js"
+    },
     "./locale": {
       "types": "./dist/locale/index.d.ts",
       "import": "./dist/locale/index.js"
@@ -44,6 +48,12 @@
     "./button.css": "./dist/components/button/style.css",
     "./input.css": "./dist/components/input/style.css",
     "./tag.css": "./dist/components/tag/style.css",
+    "./popover.css": "./dist/components/popover/style.css",
+    "./dialog": {
+      "types": "./dist/components/dialog/index.d.ts",
+      "import": "./dist/components/dialog/index.js"
+    },
+    "./dialog.css": "./dist/components/dialog/style.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -70,6 +80,7 @@
     "vue": "3.5.43"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.8.0",
     "@tabler/icons-vue": "^3.38.0"
   }
 }

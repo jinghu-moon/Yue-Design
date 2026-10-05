@@ -1,0 +1,111 @@
+/* YuePopover component styles. The token sheet must be loaded before this file. */
+
+.yue-popover__anchor {
+  display: contents;
+}
+
+.yue-popover {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: var(--popover-z-index);
+  max-width: min(32rem, calc(100vw - 1rem));
+  max-height: var(--_available-height, calc(100vh - 1rem));
+  overflow: auto;
+  padding: var(--popover-padding);
+  border: var(--popover-border-width) solid var(--popover-border-color);
+  border-radius: var(--popover-border-radius);
+  background: var(--popover-background);
+  color: var(--popover-color);
+  font-size: var(--popover-font-size);
+  box-shadow: var(--popover-shadow);
+  /* The surface unfolds from the edge that faces its trigger. Overridden per
+   * placement below; the default matches the `bottom` initial placement. The
+   * resting polygon overhangs the box so the shadow is never clipped. */
+  --_popover-reveal-from: polygon(-20% 0, 120% 0, 120% 0, -20% 0);
+  --_popover-reveal-to: polygon(-20% 0, 120% 0, 120% 120%, -20% 120%);
+  will-change: transform, clip-path, opacity;
+}
+
+.yue-popover[data-state='closed'] {
+  pointer-events: none;
+}
+
+/* The enter/leave motion is a clip-path reveal plus a fade, both driven by
+ * keyframes so the animation never touches `transform`: Floating UI owns that
+ * property and writes the surface's viewport coordinate into it.
+ *
+ * The reveal edge is the only per-placement input. It collapses the surface onto
+ * the edge that faces its trigger and grows it back to the full rect, so a `bottom`
+ * surface unfolds downward out of its trigger and a `top` surface upward.
+ * `data-placement` carries the flipped placement, so a surface that flips from
+ * `bottom` to `top` reveals from the opposite edge too. Both polygons keep four
+ * vertices in the same order — clip-path only interpolates between matching
+ * vertex counts. */
+.yue-popover-enter-active {
+  animation:
+    yue-popover-reveal-in var(--popover-duration-enter) var(--popover-ease),
+    yue-popover-fade-in var(--popover-duration-enter) linear;
+}
+
+.yue-popover-leave-active {
+  animation:
+    yue-popover-reveal-out var(--popover-duration-exit) var(--popover-ease),
+    yue-popover-fade-out var(--popover-duration-exit) var(--popover-ease);
+}
+
+@keyframes yue-popover-reveal-in {
+  from { clip-path: var(--_popover-reveal-from); }
+  to { clip-path: var(--_popover-reveal-to); }
+}
+
+@keyframes yue-popover-reveal-out {
+  from { clip-path: var(--_popover-reveal-to); }
+  to { clip-path: var(--_popover-reveal-from); }
+}
+
+@keyframes yue-popover-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes yue-popover-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.yue-popover[data-placement^='bottom'] {
+  --_popover-reveal-from: polygon(-20% 0, 120% 0, 120% 0, -20% 0);
+}
+
+.yue-popover[data-placement^='top'] {
+  --_popover-reveal-from: polygon(-20% 120%, 120% 120%, 120% 120%, -20% 120%);
+}
+
+.yue-popover[data-placement^='left'] {
+  --_popover-reveal-from: polygon(120% 0, 120% 0, 120% 120%, 120% 120%);
+}
+
+.yue-popover[data-placement^='right'] {
+  --_popover-reveal-from: polygon(-20% 0, -20% 0, -20% 120%, -20% 120%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yue-popover-enter-active,
+  .yue-popover-leave-active {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .yue-popover {
+    background: Canvas;
+    color: CanvasText;
+    border-color: ButtonText;
+    box-shadow: none;
+  }
+
+  .yue-popover:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

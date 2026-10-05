@@ -1,27 +1,29 @@
 # 基础
 
-Token 包 `@yue-ui/design-tokens` 是纯 CSS，没有构建步骤。它由三个 Token 层与一个实现层组成，共 **451 个唯一 Token 名**（568 条声明，含深色与 Accent 覆写）。
+Token 包 `@yue-ui/design-tokens` 是纯 CSS，没有构建步骤。它由三个 Token 层与一个实现层组成，共 **638 个唯一 Token 名**。
 
 ## 分层与规模
 
 | 层 | 文件 | 声明数 | 内容 |
 | --- | --- | ---: | --- |
-| `primitives` | `src/primitives/*.css` | 179 | 标尺、字体、动效、原始色板与控制尺度 |
-| `semantics` | `src/semantics/*.css` | 81 | 主题与交互角色、Accent |
-| `components` | `src/component-tokens/*.css` | 331 | 组件几何与视觉契约，按组件命名空间拆分 |
+| `primitives` | `src/primitives/*.css` | 186 | 标尺、字体、动效、原始色板与控制尺度 |
+| `semantics` | `src/semantics/*.css` | 83 | 主题与交互角色、Accent |
+| `components` | `src/component-tokens/*.css` | 377 | 组件几何与视觉契约，按组件命名空间拆分 |
 | `implementations` | `src/prototype/*.css`（经 `src/implementations.css`） | — | 原型期组件选择器（`.btn` 等），可选入口，由 `@yue-ui/vue` 逐步接管 |
 
-按 Token 名归类：
+按 Token 名的首段（命名空间）归类，合计 638：
 
 | 类别 | 数量 |
 | --- | ---: |
 | 原始色板（`--neutral-*`、`--azure-*` …） | 68 |
-| 组件契约（`--button-*`、`--input-*` …） | 216 |
-| 语义角色（`--surface`、`--text-*`、`--border-*` …） | 61 |
-| 空间 / 尺寸 / 圆角 / 描边 | 36 |
+| 组件契约（`--button-*`、`--input-*` …） | 380 |
+| 语义角色（`--surface`、`--text-*`、`--action-*` …） | 56 |
+| 空间 / 尺寸 / 圆角 / 描边（`--space-*`、`--border-*` …） | 69 |
 | 字体 / 字号 / 行高 | 26 |
-| 动效 / 不透明度 / 层级 | 18 |
-| Accent 角色 | 18 |
+| 动效 / 不透明度 / 层级 | 23 |
+| Accent 角色 | 16 |
+
+命名空间口径与上面的分层口径不同：组件契约按名字统计，其中 `--list-row-*`（3 个）声明在 `semantics` 层，因此这里是 380 而不是 377。
 
 ## 四种模式
 

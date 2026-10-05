@@ -1,159 +1,234 @@
 {
+  "schemaVersion": 2,
   "component": "YueTag",
-  "exportedAt": "2026-10-03T08:35:31.738Z",
-  "totalQuestions": 17,
-  "answeredCount": 17,
+  "templateVersion": "2.0.0",
+  "exportedAt": "2026-10-04T06:44:14.017Z",
+  "round": 4,
   "answers": {
     "1": {
-      "summary": "家族范围",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "B"
       ],
+      "value": "",
       "note": "先实现 YueTag，然后在此基础上实现 YueCheckTag ",
-      "recommended": "A",
-      "answered": true
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "2": {
-      "summary": "语义元素",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "B"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "3": {
-      "summary": "导航能力",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "4": {
-      "summary": "点击交互",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "5": {
-      "summary": "variant 轴",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 2,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "6": {
-      "summary": "theme 轴",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 2,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "7": {
-      "summary": "size 轴",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 2,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "8": {
-      "summary": "shape 轴",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 2,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "9": {
-      "summary": "文字截断",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 2,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "10": {
-      "summary": "closable",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "这是一个问题：我在思考项目是否需要引入一个图标库，本人不擅长于绘制图标，也没有这个功底，如果引入图标库的话，可以选择 https://github.com/tabler/tabler-icons",
-      "recommended": "A",
-      "answered": true
+      "round": 3,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "11": {
-      "summary": "close 事件",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 3,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "12": {
-      "summary": "disabled 行为",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 3,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "13": {
-      "summary": "图标插槽",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 3,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "14": {
-      "summary": "属性透传",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 4,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "15": {
-      "summary": "i18n",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "A"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 4,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "16": {
-      "summary": "非功能项",
+      "type": "choice",
+      "status": "question",
       "letters": [],
+      "value": "",
       "note": "③ mark 标记形状 ④ Tag 输入框（TagInput） 暂时不做，其余的要做",
-      "recommended": "A",
-      "answered": true
+      "round": 4,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     },
     "17": {
-      "summary": "组件文件结构",
+      "type": "choice",
+      "status": "decided",
       "letters": [
         "B"
       ],
+      "value": "",
       "note": "",
-      "recommended": "A",
-      "answered": true
+      "round": 4,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": null
     }
+  },
+  "userQuestions": [],
+  "findings": [],
+  "freezeGate": {
+    "choice": null,
+    "updatedAt": null
   }
 }

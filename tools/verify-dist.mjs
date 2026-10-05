@@ -44,6 +44,9 @@ const EXPECTED_PAGES = [
   'components/input.html',
   'components/input/api.html',
   'components/input/guide.html',
+  'components/popover.html',
+  'components/popover/api.html',
+  'components/popover/guide.html',
   'design/index.html',
   'design/color.html',
   'design/dark-mode.html',
@@ -65,6 +68,9 @@ const EXPECTED_PAGES = [
   'en/components/input.html',
   'en/components/input/api.html',
   'en/components/input/guide.html',
+  'en/components/popover.html',
+  'en/components/popover/api.html',
+  'en/components/popover/guide.html',
   'en/design/index.html',
   'en/design/color.html',
   'en/design/dark-mode.html',
@@ -140,11 +146,31 @@ const COMPONENT_PAGES = [
     mustContain: ['YueInput', 'readonly', 'YueField'],
   },
   {
+    page: 'components/popover.html',
+    label: 'Popover page renders real YuePopover markup',
+    mustContain: ['yue-popover__anchor', 'data-popover-trigger', 'YuePopover'],
+  },
+  {
+    page: 'components/popover/api.html',
+    label: 'Popover API page contains the public contract',
+    mustContain: ['YuePopover', 'closeOnOutside', 'aria-controls', 'update:modelValue'],
+  },
+  {
+    page: 'components/popover/guide.html',
+    label: 'Popover guide page contains usage guidance',
+    mustContain: ['YuePopover', 'Teleport', 'Escape'],
+  },
+  {
     page: 'en/components/button.html',
     label: 'the English Button page renders the real component',
     // The component markup is language-independent; the *chrome* is not, so both halves are
     // asserted: a rendered button and English section titles.
     mustContain: ['yue-button yue-button--', 'Anatomy', 'yue-button__loader'],
+  },
+  {
+    page: 'en/components/popover.html',
+    label: 'the English Popover page renders the real component',
+    mustContain: ['yue-popover__anchor', 'data-popover-trigger', 'Teleport'],
   },
   {
     page: 'en/guide/i18n.html',
@@ -234,7 +260,7 @@ const COMPONENT_STYLESHEETS = [
   {
     subpath: './style.css',
     file: 'dist/style.css',
-    blocks: ['button', 'input'],
+    blocks: ['button', 'input', 'popover'],
   },
   {
     subpath: './button.css',
@@ -245,6 +271,11 @@ const COMPONENT_STYLESHEETS = [
     subpath: './input.css',
     file: 'dist/components/input/style.css',
     blocks: ['input'],
+  },
+  {
+    subpath: './popover.css',
+    file: 'dist/components/popover/style.css',
+    blocks: ['popover'],
   },
 ]
 

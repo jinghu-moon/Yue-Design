@@ -1,27 +1,29 @@
 # Foundations
 
-The `@yue-ui/design-tokens` package is pure CSS with no build step. It consists of three token layers and one implementation layer, totalling **451 unique token names** (568 declarations, including dark and Accent overrides).
+The `@yue-ui/design-tokens` package is pure CSS with no build step. It consists of three token layers and one implementation layer, totalling **638 unique token names**.
 
 ## Layers and scale
 
 | Layer | File | Declarations | Contents |
 | --- | --- | ---: | --- |
-| `primitives` | `src/primitives/*.css` | 179 | Scales, fonts, motion, raw palettes and the control scale |
-| `semantics` | `src/semantics/*.css` | 81 | Theme and interaction roles, Accent |
-| `components` | `src/component-tokens/*.css` | 331 | Component geometry and visual contract, split by component namespace |
+| `primitives` | `src/primitives/*.css` | 186 | Scales, fonts, motion, raw palettes and the control scale |
+| `semantics` | `src/semantics/*.css` | 83 | Theme and interaction roles, Accent |
+| `components` | `src/component-tokens/*.css` | 377 | Component geometry and visual contract, split by component namespace |
 | `implementations` | `src/prototype/*.css` (via `src/implementations.css`) | — | Prototype-stage component selectors (`.btn` and others), an opt-in entry, progressively taken over by `@yue-ui/vue` |
 
-Grouped by token name:
+Grouped by the first segment of the token name (its namespace), summing to 638:
 
 | Category | Count |
 | --- | ---: |
 | Raw palette (`--neutral-*`, `--azure-*` …) | 68 |
-| Component contracts (`--button-*`, `--input-*` …) | 216 |
-| Semantic roles (`--surface`, `--text-*`, `--border-*` …) | 61 |
-| Space / size / radius / stroke | 36 |
+| Component contracts (`--button-*`, `--input-*` …) | 380 |
+| Semantic roles (`--surface`, `--text-*`, `--action-*` …) | 56 |
+| Space / size / radius / stroke (`--space-*`, `--border-*` …) | 69 |
 | Font / font size / line height | 26 |
-| Motion / opacity / elevation | 18 |
-| Accent roles | 18 |
+| Motion / opacity / elevation | 23 |
+| Accent roles | 16 |
+
+The namespace view is not the layer view above: component contracts are counted by name, and three of them (`--list-row-*`) are declared in the `semantics` layer, which is why this row reads 380 rather than 377.
 
 ## Four modes
 

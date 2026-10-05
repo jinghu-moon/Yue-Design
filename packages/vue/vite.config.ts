@@ -61,6 +61,8 @@ export default defineConfig({
         'components/button/index': src('./src/components/button/index.ts'),
         'components/input/index': src('./src/components/input/index.ts'),
         'components/tag/index': src('./src/components/tag/index.ts'),
+        'components/popover/index': src('./src/components/popover/index.ts'),
+        'components/dialog/index': src('./src/components/dialog/index.ts'),
         // Locale: one entry for the facade and one per language pack. Separate entries are
         // the whole point — an application that never shows Chinese must not download it,
         // and that is a property of the bundle graph, not of a runtime check.

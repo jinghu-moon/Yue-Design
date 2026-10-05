@@ -7,6 +7,11 @@
 
 :root {
   --scrim                : rgb(0 0 0/.56);
+
+  /* A modal keeps a mode-invariant backdrop: a dialog owns its scrim (Q16) and reads the same in
+     light and dark, rather than tracking --scrim's per-theme strengthening. Declared once, with no
+     dark override, so the value is intentionally identical across profiles. */
+  --scrim-modal          : rgb(0 0 0/.5);
 }
 
 [data-theme=dark] {

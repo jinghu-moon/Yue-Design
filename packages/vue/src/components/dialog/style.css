@@ -1,0 +1,289 @@
+/* YueDialog component styles. The token sheet must be loaded before this file.
+ *
+ * Namespace isolation: this sheet reads only `--dialog-*` and its own `--_*` private slots.
+ * The surface axes reach the frozen Box `--box-*-dialog` contract through the pass-through
+ * aliases declared in `component-tokens/dialog.css` (Q29=B resolved under the isolation rule:
+ * Box keeps owning the values; the alias forwards them, it does not re-type them — the same
+ * route the popover surface axes take to their `--box-*-popover` contract). The concrete
+ * duration/curve/displacement values are a prototype decision (Q16); the mechanism — a single
+ * duration source per phase, resolved by the real `transitionend` Vue observes on the overlay
+ * root — is frozen (Q30=A).
+ */
+
+.yue-dialog__overlay {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  z-index: var(--dialog-z-index);
+  display: grid;
+  place-items: center;
+  padding: var(--dialog-spacing);
+}
+
+.yue-dialog__scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--dialog-scrim-color);
+}
+
+.yue-dialog {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--_dialog-width);
+  max-width: calc(100vw - var(--dialog-spacing) * 2);
+  max-height: calc(100vh - var(--dialog-spacing) * 2);
+  padding: var(--dialog-padding);
+  background: var(--dialog-background);
+  color: var(--dialog-color);
+  border: var(--dialog-border-width) solid var(--dialog-border-color);
+  border-radius: var(--dialog-border-radius);
+  box-shadow: var(--dialog-shadow);
+  outline: none;
+  /* The card grows toward the trigger (Q25=A); the overlay root writes the resolved origin. */
+  transform-origin: var(--_dialog-transform-origin, center);
+  overflow: auto;
+}
+
+/* Width ramp: chosen by data-size so each token is referenced by name (see the note above). */
+.yue-dialog[data-size='sm'] { --_dialog-width: var(--dialog-width-sm); }
+.yue-dialog[data-size='md'] { --_dialog-width: var(--dialog-width-md); }
+.yue-dialog[data-size='lg'] { --_dialog-width: var(--dialog-width-lg); }
+.yue-dialog[data-size='xl'] { --_dialog-width: var(--dialog-width-xl); }
+
+.yue-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dialog-footer-gap);
+  min-height: var(--dialog-header-height);
+  margin: calc(var(--dialog-section-padding) * -1) calc(var(--dialog-section-padding) * -1) var(--dialog-section-padding);
+  padding: 0 var(--dialog-section-padding);
+}
+
+.yue-dialog__title {
+  margin: 0;
+  font-size: 1.125em;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.yue-dialog__description {
+  margin: 0 0 var(--dialog-section-padding);
+  color: var(--dialog-color);
+  opacity: 0.72;
+}
+
+.yue-dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Scroll ownership (Q19=C): by default the whole card scrolls; `scrollable` pins the
+ * header/footer and lets only the body scroll. */
+.yue-dialog--scrollable {
+  overflow: hidden;
+}
+
+.yue-dialog--scrollable .yue-dialog__body {
+  overflow: auto;
+  margin: 0 calc(var(--dialog-section-padding) * -1);
+  padding: 0 var(--dialog-section-padding);
+}
+
+.yue-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--dialog-footer-gap);
+  margin: var(--dialog-section-padding) calc(var(--dialog-section-padding) * -1) calc(var(--dialog-section-padding) * -1);
+  padding: var(--dialog-section-padding) var(--dialog-section-padding) 0;
+}
+
+.yue-dialog__close {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dialog-action-border-radius);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.yue-dialog__close-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.yue-dialog__action {
+  padding: var(--dialog-action-spacing-block) var(--dialog-action-spacing-inline);
+  border: var(--dialog-action-border-width) solid var(--dialog-action-border-color);
+  border-radius: var(--dialog-action-border-radius);
+  background: var(--dialog-action-background);
+  color: var(--dialog-action-text-color);
+  font: inherit;
+  cursor: pointer;
+}
+
+.yue-dialog__action--confirm {
+  background: var(--dialog-action-primary-background);
+  border-color: var(--dialog-action-primary-border);
+  color: var(--dialog-action-on-primary);
+}
+
+.yue-dialog--danger .yue-dialog__action--danger,
+.yue-dialog__action--danger {
+  background: var(--dialog-action-danger-background);
+  border-color: var(--dialog-action-danger-border);
+  color: var(--dialog-action-on-danger);
+}
+
+/* Busy built-in actions (C1): a self-contained ring, no icon dependency, so the confirm
+ * button reads as pending without swapping in a glyph. `aria-busy` carries the signal to
+ * assistive tech; the disabled state carries it to pointer users. */
+.yue-dialog__action:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.yue-dialog__spinner {
+  display: inline-block;
+  width: 0.875em;
+  height: 0.875em;
+  margin-inline-end: 0.375em;
+  vertical-align: -0.125em;
+  border: 2px solid currentColor;
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  animation: yue-dialog-spin 0.7s linear infinite;
+}
+
+@keyframes yue-dialog-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fullscreen surface (Q2=C): the card fills the viewport, gutter and radius collapse. */
+.yue-dialog__overlay:has(.yue-dialog--fullscreen) {
+  padding: 0;
+}
+
+.yue-dialog--fullscreen {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  border-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Motion: scrim fades; the card fades and flies from the trigger centre (a clamped translate, Q25
+ * revised) or, with no trigger, grows in place (tx/ty default to 0 and scale stays .96). Enter and
+ * exit take the duration tokens from their own phase so the leave is the shorter of the pair. */
+.yue-dialog-enter-active {
+  transition: opacity var(--dialog-duration-enter) var(--dialog-ease);
+}
+
+.yue-dialog-enter-active .yue-dialog__scrim {
+  transition: opacity var(--dialog-duration-enter) var(--dialog-ease);
+}
+
+.yue-dialog-enter-active .yue-dialog {
+  transition:
+    opacity var(--dialog-duration-enter) var(--dialog-ease),
+    transform var(--dialog-duration-enter) var(--dialog-ease);
+}
+
+.yue-dialog-enter-from {
+  opacity: 0;
+}
+
+.yue-dialog-enter-from .yue-dialog__scrim {
+  opacity: 0;
+}
+
+.yue-dialog-enter-from .yue-dialog {
+  opacity: 0;
+  transform: translate(var(--_dialog-tx, 0px), var(--_dialog-ty, 0px)) scale(var(--_dialog-enter-scale, .96));
+}
+
+.yue-dialog-leave-active {
+  transition: opacity var(--dialog-duration-exit) var(--dialog-ease);
+}
+
+.yue-dialog-leave-active .yue-dialog__scrim {
+  transition: opacity var(--dialog-duration-exit) var(--dialog-ease);
+}
+
+.yue-dialog-leave-active .yue-dialog {
+  transition:
+    opacity var(--dialog-duration-exit) var(--dialog-ease),
+    transform var(--dialog-duration-exit) var(--dialog-ease);
+}
+
+.yue-dialog-leave-to {
+  opacity: 0;
+}
+
+.yue-dialog-leave-to .yue-dialog__scrim {
+  opacity: 0;
+}
+
+.yue-dialog-leave-to .yue-dialog {
+  opacity: 0;
+  transform: translate(var(--_dialog-tx, 0px), var(--_dialog-ty, 0px)) scale(var(--_dialog-enter-scale, .96));
+}
+
+/* Fullscreen rises as a sheet, never a viewport zoom (later + equal specificity wins; reduced-motion resets). */
+.yue-dialog-enter-from .yue-dialog--fullscreen,
+.yue-dialog-leave-to .yue-dialog--fullscreen {
+  transform: translateY(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yue-dialog-enter-active,
+  .yue-dialog-enter-active .yue-dialog__scrim,
+  .yue-dialog-enter-active .yue-dialog,
+  .yue-dialog-leave-active,
+  .yue-dialog-leave-active .yue-dialog__scrim,
+  .yue-dialog-leave-active .yue-dialog {
+    transition: none;
+  }
+
+  .yue-dialog-enter-from .yue-dialog,
+  .yue-dialog-leave-to .yue-dialog {
+    transform: none;
+  }
+
+  /* A busy ring still reads busy without spinning (the disabled + aria-busy state holds). */
+  .yue-dialog__spinner {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .yue-dialog {
+    background: Canvas;
+    color: CanvasText;
+    /* elevation is never the only hierarchy marker — restore a hard system border. */
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+
+  .yue-dialog__scrim {
+    background: Canvas;
+    opacity: 0.6;
+  }
+
+  .yue-dialog__close:focus-visible,
+  .yue-dialog__action:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

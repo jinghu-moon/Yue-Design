@@ -17,6 +17,11 @@ export const enUS = {
   tag: {
     closeLabel: 'Remove tag',
   },
+  dialog: {
+    confirm: 'OK',
+    cancel: 'Cancel',
+    closeLabel: 'Close dialog',
+  },
 } satisfies YueLocaleMessages
 
 export default enUS

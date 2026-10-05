@@ -35,6 +35,8 @@ import YueButtonToggleItem from './components/button/YueButtonToggleItem.vue'
 import YueInput from './components/input/YueInput.vue'
 import YueTag from './components/tag/YueTag.vue'
 import YueCheckTag from './components/tag/YueCheckTag.vue'
+import YuePopover from './components/popover/YuePopover.vue'
+import YueDialog from './components/dialog/YueDialog.vue'
 import YueLocaleProvider from './locale/YueLocaleProvider.vue'
 
 /**
@@ -50,6 +52,8 @@ const components = {
   YueInput,
   YueTag,
   YueCheckTag,
+  YuePopover,
+  YueDialog,
   YueLocaleProvider,
 }
 

@@ -7,9 +7,9 @@ metadata:
 
 # Yue component spec
 
-This skill runs before any implementation. Its job is to turn a loose idea into a frozen
-component spec through a structured design interview. Do not write component code or CSS until
-the interview is complete and the spec is written.
+This skill runs before any implementation. Its job is to turn a loose idea into a traceable
+component decision record and, only after the user passes the fixed freeze gate, a frozen spec.
+Do not write component code or CSS before that gate.
 
 ## How this works
 
@@ -20,9 +20,10 @@ idea, a screenshot, a reference component, or just a name — the interview will
 The Agent will:
 1. Study the materials you provide (screenshots, HTML, reference library code in `refer/`).
 2. Look up facts it can find itself (existing Yue components, tokens, patterns in the codebase).
-3. Run a design interview in rounds, asking only decisions that are ready to be made.
-4. Give a recommended answer for every question so you can respond quickly.
-5. After the interview, write the component spec and freeze the API.
+3. Separate facts, user decisions, prototypes, and open user questions.
+4. Run as many interview rounds as the decision frontier requires.
+5. Give a recommended answer for decision questions, never for fact questions.
+6. Wait for the fixed freeze gate; only then write and confirm the component spec.
 
 You will:
 1. Answer the questions — agree, disagree, or say "I don't know" and mean it.
@@ -52,8 +53,8 @@ Disagreement is more valuable than agreement. A session with no pushback is a se
 produced the Agent's opinion, not yours.
 
 **Facts vs. decisions:** The Agent finds facts (reads files, checks existing components,
-inspects `refer/` libraries). You make decisions. The Agent will not ask you something it
-can look up itself, and it will not answer a decision for you.
+inspects `refer/` libraries) and records them as FINDINGS. You make decisions. A fact-question
+must never be disguised as a choice question, and a finding never counts as a user decision.
 
 **Ungrillable questions:** Some questions cannot be settled by talking. "How should this
 feel visually?" or "which of these two layouts works better?" cannot be answered without
@@ -70,21 +71,24 @@ The interview runs as a browser panel, not in the terminal. Use
 `references/interview-panel-template.html` as the base:
 
 1. Create directory `interviews/{component-kebab}/`.
-2. Copy `references/interview-panel-template.html` to `interviews/{component-kebab}/panel.html` — do not edit it.
+2. Copy `references/interview-panel-template.html` to `interviews/{component-kebab}/panel.html`.
+   The template is the source; generated panels carry its version and must not drift.
 3. Copy `references/data-template.js` to `interviews/{component-kebab}/data.js` and fill in
    `COMPONENT_NAME`, `SECTIONS`, and `QUESTIONS`. Use JS object syntax (trailing commas and
    `//` comments allowed); never hand-write JSON inside HTML.
 4. Ask the user to open `panel.html` in a browser and answer the questions.
-5. The user exports answers with the ↓ button; the file saves as `answers.json` in their
-   Downloads folder. Ask them to move it to `interviews/{component-kebab}/answers.json`.
-6. Read `answers.json` to collect decisions, then write the component spec.
+5. Let the user bind the interview directory when supported; keep manual import/export as a
+   fallback. Save schema v2 snapshots and immutable round history.
+6. Read `answers.json`, `userQuestions`, and `findings`; validate them before interpreting.
+7. Apply the fixed freeze gate. If it is not passed, create the requested prototype or next
+   round instead of writing a frozen spec.
 
 ### File layout
 
 ```
 interviews/
   yue-button/
-    panel.html     ← static shell, never edited (Agent copies from template)
+    panel.html     ← generated shell with template version/hash
     data.js        ← Agent writes this; questions defined as JS object literals
     answers.json   ← user exports from panel, then moves here
   yue-input/
@@ -95,7 +99,8 @@ interviews/
 ```
 
 `data.js` is the source of truth for what was asked.
-`answers.json` is the only input the Agent reads back — never re-read `data.js` to infer answers.
+`answers.json` is the current user-state snapshot, not proof that every item is decided. Read
+explicit status fields; never infer a decision from a note or the old `answered` flag.
 
 When multiple interviews exist simultaneously (two components being designed in
 parallel), each pair is fully independent. Reference a specific pair by its
@@ -143,6 +148,19 @@ Read only the reference needed:
 | --- | --- |
 | New component or API redesign | `references/draft-template.md` |
 | Any task with breaking changes | `references/breaking-change-process.md` |
+| Answer/status interpretation | `references/answer-schema.md`, `references/question-types.md` |
+| Multi-round interview | `references/interview-rounds.md`, `references/findings.md` |
+| Freeze decision | `references/freeze-gate.md` |
+
+Validation and maintenance scripts:
+
+- `node .agent/skills/yue-component-spec/scripts/validate-interview-data.mjs interviews/{component}/data.js`
+- `node .agent/skills/yue-component-spec/scripts/validate-answers.mjs interviews/{component}/answers.json interviews/{component}/data.js`
+- `node .agent/skills/yue-component-spec/scripts/migrate-answers-v1-to-v2.mjs <old.json> <new.json> <data.js>`
+- `node .agent/skills/yue-component-spec/scripts/sync-interview-panels.mjs`
+
+Run `corepack pnpm validate:interviews` before interpreting any interview snapshot and
+`corepack pnpm test:interview-panel` after changing the panel template.
 
 ## After the interview: writing the spec
 
@@ -161,9 +179,10 @@ The API is frozen when the spec is written and you confirm it. From that point:
 ## Hard rules
 
 - Do not start the interview and then answer your own questions. Decisions belong to the user.
+- Do not count notes, findings, or open questions as decisions.
 - Do not rush to the spec. Run the full interview first; ask the next round before writing.
+- Do not encode the freeze decision as a normal `QUESTIONS` entry.
 - Do not begin writing implementation code or CSS during this skill. This skill ends with a
   written, confirmed spec. Implementation happens in `yue-component-design`.
 - If a question cannot be settled by talking, mark it as "needs prototype" and continue.
   Do not spend multiple rounds rephrasing an ungrillable question.
-

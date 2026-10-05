@@ -21,6 +21,17 @@ export { installYueConfig, provideYueConfig, useConfig } from './config/useConfi
 export { useNamespace } from './namespace/useNamespace.js'
 
 /**
+ * Overlay: the ordering runtime two detached surfaces have to share.
+ *
+ * Only the stack lives here, because only the stack has more than one consumer today
+ * (`YuePopover` and `YueDialog` both need cross-surface topmost arbitration). Modal
+ * semantics — focus trap, background inert, scroll lock — stay in the component that owns
+ * them; they are not shared runtime, they are a single component's behaviour.
+ */
+export { isTopOverlay, registerOverlay } from './overlay/stack.js'
+export type { OverlayRecord } from './overlay/stack.js'
+
+/**
  * Locale: the mechanism, without a single concrete message.
  *
  * The catalog of strings Yue renders itself lives in `@yue-ui/vue`, because it is a

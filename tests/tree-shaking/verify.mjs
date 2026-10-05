@@ -6,8 +6,7 @@
  *
  *   1. `@yue-ui/vue/button` + `@yue-ui/vue/button.css` must contain the Button and
  *      its CSS, and must NOT contain the plugin's registry, the install helper,
- *      the other component, any Dialog (there is none yet — that assertion is the
- *      guard for when there is), or a Reka UI primitive.
+ *      the other components, the Dialog, or a Reka UI primitive.
  *   2. `@yue-ui/vue/input` + `@yue-ui/vue/input.css` must contain the Input and its
  *      CSS, and must NOT contain the registry, the install helper, or the Button.
  *   3. `@yue-ui/vue/plugin` + `@yue-ui/vue/style.css` must contain all of it.
@@ -65,6 +64,18 @@ const INPUT_CSS_MUST = [
   'yue-input__clear',
   'is-invalid',
 ]
+
+// Rolldown inlines and minifies Floating UI's named exports; its collision engine is
+// identified by the stable algorithm marker that survives that transform.
+const POPOVER_JS_MUST = ['YuePopover', 'detectOverflow']
+const POPOVER_CSS_MUST = ['.yue-popover', '--popover-background', 'prefers-reduced-motion', 'forced-colors']
+
+// Dialog is a hand-written modal, so its entry is identified by the `defineOptions` name
+// (a JS string literal that survives bundling) and its stylesheet by the composed class.
+// Floating UI must not appear: the dialog is centred by CSS; the Q25 fly-in is a hand-computed
+// translate delta from the trigger's bounding rect, not a Floating UI anchor/positioning dependency.
+const DIALOG_JS_MUST = ['YueDialog']
+const DIALOG_CSS_MUST = ['.yue-dialog', '--dialog-width-md', 'prefers-reduced-motion', 'forced-colors']
 /**
  * …and must not drag in the registration path, nor the other component.
  *
@@ -88,8 +99,9 @@ const INPUT_CSS_MUST = [
 const PLUGIN_ONLY_JS = [
   '.component(',
   '.provide(',
-  // Dialog does not exist yet. These keep the assertion meaningful for when it
-  // does, so adding one to the plugin cannot silently leak into every entry.
+  // Dialog exists now as its own entry, so these are the live cross-contamination guards they
+  // were written to become: `YueDialog` reaches a bundle only through its subpath or the plugin,
+  // never through the graph of an unrelated single-component consumer.
   'YueDialog',
   'yue-dialog',
   // Reka UI is reserved for Popover/Dialog and must never appear in the graph of
@@ -101,6 +113,27 @@ const PLUGIN_ONLY_JS = [
 const BUTTON_JS_MUST_NOT = [...PLUGIN_ONLY_JS, 'YueInput', 'yue-input']
 const INPUT_JS_MUST_NOT = [...PLUGIN_ONLY_JS, 'YueButton', 'yue-button']
 const INPUT_CSS_MUST_NOT = ['.yue-button']
+const POPOVER_JS_MUST_NOT = [...PLUGIN_ONLY_JS, 'YueButton', 'YueInput', 'YueButtonGroup']
+const POPOVER_CSS_MUST_NOT = ['.yue-button', '.yue-input']
+// The Dialog entry is a single-component graph of its own: it must carry the plugin registry
+// nothing, and must not reach into any other component. `YueDialog`/`yue-dialog` are excluded
+// from the must-not list because they are this entry's own payload.
+const DIALOG_JS_MUST_NOT = [
+  '.component(',
+  '.provide(',
+  'reka-ui',
+  'RekaPortal',
+  'YueButton',
+  'YueInput',
+  'YuePopover',
+  // The Q25 fly-in is a hand-computed translate delta from getBoundingClientRect, not a positioning
+  // problem: a modal is centred by CSS and its trigger cannot move while the background is scroll-
+  // locked + inert. Floating UI stays quarantined to Popover, so it is now an explicit ban (was
+  // previously implied by the size budget + intent comment only).
+  '@floating-ui',
+  'computePosition',
+]
+const DIALOG_CSS_MUST_NOT = ['.yue-button', '.yue-input', '.yue-popover', '--popover-background']
 
 const PLUGIN_JS_MUST = [
   'YueButton',
@@ -108,11 +141,13 @@ const PLUGIN_JS_MUST = [
   'YueButtonToggle',
   'YueButtonToggleItem',
   'YueInput',
+  'YuePopover',
+  'YueDialog',
   '.component(',
   '.provide(',
   'Object.entries(',
 ]
-const PLUGIN_CSS_MUST = ['.yue-button', '.yue-button-group', '.yue-input']
+const PLUGIN_CSS_MUST = ['.yue-button', '.yue-button-group', '.yue-input', '.yue-popover', '.yue-dialog']
 
 /**
  * A single language pack, imported on its own.
@@ -145,13 +180,32 @@ const LOCALE_JS_MUST_NOT = [
 const BUDGET = {
   button: { js: 10_000, css: 20_000 },
   input: { js: 15_000, css: 14_000 },
+  popover: { js: 45_000, css: 3_000 },
+  // Dialog is a hand-written modal: no Floating UI, so its JS is the component plus the shared
+  // overlay stack and the en-US default pack, inlined and un-minified in this consumer build
+  // (measured 19376B js / 6924B css). Ceiling is set just above the measurement.
+  // CSS ceiling raised 7_500 -> 8_000 when the fullscreen surface got its own sheet entrance
+  // (translateY instead of the viewport-wide scale, Q16), then 8_000 -> 8_500 and js 20_000 ->
+  // 21_000 for the Q25 fly-in (a hand-computed translate delta in the component + the enter-from
+  // transform rule). Raised again 21_000 -> 22_500 js / 8_500 -> 9_000 css for the review-phase
+  // modal capability set (B1 activate/deactivate + onMounted, B2 isModal decoupled from surface,
+  // B3 visibility focus test, C1 busy/spinner guard, C2 show* actions, C3 per-part classNames/
+  // styles, C4 lazy mount, C5 modeless, C6 close-icon slot): measured now 21834B js / 8755B css.
+  // Reviewed feature additions, not graph growth — still no Floating UI, no duplicated runtime.
+  dialog: { js: 22_500, css: 9_000 },
   // plugin budget raised when YueTag + YueCheckTag were added (Tag family: +775B js, +3822B css).
   // The CheckTag theme support adds per-theme selected palettes: the plugin stylesheet measures 42378B,
   // and the budget is set just above that measurement rather than leaving room to grow into.
-  plugin: { js: 27_500, css: 42_500 },
+  // Popover is part of the full plugin graph and carries Floating UI's positioning engine.
+  // The graph grew again when Dialog joined it (measured 69023B js / 52804B css), and with the
+  // Dialog review-phase capability set (see the dialog budget note): measured now 71550B js /
+  // 54635B css, so the plugin ceiling follows to 72_500 js / 55_500 css.
+  plugin: { js: 72_500, css: 55_500 },
   // Rolldown preserves fixture comments in this unminified consumer build; 750B
   // covers the measured output without making the budget follow future growth.
-  locale: { js: 750, css: 0 },
+  // Raised to 800B after the dialog.* labels (confirm/cancel/closeLabel) were added to every
+  // pack in the i18n stage; the zh-CN bundle now measures 763B (still data only, no components).
+  locale: { js: 800, css: 0 },
 }
 
 const problems = []
@@ -257,7 +311,7 @@ async function main() {
     }
   }
 
-  for (const mode of ['button', 'input', 'plugin', 'locale']) {
+  for (const mode of ['button', 'input', 'popover', 'dialog', 'plugin', 'locale']) {
     process.stdout.write(`building ${mode} consumer…\n`)
     await buildMode(mode)
   }
@@ -279,6 +333,26 @@ async function main() {
     expectAbsent('input js', code, INPUT_JS_MUST_NOT)
     expectAbsent('input css', input.css, INPUT_CSS_MUST_NOT)
     notes.push(`input: bundle.js ${input.js.length}B, bundle.css ${input.css.length}B`)
+  }
+
+  const popover = readOutputs('popover')
+  if (popover) {
+    const code = stripJsComments(popover.js)
+    expectContains('popover js', code, POPOVER_JS_MUST)
+    expectContains('popover css', popover.css, POPOVER_CSS_MUST)
+    expectAbsent('popover js', code, POPOVER_JS_MUST_NOT)
+    expectAbsent('popover css', popover.css, POPOVER_CSS_MUST_NOT)
+    notes.push(`popover: bundle.js ${popover.js.length}B, bundle.css ${popover.css.length}B`)
+  }
+
+  const dialog = readOutputs('dialog')
+  if (dialog) {
+    const code = stripJsComments(dialog.js)
+    expectContains('dialog js', code, DIALOG_JS_MUST)
+    expectContains('dialog css', dialog.css, DIALOG_CSS_MUST)
+    expectAbsent('dialog js', code, DIALOG_JS_MUST_NOT)
+    expectAbsent('dialog css', dialog.css, DIALOG_CSS_MUST_NOT)
+    notes.push(`dialog: bundle.js ${dialog.js.length}B, bundle.css ${dialog.css.length}B`)
   }
 
   // A language pack is data: importing `@yue-ui/vue/locale/zh-CN` must not pull the component
@@ -361,6 +435,7 @@ async function main() {
     ['button', button],
     ['input', input],
     ['plugin', plugin],
+    ['dialog', dialog],
     ['locale', locale],
   ]) {
     checkBudget(mode, output)

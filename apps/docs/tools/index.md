@@ -49,7 +49,7 @@ gating profiles: light/azure, dark/azure
   → SUPERSET + REGISTERED DIVERGENCES — no drift, no loss
 
 ▌ architecture (reachability, resolution, one declaration site, layer direction)
-  architecture: 591 declared token(s) across 37 reachable file(s), 17 catalogue group(s) in 17 file(s)
+  architecture: 646 declared token(s) across 40 reachable file(s), 19 catalogue group(s) in 19 file(s)
   unreachable 0, undeclared 0, duplicates 0, cross-file slots 0, layer violations 0
 
 RESULT: PASS

@@ -6,11 +6,30 @@
  */
 
 :root {
-  --duration-fast             : 100ms;
+  /* Duration ladder — a 50ms-stepped scale from 100 to 400. Q16 promoted the old three-step scale
+     to a full ladder so a component can name the rung it wants (a modal's more deliberate enter/exit
+     sits between the transient tiers) instead of scattering a raw literal. The named tiers below are
+     aliases onto the rungs, so the semantic motion roles and every existing component token keep their
+     vocabulary while each concrete duration lives in exactly one place. */
+  --duration-100              : 100ms;
 
-  --duration-normal           : 200ms;
+  --duration-150              : 150ms;
 
-  --duration-slow             : 300ms;
+  --duration-200              : 200ms;
+
+  --duration-250              : 250ms;
+
+  --duration-300              : 300ms;
+
+  --duration-350              : 350ms;
+
+  --duration-400              : 400ms;
+
+  --duration-fast             : var(--duration-100);
+
+  --duration-normal           : var(--duration-200);
+
+  --duration-slow             : var(--duration-300);
 
   --ease-standard             : cubic-bezier(.2, 0, .38, .9);
 

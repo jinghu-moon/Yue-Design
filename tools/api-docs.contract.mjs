@@ -90,4 +90,44 @@ export const DOC_CONTRACTS = [
       label: 'contrast checks',
     },
   },
+  {
+    id: 'popover',
+    types: 'packages/vue/src/components/popover/types.ts',
+    docs: 'apps/docs/components/popover/api.md',
+    components: [
+      {
+        name: 'YuePopover',
+        section: 'YuePopover',
+        props: 'YuePopoverProps',
+        slots: 'YuePopoverSlots',
+        emits: 'YuePopoverEmits',
+        sfc: 'packages/vue/src/components/popover/YuePopover.vue',
+      },
+    ],
+    exampleFiles: [
+      'apps/docs/components/popover.md',
+      'apps/docs/components/popover/api.md',
+      'apps/docs/components/popover/guide.md',
+    ],
+  },
+  {
+    id: 'dialog',
+    types: 'packages/vue/src/components/dialog/types.ts',
+    docs: 'apps/docs/components/dialog/api.md',
+    components: [
+      {
+        name: 'YueDialog',
+        section: 'YueDialog',
+        props: 'YueDialogProps',
+        slots: 'YueDialogSlots',
+        emits: 'YueDialogEmits',
+        sfc: 'packages/vue/src/components/dialog/YueDialog.vue',
+      },
+    ],
+    exampleFiles: [
+      'apps/docs/components/dialog.md',
+      'apps/docs/components/dialog/api.md',
+      'apps/docs/components/dialog/guide.md',
+    ],
+  },
 ]

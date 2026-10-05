@@ -5,6 +5,9 @@
  */
 
 window.COMPONENT_NAME = 'YueTag';
+window.SCHEMA_VERSION = 2;
+window.TEMPLATE_VERSION = '2.0.0';
+window.FINDINGS = [];
 
 window.SECTIONS = [
   { title: '第一轮：组件边界与家族划分', start: 1, end: 4 },

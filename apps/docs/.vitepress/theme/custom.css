@@ -389,6 +389,23 @@
   gap: var(--space-16);
 }
 
+/* Popover examples use a real content panel so the docs exercise interactive
+ * form controls rather than a static rectangle. */
+.popover-panel {
+  display: grid;
+  min-width: 14rem;
+  gap: var(--space-8);
+  color: var(--text-primary);
+}
+
+.popover-panel label {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
 .preview-frame__code-toggle {
   display: block;
   width: 100%;

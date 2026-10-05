@@ -15,6 +15,11 @@ export const zhCN = {
   tag: {
     closeLabel: '移除标签',
   },
+  dialog: {
+    confirm: '确定',
+    cancel: '取消',
+    closeLabel: '关闭对话框',
+  },
 } satisfies YueLocaleMessages
 
 export default zhCN

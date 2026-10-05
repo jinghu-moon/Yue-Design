@@ -2064,6 +2064,353 @@ async function checkCheckedTagHover(page, origin) {
   await page.emulateMedia({ colorScheme: 'light' })
 }
 
+/**
+ * Assert that the clip-path reveal collapses onto the edge facing the surface's trigger.
+ *
+ * A `bottom` surface unfolds from its own top edge, a `top` surface from its bottom edge,
+ * `left` from its right edge and `right` from its left edge, and the edge must follow a
+ * flipped placement. The resting polygon also has to overhang the box, or the animation
+ * ends with the surface's shadow clipped away. Read from the resolved custom properties
+ * rather than a mid-animation sample, which would be racy.
+ */
+async function assertRevealFacesTrigger(page, locator, label) {
+  const reveal = await locator.evaluate((el) => {
+    const cs = getComputedStyle(el)
+    return {
+      placement: el.getAttribute('data-placement'),
+      from: cs.getPropertyValue('--_popover-reveal-from').trim(),
+      to: cs.getPropertyValue('--_popover-reveal-to').trim(),
+    }
+  })
+  // The coordinate every vertex shares at the start of the reveal, per main axis.
+  const expected = {
+    bottom: { axis: 'y', value: 0 },
+    top: { axis: 'y', value: 120 },
+    left: { axis: 'x', value: 120 },
+    right: { axis: 'x', value: -20 },
+  }[reveal.placement?.split('-')[0]]
+  if (!expected) {
+    fail(`${label}: cannot resolve a reveal edge for placement ${reveal.placement}`)
+    return
+  }
+  // Percentages and lengths are compared as bare numbers: the authored polygon uses
+  // `0` for an edge and `120%`/`-20%` for the overhang, and only the ratio matters.
+  const vertices = (polygon) => [...polygon.matchAll(/(-?[\d.]+)%?\s+(-?[\d.]+)%?/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }))
+  const from = vertices(reveal.from)
+  const to = vertices(reveal.to)
+  if (from.length !== 4 || to.length !== 4) {
+    fail(`${label}: clip-path only interpolates between equal vertex counts (from ${reveal.from} / to ${reveal.to})`)
+    return
+  }
+  if (from.some((v) => v[expected.axis] !== expected.value)) {
+    fail(`${label}: ${reveal.placement} reveals from the wrong edge (${reveal.from})`)
+  }
+  const xs = to.map((v) => v.x)
+  const ys = to.map((v) => v.y)
+  if (Math.min(...xs) !== -20 || Math.max(...xs) !== 120 || Math.min(...ys) !== 0 || Math.max(...ys) !== 120) {
+    fail(`${label}: the reveal must finish on the overhang rect so the shadow survives (${reveal.to})`)
+  }
+}
+
+/**
+ * Exercise the public Popover example in a real browser. Unit tests own state
+ * transitions; this owns Teleport, computed geometry, focus restoration and the
+ * document-level outside/Escape listeners that jsdom cannot model faithfully.
+ */
+async function checkPopover(page, origin, label) {
+  await page.goto(`${origin}/components/popover`, { waitUntil: 'load' })
+  await page.waitForSelector('[data-popover-trigger]', { state: 'visible', timeout: 15_000 })
+
+  const trigger = page.locator('[data-popover-trigger]')
+  const triggerId = await trigger.getAttribute('aria-controls')
+  if (!triggerId) fail(`${label}: Popover trigger has no aria-controls relationship`)
+  if ((await trigger.getAttribute('aria-expanded')) !== 'false') {
+    fail(`${label}: Popover is open before activation`)
+  }
+
+  await trigger.focus()
+  const content = page.locator('.yue-popover').first()
+  // Sample from the frame the surface mounts: the reveal lasts one transition window,
+  // so a read after `waitFor(visible)` can find it already finished.
+  const enterFrames = page.evaluate(() => new Promise((resolve) => {
+    const samples = []
+    setTimeout(() => resolve(samples), 2_000)
+    const tick = () => {
+      const element = document.querySelector('.yue-popover')
+      const triggerElement = document.querySelector('[data-popover-trigger]')
+      if (element && triggerElement) {
+        const style = getComputedStyle(element)
+        const rect = element.getBoundingClientRect()
+        const triggerRect = triggerElement.getBoundingClientRect()
+        samples.push({
+          transform: style.transform,
+          animationName: style.animationName,
+          clipPath: style.clipPath,
+          opacity: Number(style.opacity),
+          rect: { x: rect.x, y: rect.y, height: rect.height },
+          triggerRect: { x: triggerRect.x, y: triggerRect.y, width: triggerRect.width, height: triggerRect.height, right: triggerRect.right, bottom: triggerRect.bottom },
+        })
+      }
+      if (samples.length >= 8) resolve(samples)
+      else requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }))
+  await trigger.click()
+  const openingFrames = await enterFrames
+  await content.waitFor({ state: 'visible', timeout: 15_000 })
+  if (!openingFrames.length) fail(`${label}: Popover never mounted while its enter animation was sampled`)
+  else {
+    const first = openingFrames[0]
+    const translation = first.transform.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,\s*([\d.-]+),\s*([\d.-]+)/)
+    if (!translation || Math.abs(Number(translation[1])) < 1 || Math.abs(Number(translation[2])) < 1) {
+      fail(`${label}: first rendered frame has no non-zero Floating UI coordinate (${first.transform})`)
+    }
+    if (first.rect.y < first.triggerRect.y - 16) {
+      fail(`${label}: opening frame starts above the trigger instead of at its anchor`)
+    }
+    if (!/reveal-in/.test(first.animationName)) {
+      fail(`${label}: the enter animation is not the clip-path reveal (${first.animationName})`)
+    }
+    if (first.opacity >= 1) {
+      fail(`${label}: the opening frame is already opaque (${first.opacity})`)
+    }
+    // The reveal travels along the main axis: the clipped band must start collapsed on
+    // the trigger-facing edge and grow. Chrome serialises an interpolated polygon with
+    // mixed units — the animated coordinate comes back in px while the untouched one
+    // stays a percentage — so resolve each vertex against the surface's own height.
+    const bandHeight = (clipPath, boxHeight) => {
+      const ys = [...clipPath.matchAll(/(-?[\d.]+)(%|px)\s+(-?[\d.]+)(%|px)/g)]
+        .map((m) => Number(m[3]) * (m[4] === '%' ? boxHeight / 100 : 1))
+      return ys.length === 4 ? Math.max(...ys) - Math.min(...ys) : null
+    }
+    const bands = openingFrames
+      .map((frame) => bandHeight(frame.clipPath, frame.rect.height))
+      .filter((height) => height !== null)
+    if (!bands.length) {
+      fail(`${label}: no sampled frame carried a four-vertex clip-path (${openingFrames[0].clipPath})`)
+    } else if (bands[0] > 1) {
+      fail(`${label}: the reveal starts ${bands[0].toFixed(1)}px tall instead of collapsed on its edge`)
+    } else if (bands[bands.length - 1] <= bands[0] + 8) {
+      fail(`${label}: the reveal never grew (${bands[0].toFixed(1)}px → ${bands[bands.length - 1].toFixed(1)}px)`)
+    }
+  }
+  // Vue drops the -active class on animationend, so the clip only exists while the
+  // reveal runs. Wait for that release before reading the settled surface, or the
+  // "settled" sample lands mid-animation.
+  await page.waitForFunction(() => {
+    const element = document.querySelector('.yue-popover')
+    return !!element && getComputedStyle(element).clipPath === 'none'
+  }, null, { timeout: 5_000 }).catch(() => {
+    fail(`${label}: the enter reveal never released its clip-path`)
+  })
+  const reading = await content.evaluate((element) => {
+    const style = getComputedStyle(element)
+    const rect = element.getBoundingClientRect()
+    return {
+      id: element.id,
+      role: element.getAttribute('role'),
+      state: element.getAttribute('data-state'),
+      placement: element.getAttribute('data-placement'),
+      position: style.position,
+      transform: style.transform,
+      clipPath: style.clipPath,
+      fontSize: style.fontSize,
+      width: rect.width,
+      height: rect.height,
+      inBody: element.parentElement === document.body,
+      label: element.getAttribute('aria-label'),
+    }
+  })
+  if (reading.id !== triggerId) fail(`${label}: trigger aria-controls does not name the content root`)
+  if (reading.role !== 'dialog') fail(`${label}: expected role=dialog, got ${reading.role}`)
+  if (reading.state !== 'open') fail(`${label}: open content has data-state=${reading.state}`)
+  if (!reading.inBody) fail(`${label}: default Teleport did not move content under body`)
+  if (reading.position !== 'fixed') fail(`${label}: content is not positioned by the detached layer`)
+  if (reading.transform === 'none' || reading.transform === '') fail(`${label}: Floating UI did not position content`)
+  if (!reading.placement) fail(`${label}: content has no resolved placement`)
+  if (reading.width <= 0 || reading.height <= 0) fail(`${label}: content has no measurable box`)
+  if (reading.label !== '示例弹出层') fail(`${label}: accessible name was not routed to content root`)
+  // The reveal is an animation, not a resting style: once it finishes no clip may remain,
+  // or the surface's own shadow would be trimmed.
+  if (reading.clipPath !== 'none') {
+    fail(`${label}: settled surface still carries a clip-path (${reading.clipPath})`)
+  }
+  // The surface declares its own type size instead of inheriting the host page's body
+  // text: `--popover-font-size` → `--box-font-size-popover` → `--font-size-md`.
+  if (reading.fontSize !== '14px') {
+    fail(`${label}: expected a 14px surface, got ${reading.fontSize}`)
+  }
+  await assertRevealFacesTrigger(page, content, label)
+
+  // Content clicks are not outside clicks by default.
+  await page.locator('[data-popover-content]').click()
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
+    fail(`${label}: content click closed a non-closing Popover`)
+  }
+
+  await page.keyboard.press('Escape')
+  await page.waitForFunction(() => document.querySelector('[data-popover-trigger]')?.getAttribute('aria-expanded') === 'false')
+  if (await page.evaluate(() => document.activeElement?.matches('[data-popover-trigger]') !== true)) {
+    fail(`${label}: Escape did not restore focus to the trigger`)
+  }
+
+  await trigger.click()
+  await content.waitFor({ state: 'visible', timeout: 15_000 })
+  // The component registers its document-level stack listener in a post-flush watcher;
+  // wait one browser turn so the outside pointer assertion observes the live listener.
+  await page.waitForTimeout(50)
+  await page.mouse.click(4, 4)
+  await page.waitForFunction(() => document.querySelector('[data-popover-trigger]')?.getAttribute('aria-expanded') === 'false')
+  const filterTrigger = page.getByRole('button', { name: '筛选' })
+  await filterTrigger.click()
+  const filterContent = page.locator('.yue-popover[aria-label="筛选面板"]')
+  await filterContent.waitFor({ state: 'visible', timeout: 5_000 })
+  if ((await filterContent.locator('input[type="checkbox"]').count()) !== 2) {
+    fail(`${label}: filter panel did not render its two interactive options`)
+  }
+  await assertRevealFacesTrigger(page, filterContent, `${label} bottom-start`)
+  await page.keyboard.press('Escape')
+
+  const hoverTrigger = page.getByRole('button', { name: '悬停查看说明' })
+  await hoverTrigger.hover()
+  await page.locator('.yue-popover[role="tooltip"]').first().waitFor({ state: 'visible', timeout: 5_000 })
+  await assertRevealFacesTrigger(page, page.locator('.yue-popover[role="tooltip"]').first(), `${label} top tooltip`)
+  await page.mouse.move(4, 4)
+  await page.waitForFunction(() => ![...document.querySelectorAll('.yue-popover[role="tooltip"]')].some((node) => getComputedStyle(node).display !== 'none'))
+
+  const focusTrigger = page.getByRole('button', { name: '聚焦查看说明' })
+  await focusTrigger.focus()
+  await page.locator('.yue-popover[role="tooltip"]').last().waitFor({ state: 'visible', timeout: 5_000 })
+  await page.mouse.click(4, 4)
+
+  const manualTrigger = page.getByRole('button', { name: '打开', exact: true })
+  await manualTrigger.click()
+  await page.locator('.yue-popover[aria-label="外部锚点内容"]').waitFor({ state: 'visible', timeout: 5_000 })
+  await assertRevealFacesTrigger(page, page.locator('.yue-popover[aria-label="外部锚点内容"]'), `${label} right anchor`)
+  await page.keyboard.press('Escape')
+
+  const closeTrigger = page.getByRole('button', { name: '点击内容后关闭' })
+  await closeTrigger.click()
+  const closeContent = page.locator('.yue-popover').filter({ has: page.getByRole('button', { name: '完成并关闭' }) })
+  await closeContent.getByRole('button', { name: '完成并关闭' }).click()
+  await page.waitForFunction(() => [...document.querySelectorAll('button')].some((button) => button.textContent?.trim() === '点击内容后关闭' && button.getAttribute('aria-expanded') === 'false'))
+  if (!(await page.getByText('最近一次关闭：trigger').isVisible())) {
+    fail(`${label}: close event did not expose the trigger reason`)
+  }
+  notes.push(`${label}: Teleport, ${reading.placement} placement, trigger-facing clip-path reveal, outside/Escape and focus restore passed`)
+}
+
+/**
+ * Drive the public Dialog example in a real browser. The unit tests own the close pipeline and
+ * the prop logic; this owns the things jsdom cannot model faithfully — a modal that genuinely
+ * covers the page (fixed overlay at `--layer-modal`, a card centred in the viewport, an opaque
+ * scrim), a background switched to inert, a scroll lock on the document element, initial focus
+ * landing on the card, and Escape reporting its reason back to the page. A danger dialog has to
+ * survive a real key press, because that is the one promise its variant makes.
+ */
+async function checkDialog(page, origin, label) {
+  await page.goto(`${origin}/components/dialog`, { waitUntil: 'load' })
+  await page.waitForSelector('[data-dialog-basic-open]', { state: 'visible', timeout: 15_000 })
+
+  if ((await page.locator('.yue-dialog').count()) !== 0) {
+    fail(`${label}: a dialog is present before any trigger was activated`)
+  }
+
+  await page.click('[data-dialog-basic-open]')
+  const panel = page.locator('.yue-dialog').first()
+  await panel.waitFor({ state: 'visible', timeout: 15_000 })
+
+  const layerModal = await page.evaluate(
+    () => getComputedStyle(document.documentElement).getPropertyValue('--layer-modal').trim(),
+  )
+  const reading = await panel.evaluate((element) => {
+    const overlay = element.closest('.yue-dialog__overlay')
+    const scrim = overlay ? overlay.querySelector('.yue-dialog__scrim') : null
+    const overlayStyle = getComputedStyle(overlay)
+    const rect = element.getBoundingClientRect()
+    const overlayRect = overlay.getBoundingClientRect()
+    return {
+      role: element.getAttribute('role'),
+      ariaModal: element.getAttribute('aria-modal'),
+      labelled: !!document.getElementById(element.getAttribute('aria-labelledby') || '__none'),
+      focused: document.activeElement === element,
+      overlayPosition: overlayStyle.position,
+      overlayZIndex: overlayStyle.zIndex,
+      // Centred against the overlay box, not the raw window: the scroll lock reserves a
+      // scrollbar gutter, so the fixed overlay is the card's real containing block.
+      centered:
+        Math.abs(rect.x + rect.width / 2 - (overlayRect.x + overlayRect.width / 2)) < 4 &&
+        Math.abs(rect.y + rect.height / 2 - (overlayRect.y + overlayRect.height / 2)) < 4,
+      scrimFixed: scrim ? getComputedStyle(scrim).position === 'fixed' : false,
+      htmlOverflow: getComputedStyle(document.documentElement).overflow,
+      inertSiblings: document.body.querySelectorAll(':scope > [aria-hidden="true"]').length,
+    }
+  })
+
+  if (reading.role !== 'dialog') fail(`${label}: expected role=dialog, got ${reading.role}`)
+  if (reading.ariaModal !== 'true') fail(`${label}: the modal card is not aria-modal`)
+  if (!reading.labelled) fail(`${label}: aria-labelledby does not name a rendered title`)
+  if (!reading.focused) fail(`${label}: initial focus did not land on the card container`)
+  if (reading.overlayPosition !== 'fixed') {
+    fail(`${label}: the overlay is not fixed (${reading.overlayPosition})`)
+  }
+  if (!layerModal) fail(`${label}: --layer-modal did not resolve on the document`)
+  if (reading.overlayZIndex !== layerModal) {
+    fail(`${label}: overlay z-index ${reading.overlayZIndex} != --layer-modal ${layerModal}`)
+  }
+  if (!reading.centered) fail(`${label}: the card is not centred in the viewport`)
+  if (!reading.scrimFixed) fail(`${label}: no fixed scrim sits behind the card`)
+  if (reading.htmlOverflow !== 'clip') {
+    fail(`${label}: background scroll was not locked (overflow=${reading.htmlOverflow})`)
+  }
+  if (reading.inertSiblings < 1) fail(`${label}: no background sibling was switched to inert`)
+
+  // Escape unmounts the teleported surface and reports its reason to the page.
+  await page.keyboard.press('Escape')
+  await page
+    .waitForFunction(() => document.querySelector('.yue-dialog') === null, null, { timeout: 5_000 })
+    .catch(() => fail(`${label}: Escape did not close the basic dialog`))
+  if (!(await page.getByText('最近一次关闭：escape').isVisible().catch(() => false))) {
+    fail(`${label}: closing by Escape did not report the reason back to the page`)
+  }
+  // Conditional focus return (Q12=A): a keyboard close hands focus back to the pre-open
+  // trigger. This is only observable in a real browser — happy-dom will not move
+  // document.activeElement onto a body-level trigger here — so it belongs to this gate.
+  const restored = await page.evaluate(
+    () => document.activeElement === document.querySelector('[data-dialog-basic-open]'),
+  )
+  if (!restored) {
+    fail(`${label}: Escape close did not return focus to the opening trigger`)
+  }
+  const released = await page.evaluate(() => getComputedStyle(document.documentElement).overflow)
+  if (released === 'clip') fail(`${label}: the scroll lock was not released after close`)
+
+  // Danger: a real Escape press must not answer on the user's behalf.
+  await page.click('[data-dialog-danger-open]')
+  const danger = page.locator('.yue-dialog').first()
+  await danger.waitFor({ state: 'visible', timeout: 15_000 })
+  const dangerRole = await danger.getAttribute('role')
+  if (dangerRole !== 'alertdialog') {
+    fail(`${label}: danger variant role is ${dangerRole}, expected alertdialog`)
+  }
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(150)
+  if ((await page.locator('.yue-dialog').count()) === 0) {
+    fail(`${label}: the danger dialog closed on Escape`)
+  }
+  await page.screenshot({ path: join(HERE, 'dialog-light.png'), fullPage: true })
+  await page.locator('.yue-dialog__close').first().click()
+  await page
+    .waitForFunction(() => document.querySelector('.yue-dialog') === null, null, { timeout: 5_000 })
+    .catch(() => fail(`${label}: the danger dialog did not close via its close button`))
+
+  notes.push(
+    `${label}: fixed modal at --layer-modal=${layerModal}, centred card, inert background, scroll ` +
+      'lock, Escape reason and danger guard passed',
+  )
+}
+
 async function main() {
   if (!existsSync(SITE_DIR)) {
     process.stderr.write(
@@ -2254,6 +2601,8 @@ async function main() {
     await checkToggle(page, 'light')
     // Tag-level, not colour-level: the `tag="a"` path is walked once, with real key presses.
     await checkAnchorTabOrder(page, 'light')
+    await checkPopover(page, origin, 'light Popover')
+    await checkDialog(page, origin, 'light Dialog')
 
     // The Input page in light. Its six states are a different axis from the Button's
     // theme x variant matrix, so they get their own pass rather than being folded in.

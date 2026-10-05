@@ -417,6 +417,10 @@ const NON_PROP_ATTRIBUTES = new Set([
 const isNonPropAttribute = (attribute) =>
   NON_PROP_ATTRIBUTE_PREFIX.test(attribute) || NON_PROP_ATTRIBUTES.has(attribute)
 
+/** Vue accepts both `closeOnContentClick` and its template-friendly kebab spelling. */
+const normalizePropAttribute = (attribute) =>
+  attribute.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
+
 /** Components whose tags the example scan looks for, longest name first. */
 function tagPattern(names) {
   const sorted = [...names].sort((left, right) => right.length - left.length).map(escapeRegExp)
@@ -652,7 +656,7 @@ export function checkApiDocs(spec) {
       for (const attribute of tagAttributes(body)) {
         if (isNonPropAttribute(attribute)) continue
         const declared = propsByComponent.get(tag) ?? []
-        if (!declared.includes(attribute)) {
+        if (!declared.includes(normalizePropAttribute(attribute))) {
           problems.push(`${file}: \`<${tag} ${attribute}…>\` — \`${attribute}\` is not a documented prop`)
         }
       }

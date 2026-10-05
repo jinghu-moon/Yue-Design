@@ -3,17 +3,17 @@
 > 前提：**Token 集是设计语言，覆盖必然宽于组件当前用量**。下面的数字是"未被其他文件引用"的清单，
 > 不是待清理的债务；报表的作用是让每一个这样的 Token 都**有可解释的存在理由**。
 
-生成方式：`node tools/token-usage-report.mjs`。总数 117，全部可解释（需要动作的：0）。
+生成方式：`node tools/token-usage-report.mjs`。总数 116，全部可解释（需要动作的：0）。
 
 | 存在理由 | 数量 | 含义 |
 | --- | --- | --- |
-| `same-file-composition` | 13 | 只在声明它的文件内部被引用（语义角色由本文件的色阶组合而成）——计数口径排除自文件引用，实际上有消费者 |
-| `prototype-contract` | 94 | 冻结原型声明同名 Token，parity 门禁固定住它 |
+| `same-file-composition` | 16 | 只在声明它的文件内部被引用（语义角色由本文件的色阶组合而成）——计数口径排除自文件引用，实际上有消费者 |
+| `prototype-contract` | 90 | 冻结原型声明同名 Token，parity 门禁固定住它 |
 | `consumer-facing` | 10 | 面向消费者的公共原语，已在文档中说明（断点/布局/动效时长等，其中部分结构上无法被 CSS `var()` 读取） |
 | `scale-step` | 0 | 闭合刻度中的一个档位：刻度本身就是契约，不按当前用量裁剪 |
 | `interface-without-reader` | 0 | **唯一需要动作的一类**：组件层公共覆盖点，既没有读取方也没有文档 |
 
-## prototype-contract（94）
+## prototype-contract（90）
 
 | Token | 层 | 命名空间 | 声明位置 | 同文件引用 |
 | --- | --- | --- | --- | --- |
@@ -46,9 +46,7 @@
 | `--box-border-radius-panel` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-border-radius-toast` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-border-width-panel` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
-| `--box-color-dialog` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-color-panel` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
-| `--box-color-popover` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-color-toast` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-padding-block-toast` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
 | `--box-padding-inline-toast` | components | box | `packages/tokens/src/component-tokens/box.css` | — |
@@ -109,10 +107,8 @@
 | `--tracking-wide` | primitives | tracking | `packages/tokens/src/primitives/typography.css` | — |
 | `--weight-display` | primitives | weight | `packages/tokens/src/primitives/typography.css` | — |
 | `--weight-regular` | primitives | weight | `packages/tokens/src/primitives/typography.css` | — |
-| `--width-lg` | primitives | width | `packages/tokens/src/primitives/shape.css` | — |
-| `--width-xl` | primitives | width | `packages/tokens/src/primitives/shape.css` | — |
 
-## same-file-composition（13）
+## same-file-composition（16）
 
 | Token | 层 | 命名空间 | 声明位置 | 同文件引用 |
 | --- | --- | --- | --- | --- |
@@ -123,6 +119,9 @@
 | `--accent-700` | semantics | accent | `packages/tokens/src/semantics/accent.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css` |
 | `--accent-800` | semantics | accent | `packages/tokens/src/semantics/accent.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css` |
 | `--accent-950` | semantics | accent | `packages/tokens/src/semantics/accent.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/accent.css` |
+| `--duration-100` | primitives | duration | `packages/tokens/src/primitives/motion.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css` |
+| `--duration-200` | primitives | duration | `packages/tokens/src/primitives/motion.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css` |
+| `--duration-300` | primitives | duration | `packages/tokens/src/primitives/motion.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css` |
 | `--radius-base` | primitives | radius | `packages/tokens/src/primitives/shape.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/shape.css` |
 | `--shadow-2` | semantics | shadow | `packages/tokens/src/semantics/elevation.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/elevation.css` |
 | `--shadow-3` | semantics | shadow | `packages/tokens/src/semantics/elevation.css` | `D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/semantics/elevation.css` |
@@ -138,10 +137,10 @@
 | `--breakpoint-md` | primitives | breakpoint | `packages/tokens/src/primitives/space.css` | — |
 | `--breakpoint-sm` | primitives | breakpoint | `packages/tokens/src/primitives/space.css` | — |
 | `--breakpoint-xl` | primitives | breakpoint | `packages/tokens/src/primitives/space.css` | — |
+| `--duration-350` | primitives | duration | `packages/tokens/src/primitives/motion.css` | — |
+| `--duration-400` | primitives | duration | `packages/tokens/src/primitives/motion.css` | — |
 | `--layout-grid-columns` | primitives | layout | `packages/tokens/src/primitives/space.css` | — |
 | `--layout-grid-gap` | primitives | layout | `packages/tokens/src/primitives/space.css` | — |
 | `--layout-page-gutter` | primitives | layout | `packages/tokens/src/primitives/space.css` | — |
 | `--layout-page-gutter-lg` | primitives | layout | `packages/tokens/src/primitives/space.css` | — |
-| `--motion-duration-enter` | primitives | motion | `packages/tokens/src/primitives/motion.css` | — |
-| `--motion-duration-exit` | primitives | motion | `packages/tokens/src/primitives/motion.css` | — |
 

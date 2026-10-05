@@ -85,6 +85,8 @@ const COMPONENT_ENTRIES = [
   { source: 'src/components/button/style.css', target: 'dist/components/button/style.css' },
   { source: 'src/components/input/style.css', target: 'dist/components/input/style.css' },
   { source: 'src/components/tag/style.css', target: 'dist/components/tag/style.css' },
+  { source: 'src/components/popover/style.css', target: 'dist/components/popover/style.css' },
+  { source: 'src/components/dialog/style.css', target: 'dist/components/dialog/style.css' },
 ]
 
 function writeEntry(packageRoot, source, target) {

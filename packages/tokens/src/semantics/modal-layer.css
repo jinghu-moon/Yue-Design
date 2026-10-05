@@ -1,0 +1,18 @@
+/* Yue semantics tokens — modal stacking tier
+ *
+ * Reached only through `src/index.css` → `semantics/_index.css`; the layer wrapper lives on that
+ * import, so this file carries none.
+ *
+ * The primitive `--layer-*` ramp (base → sticky → dialog → popover → tooltip → toast) orders
+ * *transient* surfaces against each other, but a modal dialog blocks the whole application and
+ * must sit above every one of them — including a toast — while nested dialogs still resolve their
+ * own order. So modal gets a semantic role of its own rather than a slot in the primitive table,
+ * and the primitive `--layer-dialog` becomes a role the dialog no longer reads (Q9=B). A literal
+ * is correct here for the same reason `--scrim` and `--shadow-*` are literals: it names a tier,
+ * not a re-colourable primitive. The headroom above `--layer-toast: 50` leaves the runtime overlay
+ * stack free to add per-instance steps without colliding with the transient ramp.
+ */
+
+:root {
+  --layer-modal              : 1000;
+}

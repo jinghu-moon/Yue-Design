@@ -1,0 +1,21 @@
+/* Yue component tokens — Popover surface and motion
+ *
+ * @yue-token-catalogue v1
+ *
+ *   popover- | detached non-modal surface | public
+ */
+
+:root {
+  --popover-background          : var(--box-background-popover);
+  --popover-color               : var(--box-color-popover);
+  --popover-border-color        : var(--box-border-color-popover);
+  --popover-border-width        : var(--box-border-width-popover);
+  --popover-border-radius       : var(--box-border-radius-popover);
+  --popover-padding             : var(--box-padding-popover);
+  --popover-font-size           : var(--box-font-size-popover);
+  --popover-shadow              : var(--box-shadow-popover);
+  --popover-z-index             : var(--layer-popover);
+  --popover-duration-enter     : var(--motion-duration-enter);
+  --popover-duration-exit      : var(--motion-duration-exit);
+  --popover-ease                : var(--motion-ease-standard);
+}

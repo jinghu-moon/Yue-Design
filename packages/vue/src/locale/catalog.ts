@@ -39,6 +39,26 @@ export type YueLocaleMessages = {
      */
     closeLabel: string
   }
+  dialog: {
+    /**
+     * Label of `YueDialog`'s built-in confirm button.
+     *
+     * Rendered only when the consumer does not supply a `footer` slot — the visible action
+     * text is component chrome, so it belongs here rather than in the consumer's content.
+     */
+    confirm: string
+    /**
+     * Label of `YueDialog`'s built-in cancel button (same slot-conditional as `confirm`).
+     */
+    cancel: string
+    /**
+     * Accessible name of `YueDialog`'s icon-only close control.
+     *
+     * The control carries no visible text, so this string is its *only* name — a missing
+     * translation is an unnamed button, exactly as with `input.clear` and `tag.closeLabel`.
+     */
+    closeLabel: string
+  }
 }
 
 /** Every key a Yue component may pass to `t()`. Derived, never hand-written. */
@@ -75,6 +95,21 @@ export const YUE_MESSAGE_META: Readonly<Record<YueMessageKey, YueMessageMeta>> =
   },
   'tag.closeLabel': {
     purpose: "Accessible name of YueTag's close button (icon-only).",
+    params: [],
+    announced: true,
+  },
+  'dialog.confirm': {
+    purpose: "Label of YueDialog's built-in confirm button (visible; only when no footer slot).",
+    params: [],
+    announced: false,
+  },
+  'dialog.cancel': {
+    purpose: "Label of YueDialog's built-in cancel button (visible; only when no footer slot).",
+    params: [],
+    announced: false,
+  },
+  'dialog.closeLabel': {
+    purpose: "Accessible name of YueDialog's close control (icon-only).",
     params: [],
     announced: true,
   },

@@ -26,6 +26,8 @@ export { default as YueButtonToggleItem } from './components/button/YueButtonTog
 export { default as YueInput } from './components/input/YueInput.vue'
 export { default as YueTag } from './components/tag/YueTag.vue'
 export { default as YueCheckTag } from './components/tag/YueCheckTag.vue'
+export { default as YuePopover } from './components/popover/YuePopover.vue'
+export { default as YueDialog } from './components/dialog/YueDialog.vue'
 
 export type {
   YueButtonEmits,
@@ -69,6 +71,34 @@ export type {
   YueTagTheme,
   YueTagVariant,
 } from './components/tag/types'
+
+export type {
+  YuePopoverAnchor,
+  YuePopoverCloseReason,
+  YuePopoverEmits,
+  YuePopoverExposed,
+  YuePopoverPlacement,
+  YuePopoverProps,
+  YuePopoverRole,
+  YuePopoverSlots,
+  YuePopoverTrigger,
+} from './components/popover/types'
+
+export type {
+  YueDialogBeforeClose,
+  YueDialogCloseReason,
+  YueDialogDefaultSlot,
+  YueDialogEmits,
+  YueDialogExposed,
+  YueDialogFooterSlot,
+  YueDialogHeaderSlot,
+  YueDialogProps,
+  YueDialogSize,
+  YueDialogSlots,
+  YueDialogSurface,
+  YueDialogTrigger,
+  YueDialogVariant,
+} from './components/dialog/types'
 
 /**
  * The shared control-size contract, re-exported so a consumer can name the type their

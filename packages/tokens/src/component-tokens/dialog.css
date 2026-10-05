@@ -1,0 +1,94 @@
+/* Yue component tokens — Dialog structure and motion
+ *
+ * Declared in the components layer, reached only through `src/index.css` →
+ * `component-tokens/_index.css`. Every value references a semantic or primitive token; no raw hex.
+ * Component tokens are the override points a consumer may re-declare.
+ *
+ * Component CSS reads only its own `--dialog-*` namespace (the library-wide isolation rule
+ * `audit:component` enforces), so every cross-namespace token this sheet's axes resolve to is
+ * reached through an alias declared here. The alias owns no value of its own: the surface axes
+ * forward wholesale to the frozen `--box-*-dialog` contract (Q29=B — Box keeps the values, there
+ * is no second value-bearing hop), exactly as the popover namespace forwards its surface axes to
+ * the `--box-*-popover` contract. What Q29=B rules out is *re-typing* Box values behind a dialog
+ * name, which is impossible under namespace isolation; what it cannot mean is an exemption from
+ * the isolation rule itself, and the audit gate admits no exemption. The `--dialog-*` namespace
+ * carries the box axes as pass-throughs plus the axes Box does not model — width ramp,
+ * header/footer geometry, scrim, and motion. Q16 froze the concrete motion and scrim values: a modal
+ * is more deliberate than a transient surface, so `--dialog-duration-enter/exit` name the 250/150ms
+ * rungs of the duration ladder directly (rather than the shared enter/exit roles a popover keeps) and
+ * `--dialog-scrim-color` reads the mode-invariant `--scrim-modal`. Off-ramp widths are not a token
+ * concern — the component's `width` prop carries caller data — so the width ramp stays on `--width-*`.
+ * Every value is still a named token; nothing here reads a raw literal.
+ *
+ * @yue-token-catalogue v1
+ *
+ *   dialog-   | Modal dialog geometry and motion | public
+ */
+
+:root {
+  --dialog-action-background         : var(--surface-component);
+
+  --dialog-action-border-color       : var(--border-default);
+
+  --dialog-action-border-radius      : var(--radius-md);
+
+  --dialog-action-border-width       : var(--border-1);
+
+  --dialog-action-danger-background  : var(--action-danger);
+
+  --dialog-action-danger-border      : var(--action-danger);
+
+  --dialog-action-on-danger          : var(--box-color-inverse);
+
+  --dialog-action-on-primary         : var(--action-on-primary);
+
+  --dialog-action-primary-background : var(--action-primary);
+
+  --dialog-action-primary-border     : var(--action-primary);
+
+  --dialog-action-spacing-block      : var(--space-2);
+
+  --dialog-action-spacing-inline     : var(--space-4);
+
+  --dialog-action-text-color         : var(--text-primary);
+
+  --dialog-background                : var(--box-background-dialog);
+
+  --dialog-border-color              : var(--box-border-color-dialog);
+
+  --dialog-border-radius             : var(--box-border-radius-dialog);
+
+  --dialog-border-width              : var(--box-border-width-dialog);
+
+  --dialog-color                     : var(--box-color-dialog);
+
+  --dialog-duration-enter          : var(--duration-250);
+
+  --dialog-duration-exit           : var(--duration-150);
+
+  --dialog-ease                    : var(--motion-ease-standard);
+
+  --dialog-footer-gap              : var(--space-4);
+
+  --dialog-header-height           : var(--control-height-lg);
+
+  --dialog-padding                 : var(--box-padding-dialog);
+
+  --dialog-scrim-color             : var(--scrim-modal);
+
+  --dialog-section-padding         : var(--space-16);
+
+  --dialog-shadow                  : var(--box-shadow-dialog);
+
+  --dialog-spacing                 : var(--space-8);
+
+  --dialog-width-sm                : var(--width-sm);
+
+  --dialog-width-md                : var(--width-md);
+
+  --dialog-width-lg                : var(--width-lg);
+
+  --dialog-width-xl                : var(--width-xl);
+
+  --dialog-z-index                 : var(--layer-modal);
+}

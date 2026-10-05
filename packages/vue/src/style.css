@@ -35,3 +35,5 @@
 @import url('./components/button/style.css');
 @import url('./components/input/style.css');
 @import url('./components/tag/style.css');
+@import url('./components/popover/style.css');
+@import url('./components/dialog/style.css');

@@ -163,6 +163,8 @@ import '@yue-ui/design-tokens/implementations.css'
     `import { createApp, h, resolveComponent } from 'vue'
 import YueButton from '@yue-ui/vue/button'
 import YueInput from '@yue-ui/vue/input'
+import YuePopover from '@yue-ui/vue/popover'
+import YueDialog from '@yue-ui/vue/dialog'
 import YueUI from '@yue-ui/vue/plugin'
 // Imported from the *hooks* tarball, not from @yue-ui/vue, on purpose: this is the
 // cross-package path. @yue-ui/vue compiles hooks into its bundle, so the locale injection
@@ -178,6 +180,8 @@ import { createI18n } from 'vue-i18n'
 import '@yue-ui/design-tokens/index.css'
 import '@yue-ui/vue/button.css'
 import '@yue-ui/vue/input.css'
+import '@yue-ui/vue/popover.css'
+import '@yue-ui/vue/dialog.css'
 import './consumer.css'
 
 /**
@@ -267,6 +271,55 @@ const app = createApp({
       }),
       // Through the plugin, to prove it registers both components.
       h(RegisteredInput, { 'data-probe': 'input-plugin', placeholder: 'plugin input' }),
+      h(YuePopover, {
+        defaultOpen: true,
+        'data-probe': 'popover',
+        'aria-label': 'Tarball popover',
+      }, {
+        trigger: ({ props }) => h('button', { ...props, type: 'button', 'data-popover-trigger': true }, 'Open'),
+        default: () => h('div', { 'data-popover-content': true }, 'Tarball content'),
+      }),
+      // Mounted open: the modal contract (role, aria-modal, fixed overlay, the locale close
+      // label) must be observable in the first paint from the dialog subpath entry. The IME
+      // probe lives inside the dialog body on purpose: a mounted-open modal activates and sets
+      // the background inert (B1/B2 — the fix that makes an already-open instance build its
+      // modal environment on mount), so the only field a real composition can reach is one on
+      // the active surface. This doubles as proof that the modal's own content stays
+      // interactive while everything behind it is inert.
+      h(YueDialog, {
+        modelValue: true,
+        title: 'Tarball dialog',
+        'data-probe': 'dialog',
+      }, {
+        default: () => [
+          h('div', { 'data-dialog-body': true }, 'Tarball dialog content'),
+          // Records every published value and every input payload so the IME check can verify
+          // both the count and the shape. Driven by a real composition through CDP, not by
+          // hand-dispatched events, so the event order is the browser's rather than the test's.
+          h(YueInput, {
+            modelValue: '',
+            'data-probe': 'ime',
+            'onUpdate:modelValue': (value) => {
+              globalThis.__imeEmits.push(value)
+            },
+            onInput: (event) => {
+              globalThis.__imeInputs.push({
+                type: event.type,
+                value: event.target?.value ?? null,
+                // Only present on a real InputEvent, so this is what distinguishes the browser's
+                // event from a bare Event standing in for one.
+                inputType: event.inputType ?? null,
+                // What a stale payload gets wrong: reusing the last mid-composition event reports
+                // the intermediate text here instead of the final text.
+                data: event.data ?? null,
+                // A hand-built-but-never-dispatched event has neither of these.
+                targetTag: event.target?.tagName ?? null,
+                targetValue: event.target?.value ?? null,
+              })
+            },
+          }),
+        ],
+      }),
       // Inside a subtree whose locale came from the hooks package.
       h(Scoped, null, {
         default: () =>
@@ -294,31 +347,6 @@ const app = createApp({
             'data-probe': 'input-engine',
           }),
       }),
-      // Records every published value and every input payload so the IME check can verify
-      // both the count and the shape. Driven by a real composition through CDP, not by
-      // hand-dispatched events, so the event order is the browser's rather than the test's.
-      h(YueInput, {
-        modelValue: '',
-        'data-probe': 'ime',
-        'onUpdate:modelValue': (value) => {
-          globalThis.__imeEmits.push(value)
-        },
-        onInput: (event) => {
-          globalThis.__imeInputs.push({
-            type: event.type,
-            value: event.target?.value ?? null,
-            // Only present on a real InputEvent, so this is what distinguishes the browser's
-            // event from a bare Event standing in for one.
-            inputType: event.inputType ?? null,
-            // What a stale payload gets wrong: reusing the last mid-composition event reports
-            // the intermediate text here instead of the final text.
-            data: event.data ?? null,
-            // A hand-built-but-never-dispatched event has neither of these.
-            targetTag: event.target?.tagName ?? null,
-            targetValue: event.target?.value ?? null,
-          })
-        },
-      }),
     ])
   },
 })
@@ -343,11 +371,15 @@ app.mount('#app')
     'types.ts',
     `import YueButton from '@yue-ui/vue/button'
 import YueInput from '@yue-ui/vue/input'
-import { YueButton as Named, YueInput as NamedInput, useLocale } from '@yue-ui/vue'
+import YueDialog from '@yue-ui/vue/dialog'
+import { YueButton as Named, YueInput as NamedInput, YueDialog as NamedDialog, useLocale } from '@yue-ui/vue'
 import type {
   ComponentSize,
   YueButtonProps,
   YueButtonTheme,
+  YueDialogCloseReason,
+  YueDialogExposed,
+  YueDialogProps,
   YueInputProps,
   YueInputType,
   YueLocale,
@@ -367,17 +399,26 @@ const inputType: YueInputType = 'search'
 
 // The locale surface, typed: the key union comes from the shipped catalog, so a key that does
 // not exist is a compile error rather than a string that renders itself.
-const key: YueMessageKey = 'input.clear'
+const key: YueMessageKey = 'dialog.confirm'
 const locale: YueLocale = createYueLocale({ locale: 'zh-CN', packs: { 'zh-CN': ZhCN } })
 const translated: string = locale.t(key)
 const fromComponent: YueLocale = useLocale()
 
+// The Dialog surface, typed from the shipped declarations: the controlled prop set, the close
+// reason union, and the expose shape a template ref receives. A renamed union member would be
+// a compile error here rather than a runtime surprise for a consumer.
+const dialogProps: YueDialogProps = { modelValue: true, title: 'Tarball', variant: 'danger', size: 'md' }
+const closeReason: YueDialogCloseReason = 'close-btn'
+const dialogRef: YueDialogExposed | null = null
+
 export const same: typeof YueButton = Named
 export const sameInput: typeof YueInput = NamedInput
+export const sameDialog: typeof YueDialog = NamedDialog
 export const plugin = YueUI
 export const used = props
 export const usedInput = { inputProps, inputType }
 export const usedLocale = { locale, translated, fromComponent }
+export const usedDialog = { dialogProps, closeReason, dialogRef }
 `,
   )
 
@@ -399,7 +440,8 @@ export const usedLocale = { locale, translated, fromComponent }
     `import { fileURLToPath } from 'node:url'
 import YueButton from '@yue-ui/vue/button'
 import YueInput from '@yue-ui/vue/input'
-import { YueButton as NamedButton, YueInput as NamedInput } from '@yue-ui/vue'
+import { YueButton as NamedButton, YueInput as NamedInput, YueDialog as NamedDialog } from '@yue-ui/vue'
+import YueDialog from '@yue-ui/vue/dialog'
 import YueUI from '@yue-ui/vue/plugin'
 import { createYueLocale } from '@yue-ui/vue/locale'
 import EnUS from '@yue-ui/vue/locale/en-US'
@@ -416,6 +458,8 @@ const specifiers = {
   root: '@yue-ui/vue',
   button: '@yue-ui/vue/button',
   input: '@yue-ui/vue/input',
+  popover: '@yue-ui/vue/popover',
+  dialog: '@yue-ui/vue/dialog',
   plugin: '@yue-ui/vue/plugin',
   locale: '@yue-ui/vue/locale',
   localeEnUS: '@yue-ui/vue/locale/en-US',
@@ -424,6 +468,8 @@ const specifiers = {
   style: '@yue-ui/vue/style.css',
   buttonCss: '@yue-ui/vue/button.css',
   inputCss: '@yue-ui/vue/input.css',
+  popoverCss: '@yue-ui/vue/popover.css',
+  dialogCss: '@yue-ui/vue/dialog.css',
   hooks: '@yue-ui/hooks',
   hooksPackageJson: '@yue-ui/hooks/package.json',
   tokens: '@yue-ui/design-tokens/index.css',
@@ -457,8 +503,10 @@ process.stdout.write(
     JSON.stringify({
       same: YueButton === NamedButton,
       sameInput: YueInput === NamedInput,
+      sameDialog: YueDialog === NamedDialog,
       name: YueButton?.name ?? null,
       inputName: YueInput?.name ?? null,
+      dialogName: YueDialog?.name ?? null,
       block: useNamespace('input').b(),
       hasInstall: typeof YueUI?.install === 'function',
       hasBrowserGlobals: typeof window !== 'undefined' || typeof document !== 'undefined',
@@ -563,7 +611,12 @@ async function renderBuiltConsumer(dist) {
 
   let browser
   try {
-    browser = await chromium.launch({ channel: 'chrome', headless: true })
+    browser = await chromium.launch({
+      ...(process.env.YUE_BROWSER_PATH
+        ? { executablePath: process.env.YUE_BROWSER_PATH }
+        : { channel: 'msedge' }),
+      headless: true,
+    })
     const page = await browser.newPage()
     const consoleErrors = []
     page.on('console', (message) => {
@@ -682,6 +735,40 @@ async function renderBuiltConsumer(dist) {
         height: Math.round(element.getBoundingClientRect().height),
         styled: styledBy(element),
         input: inputProbe,
+        popover: (() => {
+          const content = document.querySelector('[data-probe="popover"]')
+          if (!content) return null
+          const style = getComputedStyle(content)
+          const rect = content.getBoundingClientRect()
+          return {
+            trigger: document.querySelector(`[aria-controls="${content.id}"]`)?.getAttribute('aria-controls') ?? null,
+            contentId: content.id,
+            role: content.getAttribute('role') ?? null,
+            position: style.position,
+            width: rect.width,
+            height: rect.height,
+            styled: styledBy(content),
+          }
+        })(),
+        dialog: (() => {
+          const panel = document.querySelector('[data-probe="dialog"]')
+          if (!panel) return null
+          const overlay = panel.closest('.yue-dialog__overlay')
+          const overlayStyle = overlay ? getComputedStyle(overlay) : null
+          const titleId = panel.getAttribute('aria-labelledby')
+          return {
+            role: panel.getAttribute('role') ?? null,
+            ariaModal: panel.getAttribute('aria-modal') ?? null,
+            title: titleId ? (document.getElementById(titleId)?.textContent ?? null) : null,
+            body: !!panel.querySelector('[data-dialog-body]'),
+            closeLabel: panel.querySelector('.yue-dialog__close')?.getAttribute('aria-label') ?? null,
+            overlayPosition: overlayStyle?.position ?? null,
+            overlayZIndex: overlayStyle?.zIndex ?? null,
+            layerModal: getComputedStyle(document.documentElement).getPropertyValue('--layer-modal').trim(),
+            styled: styledBy(panel),
+            teleportedToBody: overlay ? overlay.parentElement === document.body : false,
+          }
+        })(),
         pluginInput: pluginInput
           ? {
               className: pluginInput.className,
@@ -965,11 +1052,15 @@ async function main() {
       }
       if (!report.same) fail('`@yue-ui/vue/button` default and `@yue-ui/vue` named export differ')
       if (!report.sameInput) fail('`@yue-ui/vue/input` default and `@yue-ui/vue` named export differ')
+      if (!report.sameDialog) fail('`@yue-ui/vue/dialog` default and `@yue-ui/vue` named export differ')
       if (report.name !== 'YueButton') {
         fail(`component name is "${report.name}", expected "YueButton"`)
       }
       if (report.inputName !== 'YueInput') {
         fail(`component name is "${report.inputName}", expected "YueInput"`)
+      }
+      if (report.dialogName !== 'YueDialog') {
+        fail(`component name is "${report.dialogName}", expected "YueDialog"`)
       }
       if (report.block !== 'yue-input') {
         fail(`@yue-ui/hooks namespaced the input as "${report.block}"`)
@@ -1075,6 +1166,14 @@ async function main() {
         join(consumer, 'node_modules/@yue-ui/vue/dist/components/input/style.css'),
       ],
       [
+        '@yue-ui/vue/popover.css',
+        join(consumer, 'node_modules/@yue-ui/vue/dist/components/popover/style.css'),
+      ],
+      [
+        '@yue-ui/vue/dialog.css',
+        join(consumer, 'node_modules/@yue-ui/vue/dist/components/dialog/style.css'),
+      ],
+      [
         '@yue-ui/design-tokens/index.css',
         join(consumer, 'node_modules/@yue-ui/design-tokens/src/index.css'),
       ],
@@ -1158,6 +1257,39 @@ async function main() {
       )
     }
     if (rendered.height <= 0) fail('the rendered button has no height')
+    if (!rendered.popover) {
+      fail('the Popover from the installed tarball was not rendered')
+    } else {
+      if (rendered.popover.role !== 'dialog') fail(`tarball Popover role is ${rendered.popover.role}`)
+      if (rendered.popover.position !== 'fixed') fail(`tarball Popover position is ${rendered.popover.position}`)
+      if (rendered.popover.width <= 0 || rendered.popover.height <= 0) fail('tarball Popover has no measurable box')
+      if (rendered.popover.trigger !== rendered.popover.contentId) fail('tarball Popover aria-controls does not name its content')
+      if (!rendered.popover.styled) fail('tarball Popover content is not matched by its CSS entry')
+      notes.push(`tarball Popover: fixed ${rendered.popover.width}×${rendered.popover.height}, role ${rendered.popover.role}`)
+    }
+    if (!rendered.dialog) {
+      fail('the Dialog from the installed tarball was not rendered')
+    } else {
+      const dialog = rendered.dialog
+      if (dialog.role !== 'dialog') fail(`tarball Dialog role is ${dialog.role}, expected dialog`)
+      if (dialog.ariaModal !== 'true') fail(`tarball Dialog aria-modal is ${dialog.ariaModal}`)
+      if (dialog.title !== 'Tarball dialog') fail(`tarball Dialog aria-labelledby does not name the title (${dialog.title})`)
+      if (!dialog.body) fail('tarball Dialog default slot content is missing')
+      if (dialog.closeLabel !== 'Close dialog') {
+        fail(`tarball Dialog close control label is "${dialog.closeLabel}", expected the shipped en-US dialog.closeLabel`)
+      }
+      if (dialog.overlayPosition !== 'fixed') fail(`tarball Dialog overlay position is ${dialog.overlayPosition}`)
+      if (!dialog.layerModal) fail('--layer-modal did not resolve from the shipped token sheets')
+      if (dialog.overlayZIndex !== dialog.layerModal) {
+        fail(`tarball Dialog overlay z-index ${dialog.overlayZIndex} != --layer-modal ${dialog.layerModal}`)
+      }
+      if (!dialog.styled) fail('tarball Dialog card is not matched by its CSS entry')
+      if (!dialog.teleportedToBody) fail('tarball Dialog overlay did not teleport under body')
+      notes.push(
+        `tarball Dialog: role ${dialog.role}, aria-modal ${dialog.ariaModal}, fixed at --layer-modal ${dialog.layerModal}, ` +
+          'close label from the shipped en-US pack',
+      )
+    }
     // The namespace contract, checked where it actually matters: on the rendered
     // element, against the stylesheets the page loaded. A class the stylesheet does
     // not match means the button is unstyled no matter how right the markup looks.

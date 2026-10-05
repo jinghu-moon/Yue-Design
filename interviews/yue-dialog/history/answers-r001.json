@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 2,
+  "component": "YueDialog",
+  "templateVersion": "2.0.0",
+  "exportedAt": "2026-10-04T10:53:52.661Z",
+  "round": 3,
+  "totalQuestions": 22,
+  "decidedCount": 22,
+  "userQuestions": [],
+  "findings": [
+    {
+      "id": "finding-tdesign-dialog",
+      "topic": "TDesign Dialog：结构可取，无障碍与生命周期不可取",
+      "finding": "DOM 五层职责分离（层级容器 ctx / mask / wrap 滚动视口 / position flex 对齐 / 卡片 / header-body-footer），点击关闭热区落在对齐层并用 useSameTarget 判定 mousedown 与 mouseup 同点，避免卡内拖选误关；ESC 挂在 document 上，带 isComposing 输入法保护、顶层浮层判定与 stopImmediatePropagation；mode 一个 prop 同时决定遮罩、定位、可拖拽、锁滚（四件事耦合）。反面事实：整棵 DOM 没有 role / aria-modal / aria-labelledby，关闭按钮是 span + svg 不可 Tab 到达；打开时主动 document.activeElement.blur()，既无 trap 也无回焦；锁滚靠向 body 注入 `html body{overflow-y:hidden;width:calc(100% - Npx)}` 高优先级样式，关闭后延迟 150ms 移除；动画时长 CSS 侧 @anim-duration-base = 0.2s 而 JS 侧写死 300ms，opened/closed 事件与卸载比视觉晚约 100ms；Web 端样式没有任何 --td-dialog-* 运行时变量（构建期塌陷），仅 mobile 端有 var() 形式。层级 dialog = 2500，低于 popup 5500 / tooltip 5600 / message 6000。",
+      "sources": [
+        "refer/tdesign-vue-next/packages/components/dialog",
+        "refer/tdesign-common/style/web/components/dialog"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        2,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        16
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-antd-modal",
+      "topic": "Ant Design Modal：ARIA 与 z-index 栈可取，命令式双轨是负债",
+      "finding": "DOM 四层：root → mask（pointer-events:none，纯视觉）→ wrap（fixed inset:0 overflow:auto，同时承担点击关闭、Esc、滚动）→ panel（role=\"dialog\" aria-modal=\"true\" tabindex=\"-1\"）→ container（视觉盒）→ close/header/body/footer。focus trap 默认值由模态语义派生：trap = (mask !== false)，可由 focusable.trap 覆写；标题用 useId 生成 id 并 aria-labelledby 绑定；无标题时不输出 labelledby（等于无可访问名）。role 恒为 dialog，连 Modal.confirm 也不是 alertdialog；全仓 aria-describedby 0 命中。z-index 栈：useZIndex 基值 1000，容器类每层 +100 但只有顶层叠加基值（嵌套不叠加），并把当前值经 context 下发给内部浮层；静态 confirm 固定取栈顶 2000，超限 dev 告警。mask fade 与 panel zoom 完全分离且时长不同（Modal 作用域把 enter 覆写为 motionDurationSlow，mask 用 mid → 不同步结束）；transform-origin 取全局捕获的鼠标位置（100ms 窗口），代码调用退化为中心。onOk 返回 promise 时自动 loading，afterClose 是唯一卸载信号；9 个语义槽 classNames/styles 支持函数式读取 info.props；wireframe 一个开关切换两套结构。代价：静态方法另起 React 树，需要 useModal + contextHolder / App 包裹 / holderRender 三套补丁、setTimeout 异步渲染、模块级 destroyFns 与 mousePosition；getContainer=false 对静态方法无效只能告警；废弃 prop 成堆；actionFn.length 靠形参个数决定行为。证据限制：仓库无 node_modules，@rc-component/dialog 与 scrollLocker、react-focus-lock 内部实现无法读取，只能确认\"未被引用\"。",
+      "sources": [
+        "refer/ant-design/components/modal"
+      ],
+      "confidence": "medium",
+      "leadsTo": [
+        5,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        16,
+        18
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-vuetify-overlay",
+      "topic": "Vuetify VOverlay / VDialog：三级分层与滚动锁实现最完整",
+      "finding": "VOverlay（约 490 行）是浮层运行时底座：activator、定位策略、stack、teleport、scrim、四条关闭渠道 + persistent 拒绝反馈、滚动策略、focus trap、回焦、动效壳、懒挂载；VDialog（约 136 行）只做三件事——改默认值（居中定位、scrollStrategy block、trap + retain、z 基线 2400、专属 transition）、加模态语义（role=dialog 与 aria-modal 落在包含遮罩的根 div 上、内容容器 tabindex=\"-1\"、给 activator 注 aria-haspopup、fullscreen 关闭定位）、加内容布局与滚动归属；VBottomSheet 再叠在 dialog 之上，证明三级堆叠成立。栈是模块级 reactive 序列 [uid, zIndex]，激活时 z = 全局栈顶 + 10（空栈用自身默认值），dispose 线性 splice；提供 globalTop / localTop 两个谓词；关闭权分配为 Esc → globalTop、外点 → localTop 且必须落在 scrim 自身、父级不被子级关闭。focus trap 两条路线并存：Tab 环回（文档级单 keydown + 引用计数，向上找最近激活容器为边界）与捕获式拉回（一次性 focusin，pointerdown 后 100ms 抑制）；dialog 两开关全开，menu 只开捕获，tooltip 全摘；首个焦点落在内容包裹层（tabindex=-1）而非第一个控件；未找到背景 inert / aria-hidden，也未找到 aria-labelledby / aria-describedby；回焦逻辑在三处各写一遍。滚动锁细节最多：收集目标与内容的所有滚动祖先去重、跳过已锁；把 scrollLeft/scrollTop 取负写入两个 CSS 变量并加锁类；解锁时读回坐标并临时置 scroll-behavior:auto 保证同步滚动；文档滚动条用 window.innerWidth - documentElement.offsetWidth 经 padding-inline-end 补偿；html 特殊处理为 position:fixed + 负偏移；整个策略跑在独立 effect scope 且 await setTimeout(0) 一帧后启动。滚动归属三态纯样式决定：默认卡片自身滚（外框 max calc(100% - 48px)）/ scrollable 只有正文滚（头脚固定）/ fullscreen 整屏。动效有 target 时 css={false} 全 JS 驱动 FLIP（入 225ms、出 125ms，reduced-motion 退化纯 opacity 125/85ms，面积 > 视口 12% 最多放慢 1.5 倍）；scrim 是独立 0.3s fade，与内容 225/125ms 不同步（真实不一致）；afterLeave → lazy 释放 → teleport 子树卸载。不该背的复杂度：588 行定位策略（dialog 实际只需约 35 行 flex 居中）、408 行 useActivator 的 hover/focus/click 矩阵、transition 多型联合 + 无消费者的 persisted、_disableGlobalStack 私有逃生口、用 DOM 类名判组件身份、魔法数字密集、同一职责三处实现。",
+      "sources": [
+        "refer/vuetify/packages/vuetify/src"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        19,
+        21
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-popover-boundary",
+      "topic": "YuePopover 已把 Dialog 语义写成 non-feature",
+      "finding": ".spec-workflow/yue-popover/spec.md：Popover 是\"共享 overlay 行为的公开基础组件\"，并明确 Menu / Select / Tooltip / Dialog\"复用无语义 hooks，而不是通过 props 把所有语义集中到 Popover\"；non-feature 清单包含\"Dialog focus trap, modal scrim, inert background and modal back-button behavior — belongs to YueDialog\"；同时声明\"Built-in close button or locale text — content and accessible naming are supplied by the consumer\"。role 默认值为 dialog（浮层语义），且 role 变化不引入 Menu/Dialog 行为；close 事件带 reason 枚举（trigger / outside / escape / programmatic）；提供 after-open / after-close 与 restoreFocus prop；reduced-motion 下必须零时长；--_popover-reveal-* 是组件内部值而非公开 token。已定义的负向探针：直读 primitive token、泄漏 Floating UI 类型、关闭后残留监听、子点击误关父级。",
+      "sources": [
+        ".spec-workflow/yue-popover/spec.md",
+        "packages/vue/src/components/popover/types.ts"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        3,
+        4,
+        6,
+        13,
+        18,
+        22
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-token-surface",
+      "topic": "Dialog 表面 token 已存在，但没有 dialog 命名空间",
+      "finding": "packages/tokens/src/component-tokens/box.css 已提供完整 dialog 表面契约：--box-background-dialog（→ --box-background-raised-3）、--box-color-dialog、--box-border-color-dialog、--box-border-width-dialog、--box-border-radius-dialog、--box-padding-dialog、--box-shadow-dialog；冻结词表 tools/lib/token-vocabulary.mjs 的 PHRASES.box 已含以上全部短语。PHRASES 中不存在 dialog 命名空间（现有：avatar/badge/box/button/checkbox/divider/icon/input/link/menu/popover/tag…），因此新增 --dialog-* 属于\"有意扩词表\"：必须同步 PHRASES 与 tools/token-audit.pairs.mjs 的 PACKAGE_ONLY_TOKENS，并重算 inventory / token-usage 报告物。box 命名空间下没有 font-size-dialog，也没有宽度 / 头部 / 底部 / 间距类短语。",
+      "sources": [
+        "packages/tokens/src/component-tokens/box.css",
+        "tools/lib/token-vocabulary.mjs",
+        "tools/token-audit.pairs.mjs"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        7,
+        17,
+        19
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-layer-inversion",
+      "topic": "既有层级 token 把 dialog 排在 popover 之下",
+      "finding": "packages/tokens/src/primitives/effects.css：--layer-base 0 / --layer-sticky 10 / --layer-dialog 20 / --layer-popover 30 / --layer-tooltip 40 / --layer-toast 50。即模态层 dialog 低于非模态的 popover，tooltip 与 toast 又高于 dialog。prototype/overlay.css 的 .dialog-backdrop 已经在用 position:fixed + z-index:var(--layer-dialog) + inset:0 + display:grid + place-items:center + padding:var(--box-padding-dialog) + background:var(--scrim)，并注释\"elevation is never the only hierarchy marker\"（forced-colors 下补 CanvasText 边框）。参照系各家排布并不一致：TDesign dialog 2500 < popup 5500 < tooltip 5600 < message 6000；Vuetify overlay 2000 / dialog 2400，step 10，运行时栈；antd zIndexPopupBase 1000 + 容器每层 100 且嵌套不叠加。共同点是 dialog 必须高于其宿主页面内的普通内容与同页浮层。",
+      "sources": [
+        "packages/tokens/src/primitives/effects.css",
+        "packages/tokens/src/prototype/overlay.css",
+        "refer/*"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        8,
+        9
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-scrim-token",
+      "topic": "--scrim 已有明暗双值",
+      "finding": "packages/tokens/src/semantics/scrim.css：:root { --scrim: rgb(0 0 0/.56) }，[data-theme=dark] { --scrim: rgb(0 0 0/.64) }。参照系取值：Vuetify scrim opacity 0.32（#000）、antd mask 用 color 派生、TDesign mask 纯 opacity + linear 动画。Yue 现值明显更重（0.56/0.64），是否直接用于模态遮罩需要一次有画面可看的判断。",
+      "sources": [
+        "packages/tokens/src/semantics/scrim.css"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        16
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-no-overlay-hooks",
+      "topic": "hooks 包目前没有任何 overlay 运行时能力",
+      "finding": "packages/hooks/src 只有 config/、locale/、namespace/ 三个目录，没有 useOverlay / useFocusTrap / useScrollLock / useStack。Popover 的定位、Escape、焦点恢复、teleport 逻辑都在组件自身内部实现，未被第二个消费者复用。因此 Dialog 的运行时能力要么先在组件内本地实现，要么在本次决策中抽成 hooks 层的共享底座；Popover spec 已承诺\"Menu/Select/Tooltip/Dialog 复用无语义 hooks\"，但那份 hooks 目前并不存在。",
+      "sources": [
+        "packages/hooks/src",
+        "packages/vue/src/components/popover"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        5
+      ],
+      "round": 1
+    },
+    {
+      "id": "finding-i18n-cost",
+      "topic": "内置按钮文案会强制走完整 i18n 流程",
+      "finding": "packages/vue/src/locale/catalog.ts 是消息形状的唯一真源，当前只有 input.clear 与 tag.closeLabel 两个叶子键；每个键必须同步：语言包 zh-CN.ts / en-US.ts（satisfies 校验，缺键或多键直接构建失败）、YUE_MESSAGE_META（purpose / params / announced，缺元数据即 audit:i18n 失败）。catalog 注释明确边界：\"A string owned by the consumer is not a translation problem, it is their content.\"，而 Popover spec 的立场是不提供内置关闭按钮与 locale 文案。因此 Dialog 一旦内置确认/取消按钮或 icon-only 关闭控件，就必然引入新的 locale 键与双语包 + 元数据 + 审计成本。",
+      "sources": [
+        "packages/vue/src/locale/catalog.ts",
+        "packages/vue/src/locale/zh-CN.ts",
+        "packages/vue/src/locale/en-US.ts",
+        ".agent/skills/yue-i18n/SKILL.md"
+      ],
+      "confidence": "high",
+      "leadsTo": [
+        14,
+        15
+      ],
+      "round": 1
+    }
+  ],
+  "freezeGate": {
+    "choice": "freeze",
+    "updatedAt": "2026-10-04T10:53:49.862Z"
+  },
+  "answers": {
+    "1": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "核心场景",
+      "letters": [
+        "A"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "A"
+      ],
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:44:58.609Z"
+    },
+    "2": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "表面范围",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 1,
+      "introducedBy": null,
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:45:16.168Z"
+    },
+    "3": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "上下文模型",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "内部可以复用 Popover 组件",
+      "recommended": [
+        "A"
+      ],
+      "round": 1,
+      "introducedBy": "finding-popover-boundary",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:45:31.890Z"
+    },
+    "4": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "状态所有权",
+      "letters": [
+        "A"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "A"
+      ],
+      "round": 1,
+      "introducedBy": "finding-popover-boundary",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:46:10.673Z"
+    },
+    "5": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "运行时归属",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 1,
+      "introducedBy": "finding-no-overlay-hooks",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:46:28.960Z"
+    },
+    "6": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "关闭渠道",
+      "letters": [
+        "A"
+      ],
+      "value": "",
+      "note": "选择 A B C",
+      "recommended": [
+        "A",
+        "B",
+        "C"
+      ],
+      "round": 1,
+      "introducedBy": "finding-tdesign-dialog",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:46:55.742Z"
+    },
+    "7": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "否决机制",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 1,
+      "introducedBy": "finding-antd-modal",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:47:14.262Z"
+    },
+    "8": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "Token 归属",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 1,
+      "introducedBy": "finding-token-surface",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:47:25.985Z"
+    },
+    "9": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "层级修正",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 2,
+      "introducedBy": "finding-layer-inversion",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:47:37.791Z"
+    },
+    "10": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "焦点陷阱",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 2,
+      "introducedBy": "finding-vuetify-overlay",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:47:56.326Z"
+    },
+    "11": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "初始焦点",
+      "letters": [
+        "A"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "A"
+      ],
+      "round": 2,
+      "introducedBy": "finding-antd-modal",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:48:13.116Z"
+    },
+    "12": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "回焦规则",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 2,
+      "introducedBy": "finding-vuetify-overlay",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:48:21.058Z"
+    },
+    "13": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "可访问命名",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 2,
+      "introducedBy": "finding-popover-boundary",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:48:28.510Z"
+    },
+    "14": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "动作区形态",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 3,
+      "introducedBy": "finding-i18n-cost",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:48:54.965Z"
+    },
+    "15": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "关闭控件",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 3,
+      "introducedBy": "finding-i18n-cost",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:49:05.807Z"
+    },
+    "16": {
+      "type": "prototype-gate",
+      "status": "decided",
+      "summary": "入场动效",
+      "letters": [],
+      "value": "基于TDesign 的动画效果，再同步遮罩与内容动画，动画原点是触发器",
+      "note": "",
+      "recommended": [],
+      "round": 3,
+      "introducedBy": "finding-scrim-token",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:50:03.677Z"
+    },
+    "17": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "宽度策略",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 3,
+      "introducedBy": "finding-token-surface",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:50:32.003Z"
+    },
+    "18": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "命令式 API",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 3,
+      "introducedBy": "finding-antd-modal",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:52:54.441Z"
+    },
+    "19": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "滚动归属",
+      "letters": [
+        "C"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "C"
+      ],
+      "round": 3,
+      "introducedBy": "finding-vuetify-overlay",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:53:02.363Z"
+    },
+    "20": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "滚动锁定",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 3,
+      "introducedBy": "finding-tdesign-dialog",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:53:06.888Z"
+    },
+    "21": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "嵌套与顶层仲裁",
+      "letters": [
+        "B"
+      ],
+      "value": "",
+      "note": "",
+      "recommended": [
+        "B"
+      ],
+      "round": 3,
+      "introducedBy": "finding-vuetify-overlay",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:53:15.688Z"
+    },
+    "22": {
+      "type": "choice",
+      "status": "decided",
+      "summary": "验证契约",
+      "letters": [
+        "A"
+      ],
+      "value": "",
+      "note": "我选择 A B C D E F ",
+      "recommended": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F"
+      ],
+      "round": 3,
+      "introducedBy": "finding-popover-boundary",
+      "supersedes": [],
+      "updatedAt": "2026-10-04T10:53:22.222Z"
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {
-  "total": 117,
+  "total": 116,
   "counts": {
-    "same-file-composition": 13,
-    "prototype-contract": 94,
+    "same-file-composition": 16,
+    "prototype-contract": 90,
     "consumer-facing": 10
   },
   "needsDecision": 0,
@@ -337,7 +337,9 @@
       "inPrototype": true,
       "renamedFrom": "--badge-fg",
       "pinnedByParity": true,
-      "docMentions": [],
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/README.md"
+      ],
       "referencedIn": [],
       "cause": "prototype-contract",
       "verdict": "expected"
@@ -599,39 +601,7 @@
       "verdict": "expected"
     },
     {
-      "name": "--box-color-dialog",
-      "layer": "components",
-      "namespace": "box",
-      "declaredIn": [
-        "packages/tokens/src/component-tokens/box.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": true,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [],
-      "referencedIn": [],
-      "cause": "prototype-contract",
-      "verdict": "expected"
-    },
-    {
       "name": "--box-color-panel",
-      "layer": "components",
-      "namespace": "box",
-      "declaredIn": [
-        "packages/tokens/src/component-tokens/box.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": true,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [],
-      "referencedIn": [],
-      "cause": "prototype-contract",
-      "verdict": "expected"
-    },
-    {
-      "name": "--box-color-popover",
       "layer": "components",
       "namespace": "box",
       "declaredIn": [
@@ -870,6 +840,98 @@
       ],
       "referencedIn": [],
       "cause": "prototype-contract",
+      "verdict": "expected"
+    },
+    {
+      "name": "--duration-100",
+      "layer": "primitives",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
+      ],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--duration-200",
+      "layer": "primitives",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--duration-300",
+      "layer": "primitives",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/src/primitives/motion.css"
+      ],
+      "cause": "same-file-composition",
+      "verdict": "expected"
+    },
+    {
+      "name": "--duration-350",
+      "layer": "primitives",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [],
+      "referencedIn": [],
+      "cause": "consumer-facing",
+      "verdict": "expected"
+    },
+    {
+      "name": "--duration-400",
+      "layer": "primitives",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "publicOverride": true,
+      "inPrototype": false,
+      "renamedFrom": null,
+      "pinnedByParity": false,
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
+        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
+      ],
+      "referencedIn": [],
+      "cause": "consumer-facing",
       "verdict": "expected"
     },
     {
@@ -1129,7 +1191,9 @@
       "inPrototype": true,
       "renamedFrom": null,
       "pinnedByParity": false,
-      "docMentions": [],
+      "docMentions": [
+        "D:/100_Projects/110_Daily/Yue-Design-System/packages/tokens/README.md"
+      ],
       "referencedIn": [],
       "cause": "prototype-contract",
       "verdict": "expected"
@@ -1406,44 +1470,6 @@
       "docMentions": [],
       "referencedIn": [],
       "cause": "prototype-contract",
-      "verdict": "expected"
-    },
-    {
-      "name": "--motion-duration-enter",
-      "layer": "primitives",
-      "namespace": "motion",
-      "declaredIn": [
-        "packages/tokens/src/primitives/motion.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": false,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [
-        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
-        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
-      ],
-      "referencedIn": [],
-      "cause": "consumer-facing",
-      "verdict": "expected"
-    },
-    {
-      "name": "--motion-duration-exit",
-      "layer": "primitives",
-      "namespace": "motion",
-      "declaredIn": [
-        "packages/tokens/src/primitives/motion.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": false,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [
-        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/design/motion.md",
-        "D:/100_Projects/110_Daily/Yue-Design-System/apps/docs/en/design/motion.md"
-      ],
-      "referencedIn": [],
-      "cause": "consumer-facing",
       "verdict": "expected"
     },
     {
@@ -1912,38 +1938,6 @@
       "namespace": "weight",
       "declaredIn": [
         "packages/tokens/src/primitives/typography.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": true,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [],
-      "referencedIn": [],
-      "cause": "prototype-contract",
-      "verdict": "expected"
-    },
-    {
-      "name": "--width-lg",
-      "layer": "primitives",
-      "namespace": "width",
-      "declaredIn": [
-        "packages/tokens/src/primitives/shape.css"
-      ],
-      "publicOverride": true,
-      "inPrototype": true,
-      "renamedFrom": null,
-      "pinnedByParity": false,
-      "docMentions": [],
-      "referencedIn": [],
-      "cause": "prototype-contract",
-      "verdict": "expected"
-    },
-    {
-      "name": "--width-xl",
-      "layer": "primitives",
-      "namespace": "width",
-      "declaredIn": [
-        "packages/tokens/src/primitives/shape.css"
       ],
       "publicOverride": true,
       "inPrototype": true,

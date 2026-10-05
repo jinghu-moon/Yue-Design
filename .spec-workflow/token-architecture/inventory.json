@@ -9,11 +9,13 @@
       "packages/tokens/src/component-tokens/box.css",
       "packages/tokens/src/component-tokens/button.css",
       "packages/tokens/src/component-tokens/checkbox.css",
+      "packages/tokens/src/component-tokens/dialog.css",
       "packages/tokens/src/component-tokens/divider.css",
       "packages/tokens/src/component-tokens/icon.css",
       "packages/tokens/src/component-tokens/input.css",
       "packages/tokens/src/component-tokens/link.css",
       "packages/tokens/src/component-tokens/menu.css",
+      "packages/tokens/src/component-tokens/popover.css",
       "packages/tokens/src/component-tokens/progress.css",
       "packages/tokens/src/component-tokens/radio.css",
       "packages/tokens/src/component-tokens/spinner.css",
@@ -37,11 +39,12 @@
       "packages/tokens/src/semantics/elevation.css",
       "packages/tokens/src/semantics/feedback.css",
       "packages/tokens/src/semantics/interaction.css",
+      "packages/tokens/src/semantics/modal-layer.css",
       "packages/tokens/src/semantics/scrim.css",
       "packages/tokens/src/semantics/surface.css",
       "packages/tokens/src/semantics/text.css"
     ],
-    "catalogueGroups": 17
+    "catalogueGroups": 19
   },
   "profiles": [
     "light/azure",
@@ -50,8 +53,8 @@
     "dark/neutral"
   ],
   "counts": {
-    "tokens": 591,
-    "declared": 591,
+    "tokens": 646,
+    "declared": 646,
     "byNamespace": {
       "accent": 16,
       "action": 6,
@@ -61,15 +64,16 @@
       "badge": 7,
       "blue": 11,
       "border": 10,
-      "box": 59,
+      "box": 60,
       "breakpoint": 4,
       "button": 85,
       "checkbox": 2,
       "container": 2,
       "control": 14,
+      "dialog": 33,
       "disabled": 2,
       "divider": 3,
-      "duration": 3,
+      "duration": 10,
       "ease": 3,
       "elevation": 3,
       "error": 4,
@@ -80,7 +84,7 @@
       "icon": 3,
       "info": 4,
       "input": 38,
-      "layer": 6,
+      "layer": 7,
       "layout": 4,
       "leading": 3,
       "line": 7,
@@ -92,11 +96,12 @@
       "on": 1,
       "opacity": 6,
       "page": 1,
+      "popover": 12,
       "progress": 4,
       "radio": 2,
       "radius": 8,
       "red": 11,
-      "scrim": 1,
+      "scrim": 2,
       "selected": 4,
       "selection": 2,
       "shadow": 3,
@@ -116,13 +121,13 @@
       "width": 4
     },
     "byLayer": {
-      "components": 331,
-      "primitives": 179,
-      "semantics": 81
+      "components": 377,
+      "primitives": 186,
+      "semantics": 83
     },
-    "publicOverride": 331,
+    "publicOverride": 377,
     "internal": 0,
-    "unreferenced": 117
+    "unreferenced": 116
   },
   "oldTokenNames": [
     "--accent-100",
@@ -245,6 +250,7 @@
     "--box-color-subtle",
     "--box-color-toast",
     "--box-color-tooltip",
+    "--box-font-size-popover",
     "--box-font-size-tooltip",
     "--box-padding-block-toast",
     "--box-padding-block-tooltip",
@@ -371,11 +377,51 @@
     "--control-padding-inline-lg",
     "--control-padding-inline-md",
     "--control-padding-inline-sm",
+    "--dialog-action-background",
+    "--dialog-action-border-color",
+    "--dialog-action-border-radius",
+    "--dialog-action-border-width",
+    "--dialog-action-danger-background",
+    "--dialog-action-danger-border",
+    "--dialog-action-on-danger",
+    "--dialog-action-on-primary",
+    "--dialog-action-primary-background",
+    "--dialog-action-primary-border",
+    "--dialog-action-spacing-block",
+    "--dialog-action-spacing-inline",
+    "--dialog-action-text-color",
+    "--dialog-background",
+    "--dialog-border-color",
+    "--dialog-border-radius",
+    "--dialog-border-width",
+    "--dialog-color",
+    "--dialog-duration-enter",
+    "--dialog-duration-exit",
+    "--dialog-ease",
+    "--dialog-footer-gap",
+    "--dialog-header-height",
+    "--dialog-padding",
+    "--dialog-scrim-color",
+    "--dialog-section-padding",
+    "--dialog-shadow",
+    "--dialog-spacing",
+    "--dialog-width-lg",
+    "--dialog-width-md",
+    "--dialog-width-sm",
+    "--dialog-width-xl",
+    "--dialog-z-index",
     "--disabled-container",
     "--disabled-content",
     "--divider-border-color",
     "--divider-border-width",
     "--divider-margin-block",
+    "--duration-100",
+    "--duration-150",
+    "--duration-200",
+    "--duration-250",
+    "--duration-300",
+    "--duration-350",
+    "--duration-400",
     "--duration-fast",
     "--duration-normal",
     "--duration-slow",
@@ -464,6 +510,7 @@
     "--input-placeholder-color",
     "--layer-base",
     "--layer-dialog",
+    "--layer-modal",
     "--layer-popover",
     "--layer-sticky",
     "--layer-toast",
@@ -516,6 +563,18 @@
     "--opacity-hover",
     "--opacity-pressed",
     "--page",
+    "--popover-background",
+    "--popover-border-color",
+    "--popover-border-radius",
+    "--popover-border-width",
+    "--popover-color",
+    "--popover-duration-enter",
+    "--popover-duration-exit",
+    "--popover-ease",
+    "--popover-font-size",
+    "--popover-padding",
+    "--popover-shadow",
+    "--popover-z-index",
     "--progress-border-radius",
     "--progress-fill",
     "--progress-height",
@@ -542,6 +601,7 @@
     "--red-900",
     "--red-950",
     "--scrim",
+    "--scrim-modal",
     "--selected-background",
     "--selected-color",
     "--selected-marker-color",
@@ -724,11 +784,13 @@
     "packages/tokens/src/component-tokens/box.css",
     "packages/tokens/src/component-tokens/button.css",
     "packages/tokens/src/component-tokens/checkbox.css",
+    "packages/tokens/src/component-tokens/dialog.css",
     "packages/tokens/src/component-tokens/divider.css",
     "packages/tokens/src/component-tokens/icon.css",
     "packages/tokens/src/component-tokens/input.css",
     "packages/tokens/src/component-tokens/link.css",
     "packages/tokens/src/component-tokens/menu.css",
+    "packages/tokens/src/component-tokens/popover.css",
     "packages/tokens/src/component-tokens/progress.css",
     "packages/tokens/src/component-tokens/radio.css",
     "packages/tokens/src/component-tokens/spinner.css",
@@ -752,6 +814,7 @@
     "packages/tokens/src/semantics/elevation.css",
     "packages/tokens/src/semantics/feedback.css",
     "packages/tokens/src/semantics/interaction.css",
+    "packages/tokens/src/semantics/modal-layer.css",
     "packages/tokens/src/semantics/scrim.css",
     "packages/tokens/src/semantics/surface.css",
     "packages/tokens/src/semantics/text.css"
@@ -1042,7 +1105,8 @@
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/button.css",
         "packages/tokens/src/component-tokens/tag.css",
-        "packages/tokens/src/semantics/text.css"
+        "packages/tokens/src/semantics/text.css",
+        "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
         "light/azure": "#125fb8",
@@ -1061,7 +1125,8 @@
       "reachableFromEntry": true,
       "publicOverride": "semantics",
       "consumers": [
-        "packages/tokens/src/component-tokens/button.css"
+        "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css"
       ],
       "resolved": {
         "light/azure": "#a14138",
@@ -1099,7 +1164,8 @@
       "reachableFromEntry": true,
       "publicOverride": "semantics",
       "consumers": [
-        "packages/tokens/src/component-tokens/button.css"
+        "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css"
       ],
       "resolved": {
         "light/azure": "#fff",
@@ -1137,7 +1203,8 @@
       "reachableFromEntry": true,
       "publicOverride": "semantics",
       "consumers": [
-        "packages/tokens/src/component-tokens/button.css"
+        "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css"
       ],
       "resolved": {
         "light/azure": "#1f1f1f",
@@ -2079,6 +2146,7 @@
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/divider.css",
         "packages/tokens/src/component-tokens/input.css",
         "packages/tokens/src/component-tokens/status.css",
@@ -2203,6 +2271,7 @@
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/input.css",
         "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/prototype/list.css",
@@ -2266,6 +2335,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2340,6 +2410,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2490,6 +2561,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2526,6 +2598,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2583,6 +2656,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2658,6 +2732,7 @@
       "publicOverride": "public",
       "consumers": [
         "packages/tokens/src/component-tokens/menu.css",
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2751,6 +2826,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2787,6 +2863,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -2843,7 +2920,9 @@
       "layer": "components",
       "reachableFromEntry": true,
       "publicOverride": "public",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
       "resolved": {
         "light/azure": "#1f1f1f",
         "dark/azure": "#f5f5f5",
@@ -2861,6 +2940,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/box.css"
       ],
       "resolved": {
@@ -2915,7 +2995,9 @@
       "layer": "components",
       "reachableFromEntry": true,
       "publicOverride": "public",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
       "resolved": {
         "light/azure": "#1f1f1f",
         "dark/azure": "#f5f5f5",
@@ -2998,6 +3080,25 @@
       }
     },
     {
+      "name": "--box-font-size-popover",
+      "namespace": "box",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/box.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "resolved": {
+        "light/azure": "14px",
+        "dark/azure": "14px",
+        "light/neutral": "14px",
+        "dark/neutral": "14px"
+      }
+    },
+    {
       "name": "--box-font-size-tooltip",
       "namespace": "box",
       "declaredIn": [
@@ -3062,6 +3163,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -3175,6 +3277,7 @@
       "publicOverride": "public",
       "consumers": [
         "packages/tokens/src/component-tokens/menu.css",
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -3289,6 +3392,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -3325,6 +3429,7 @@
       "reachableFromEntry": true,
       "publicOverride": "public",
       "consumers": [
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -5257,6 +5362,7 @@
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/input.css"
       ],
       "resolved": {
@@ -5429,6 +5535,633 @@
       }
     },
     {
+      "name": "--dialog-action-background",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#eee",
+        "dark/azure": "#2b2b2b",
+        "light/neutral": "#eee",
+        "dark/neutral": "#2b2b2b"
+      }
+    },
+    {
+      "name": "--dialog-action-border-color",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#e0e0e0",
+        "dark/azure": "#383838",
+        "light/neutral": "#e0e0e0",
+        "dark/neutral": "#383838"
+      }
+    },
+    {
+      "name": "--dialog-action-border-radius",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "8px",
+        "dark/azure": "8px",
+        "light/neutral": "8px",
+        "dark/neutral": "8px"
+      }
+    },
+    {
+      "name": "--dialog-action-border-width",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "1px",
+        "dark/azure": "1px",
+        "light/neutral": "1px",
+        "dark/neutral": "1px"
+      }
+    },
+    {
+      "name": "--dialog-action-danger-background",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#a14138",
+        "dark/azure": "#f5aaa3",
+        "light/neutral": "#a14138",
+        "dark/neutral": "#f5aaa3"
+      }
+    },
+    {
+      "name": "--dialog-action-danger-border",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#a14138",
+        "dark/azure": "#f5aaa3",
+        "light/neutral": "#a14138",
+        "dark/neutral": "#f5aaa3"
+      }
+    },
+    {
+      "name": "--dialog-action-on-danger",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#fff",
+        "dark/azure": "#121212",
+        "light/neutral": "#fff",
+        "dark/neutral": "#121212"
+      }
+    },
+    {
+      "name": "--dialog-action-on-primary",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#fff",
+        "dark/azure": "#121212",
+        "light/neutral": "#fff",
+        "dark/neutral": "#121212"
+      }
+    },
+    {
+      "name": "--dialog-action-primary-background",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#1f1f1f",
+        "dark/azure": "#f5f5f5",
+        "light/neutral": "#1f1f1f",
+        "dark/neutral": "#f5f5f5"
+      }
+    },
+    {
+      "name": "--dialog-action-primary-border",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#1f1f1f",
+        "dark/azure": "#f5f5f5",
+        "light/neutral": "#1f1f1f",
+        "dark/neutral": "#f5f5f5"
+      }
+    },
+    {
+      "name": "--dialog-action-spacing-block",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "2px",
+        "dark/azure": "2px",
+        "light/neutral": "2px",
+        "dark/neutral": "2px"
+      }
+    },
+    {
+      "name": "--dialog-action-spacing-inline",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "4px",
+        "dark/azure": "4px",
+        "light/neutral": "4px",
+        "dark/neutral": "4px"
+      }
+    },
+    {
+      "name": "--dialog-action-text-color",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#1f1f1f",
+        "dark/azure": "#f5f5f5",
+        "light/neutral": "#1f1f1f",
+        "dark/neutral": "#f5f5f5"
+      }
+    },
+    {
+      "name": "--dialog-background",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#fff",
+        "dark/azure": "#2b2b2b",
+        "light/neutral": "#fff",
+        "dark/neutral": "#2b2b2b"
+      }
+    },
+    {
+      "name": "--dialog-border-color",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#e0e0e0",
+        "dark/azure": "#383838",
+        "light/neutral": "#e0e0e0",
+        "dark/neutral": "#383838"
+      }
+    },
+    {
+      "name": "--dialog-border-radius",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "calc(8px*1.5)",
+        "dark/azure": "calc(8px*1.5)",
+        "light/neutral": "calc(8px*1.5)",
+        "dark/neutral": "calc(8px*1.5)"
+      }
+    },
+    {
+      "name": "--dialog-border-width",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "1px",
+        "dark/azure": "1px",
+        "light/neutral": "1px",
+        "dark/neutral": "1px"
+      }
+    },
+    {
+      "name": "--dialog-color",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#1f1f1f",
+        "dark/azure": "#f5f5f5",
+        "light/neutral": "#1f1f1f",
+        "dark/neutral": "#f5f5f5"
+      }
+    },
+    {
+      "name": "--dialog-duration-enter",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "250ms",
+        "dark/azure": "250ms",
+        "light/neutral": "250ms",
+        "dark/neutral": "250ms"
+      }
+    },
+    {
+      "name": "--dialog-duration-exit",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "150ms",
+        "dark/azure": "150ms",
+        "light/neutral": "150ms",
+        "dark/neutral": "150ms"
+      }
+    },
+    {
+      "name": "--dialog-ease",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "cubic-bezier(.2, 0, .38, .9)",
+        "dark/azure": "cubic-bezier(.2, 0, .38, .9)",
+        "light/neutral": "cubic-bezier(.2, 0, .38, .9)",
+        "dark/neutral": "cubic-bezier(.2, 0, .38, .9)"
+      }
+    },
+    {
+      "name": "--dialog-footer-gap",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "4px",
+        "dark/azure": "4px",
+        "light/neutral": "4px",
+        "dark/neutral": "4px"
+      }
+    },
+    {
+      "name": "--dialog-header-height",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "40px",
+        "dark/azure": "40px",
+        "light/neutral": "40px",
+        "dark/neutral": "40px"
+      }
+    },
+    {
+      "name": "--dialog-padding",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "24px",
+        "dark/azure": "24px",
+        "light/neutral": "24px",
+        "dark/neutral": "24px"
+      }
+    },
+    {
+      "name": "--dialog-scrim-color",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "rgb(0 0 0/.5)",
+        "dark/azure": "rgb(0 0 0/.5)",
+        "light/neutral": "rgb(0 0 0/.5)",
+        "dark/neutral": "rgb(0 0 0/.5)"
+      }
+    },
+    {
+      "name": "--dialog-section-padding",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "16px",
+        "dark/azure": "16px",
+        "light/neutral": "16px",
+        "dark/neutral": "16px"
+      }
+    },
+    {
+      "name": "--dialog-shadow",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "0 18px 56px rgb(0 0 0/.22)",
+        "dark/azure": "0 18px 56px rgb(0 0 0/.52)",
+        "light/neutral": "0 18px 56px rgb(0 0 0/.22)",
+        "dark/neutral": "0 18px 56px rgb(0 0 0/.52)"
+      }
+    },
+    {
+      "name": "--dialog-spacing",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "8px",
+        "dark/azure": "8px",
+        "light/neutral": "8px",
+        "dark/neutral": "8px"
+      }
+    },
+    {
+      "name": "--dialog-width-lg",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "480px",
+        "dark/azure": "480px",
+        "light/neutral": "480px",
+        "dark/neutral": "480px"
+      }
+    },
+    {
+      "name": "--dialog-width-md",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "320px",
+        "dark/azure": "320px",
+        "light/neutral": "320px",
+        "dark/neutral": "320px"
+      }
+    },
+    {
+      "name": "--dialog-width-sm",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "192px",
+        "dark/azure": "192px",
+        "light/neutral": "192px",
+        "dark/neutral": "192px"
+      }
+    },
+    {
+      "name": "--dialog-width-xl",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "640px",
+        "dark/azure": "640px",
+        "light/neutral": "640px",
+        "dark/neutral": "640px"
+      }
+    },
+    {
+      "name": "--dialog-z-index",
+      "namespace": "dialog",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/dialog/style.css"
+      ],
+      "resolved": {
+        "light/azure": "1000",
+        "dark/azure": "1000",
+        "light/neutral": "1000",
+        "dark/neutral": "1000"
+      }
+    },
+    {
       "name": "--disabled-container",
       "namespace": "disabled",
       "declaredIn": [
@@ -5526,6 +6259,129 @@
         "dark/azure": "12px",
         "light/neutral": "12px",
         "dark/neutral": "12px"
+      }
+    },
+    {
+      "name": "--duration-100",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [],
+      "resolved": {
+        "light/azure": "100ms",
+        "dark/azure": "100ms",
+        "light/neutral": "100ms",
+        "dark/neutral": "100ms"
+      }
+    },
+    {
+      "name": "--duration-150",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "resolved": {
+        "light/azure": "150ms",
+        "dark/azure": "150ms",
+        "light/neutral": "150ms",
+        "dark/neutral": "150ms"
+      }
+    },
+    {
+      "name": "--duration-200",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [],
+      "resolved": {
+        "light/azure": "200ms",
+        "dark/azure": "200ms",
+        "light/neutral": "200ms",
+        "dark/neutral": "200ms"
+      }
+    },
+    {
+      "name": "--duration-250",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "resolved": {
+        "light/azure": "250ms",
+        "dark/azure": "250ms",
+        "light/neutral": "250ms",
+        "dark/neutral": "250ms"
+      }
+    },
+    {
+      "name": "--duration-300",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [],
+      "resolved": {
+        "light/azure": "300ms",
+        "dark/azure": "300ms",
+        "light/neutral": "300ms",
+        "dark/neutral": "300ms"
+      }
+    },
+    {
+      "name": "--duration-350",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [],
+      "resolved": {
+        "light/azure": "350ms",
+        "dark/azure": "350ms",
+        "light/neutral": "350ms",
+        "dark/neutral": "350ms"
+      }
+    },
+    {
+      "name": "--duration-400",
+      "namespace": "duration",
+      "declaredIn": [
+        "packages/tokens/src/primitives/motion.css"
+      ],
+      "layer": "primitives",
+      "reachableFromEntry": true,
+      "publicOverride": "primitives",
+      "consumers": [],
+      "resolved": {
+        "light/azure": "400ms",
+        "dark/azure": "400ms",
+        "light/neutral": "400ms",
+        "dark/neutral": "400ms"
       }
     },
     {
@@ -5714,7 +6570,6 @@
       "publicOverride": "semantics",
       "consumers": [
         "packages/tokens/src/component-tokens/input.css",
-        "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/prototype/form.css",
         "packages/tokens/src/semantics/action.css"
       ],
@@ -5777,7 +6632,8 @@
       "consumers": [
         "packages/tokens/src/component-tokens/button.css",
         "packages/tokens/src/component-tokens/tag.css",
-        "packages/tokens/src/prototype/status.css"
+        "packages/tokens/src/prototype/status.css",
+        "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
         "light/azure": "#6d342f",
@@ -5969,6 +6825,7 @@
       "publicOverride": "primitives",
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
+        "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/primitives/control.css"
       ],
       "resolved": {
@@ -7224,6 +8081,25 @@
       }
     },
     {
+      "name": "--layer-modal",
+      "namespace": "layer",
+      "declaredIn": [
+        "packages/tokens/src/semantics/modal-layer.css"
+      ],
+      "layer": "semantics",
+      "reachableFromEntry": true,
+      "publicOverride": "semantics",
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "resolved": {
+        "light/azure": "1000",
+        "dark/azure": "1000",
+        "light/neutral": "1000",
+        "dark/neutral": "1000"
+      }
+    },
+    {
       "name": "--layer-popover",
       "namespace": "layer",
       "declaredIn": [
@@ -7233,6 +8109,7 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
+        "packages/tokens/src/component-tokens/popover.css",
         "packages/tokens/src/prototype/overlay.css"
       ],
       "resolved": {
@@ -7720,7 +8597,9 @@
       "layer": "primitives",
       "reachableFromEntry": true,
       "publicOverride": "primitives",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
       "resolved": {
         "light/azure": "200ms",
         "dark/azure": "200ms",
@@ -7737,7 +8616,9 @@
       "layer": "primitives",
       "reachableFromEntry": true,
       "publicOverride": "primitives",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
       "resolved": {
         "light/azure": "100ms",
         "dark/azure": "100ms",
@@ -7776,7 +8657,9 @@
       "publicOverride": "primitives",
       "consumers": [
         "packages/tokens/src/component-tokens/button.css",
-        "packages/tokens/src/component-tokens/input.css"
+        "packages/tokens/src/component-tokens/dialog.css",
+        "packages/tokens/src/component-tokens/input.css",
+        "packages/tokens/src/component-tokens/popover.css"
       ],
       "resolved": {
         "light/azure": "cubic-bezier(.2, 0, .38, .9)",
@@ -7795,6 +8678,7 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
+        "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/semantics/action.css",
         "packages/tokens/src/semantics/surface.css",
         "packages/tokens/src/semantics/text.css"
@@ -8027,6 +8911,7 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
+        "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/semantics/action.css",
         "packages/tokens/src/semantics/surface.css",
         "packages/tokens/src/semantics/text.css"
@@ -8145,7 +9030,8 @@
       "consumers": [
         "packages/tokens/src/component-tokens/button.css",
         "packages/tokens/src/component-tokens/tag.css",
-        "packages/tokens/src/semantics/surface.css"
+        "packages/tokens/src/semantics/surface.css",
+        "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
         "light/azure": ".08",
@@ -8190,6 +9076,234 @@
         "dark/azure": "#101010",
         "light/neutral": "#f5f5f5",
         "dark/neutral": "#101010"
+      }
+    },
+    {
+      "name": "--popover-background",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#fff",
+        "dark/azure": "#202020",
+        "light/neutral": "#fff",
+        "dark/neutral": "#202020"
+      }
+    },
+    {
+      "name": "--popover-border-color",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#eee",
+        "dark/azure": "#2b2b2b",
+        "light/neutral": "#eee",
+        "dark/neutral": "#2b2b2b"
+      }
+    },
+    {
+      "name": "--popover-border-radius",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "8px",
+        "dark/azure": "8px",
+        "light/neutral": "8px",
+        "dark/neutral": "8px"
+      }
+    },
+    {
+      "name": "--popover-border-width",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "1px",
+        "dark/azure": "1px",
+        "light/neutral": "1px",
+        "dark/neutral": "1px"
+      }
+    },
+    {
+      "name": "--popover-color",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "#1f1f1f",
+        "dark/azure": "#f5f5f5",
+        "light/neutral": "#1f1f1f",
+        "dark/neutral": "#f5f5f5"
+      }
+    },
+    {
+      "name": "--popover-duration-enter",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "200ms",
+        "dark/azure": "200ms",
+        "light/neutral": "200ms",
+        "dark/neutral": "200ms"
+      }
+    },
+    {
+      "name": "--popover-duration-exit",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "100ms",
+        "dark/azure": "100ms",
+        "light/neutral": "100ms",
+        "dark/neutral": "100ms"
+      }
+    },
+    {
+      "name": "--popover-ease",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "cubic-bezier(.2, 0, .38, .9)",
+        "dark/azure": "cubic-bezier(.2, 0, .38, .9)",
+        "light/neutral": "cubic-bezier(.2, 0, .38, .9)",
+        "dark/neutral": "cubic-bezier(.2, 0, .38, .9)"
+      }
+    },
+    {
+      "name": "--popover-font-size",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "14px",
+        "dark/azure": "14px",
+        "light/neutral": "14px",
+        "dark/neutral": "14px"
+      }
+    },
+    {
+      "name": "--popover-padding",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "4px",
+        "dark/azure": "4px",
+        "light/neutral": "4px",
+        "dark/neutral": "4px"
+      }
+    },
+    {
+      "name": "--popover-shadow",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "0 12px 36px rgb(0 0 0/.16)",
+        "dark/azure": "0 12px 36px rgb(0 0 0/.38)",
+        "light/neutral": "0 12px 36px rgb(0 0 0/.16)",
+        "dark/neutral": "0 12px 36px rgb(0 0 0/.38)"
+      }
+    },
+    {
+      "name": "--popover-z-index",
+      "namespace": "popover",
+      "declaredIn": [
+        "packages/tokens/src/component-tokens/popover.css"
+      ],
+      "layer": "components",
+      "reachableFromEntry": true,
+      "publicOverride": "public",
+      "consumers": [
+        "packages/vue/src/components/popover/style.css"
+      ],
+      "resolved": {
+        "light/azure": "30",
+        "dark/azure": "30",
+        "light/neutral": "30",
+        "dark/neutral": "30"
       }
     },
     {
@@ -8379,6 +9493,7 @@
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/box.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/status.css",
         "packages/tokens/src/prototype/button.css",
         "packages/tokens/src/prototype/list.css",
@@ -8601,6 +9716,7 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
+        "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/semantics/action.css"
       ],
       "resolved": {
@@ -8684,6 +9800,25 @@
         "dark/azure": "rgb(0 0 0/.64)",
         "light/neutral": "rgb(0 0 0/.56)",
         "dark/neutral": "rgb(0 0 0/.64)"
+      }
+    },
+    {
+      "name": "--scrim-modal",
+      "namespace": "scrim",
+      "declaredIn": [
+        "packages/tokens/src/semantics/scrim.css"
+      ],
+      "layer": "semantics",
+      "reachableFromEntry": true,
+      "publicOverride": "semantics",
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
+      "resolved": {
+        "light/azure": "rgb(0 0 0/.5)",
+        "dark/azure": "rgb(0 0 0/.5)",
+        "light/neutral": "rgb(0 0 0/.5)",
+        "dark/neutral": "rgb(0 0 0/.5)"
       }
     },
     {
@@ -9100,6 +10235,7 @@
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/box.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/primitives/control.css"
       ],
       "resolved": {
@@ -9120,6 +10256,7 @@
       "publicOverride": "primitives",
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/prototype/button.css",
         "packages/tokens/src/semantics/interaction.css"
       ],
@@ -9179,6 +10316,7 @@
       "consumers": [
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/box.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/switch.css",
         "packages/tokens/src/component-tokens/tag.css",
         "packages/tokens/src/prototype/overlay.css"
@@ -9240,6 +10378,7 @@
         "packages/tokens/src/component-tokens/badge.css",
         "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/input.css",
         "packages/tokens/src/component-tokens/progress.css",
         "packages/tokens/src/component-tokens/status.css",
@@ -9520,7 +10659,8 @@
         "apps/docs/.vitepress/theme/custom.css",
         "packages/tokens/src/component-tokens/button.css",
         "packages/tokens/src/component-tokens/tag.css",
-        "packages/tokens/src/prototype/status.css"
+        "packages/tokens/src/prototype/status.css",
+        "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
         "light/azure": "#274234",
@@ -9566,6 +10706,7 @@
         "packages/tokens/src/component-tokens/badge.css",
         "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/progress.css",
         "packages/tokens/src/component-tokens/spinner.css",
         "packages/tokens/src/component-tokens/switch.css",
@@ -10135,10 +11276,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#c75146",
-        "dark/azure": "#f5aaa3",
-        "light/neutral": "#c75146",
-        "dark/neutral": "#f5aaa3"
+        "light/azure": "#a14138",
+        "dark/azure": "#96372f",
+        "light/neutral": "#a14138",
+        "dark/neutral": "#96372f"
       }
     },
     {
@@ -10173,10 +11314,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#6d342f",
-        "dark/azure": "#fee8e6",
-        "light/neutral": "#6d342f",
-        "dark/neutral": "#fee8e6"
+        "light/azure": "#fff",
+        "dark/azure": "#fff",
+        "light/neutral": "#fff",
+        "dark/neutral": "#fff"
       }
     },
     {
@@ -10230,10 +11371,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#c75146",
-        "dark/azure": "#f5aaa3",
-        "light/neutral": "#c75146",
-        "dark/neutral": "#f5aaa3"
+        "light/azure": "#6d342f",
+        "dark/azure": "#fee8e6",
+        "light/neutral": "#6d342f",
+        "dark/neutral": "#fee8e6"
       }
     },
     {
@@ -11218,10 +12359,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#274234",
-        "dark/azure": "#ddefe4",
-        "light/neutral": "#274234",
-        "dark/neutral": "#ddefe4"
+        "light/azure": "#fff",
+        "dark/azure": "#121212",
+        "light/neutral": "#fff",
+        "dark/neutral": "#121212"
       }
     },
     {
@@ -11446,10 +12587,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#623a1a",
-        "dark/azure": "#fff0c6",
-        "light/neutral": "#623a1a",
-        "dark/neutral": "#fff0c6"
+        "light/azure": "#121212",
+        "dark/azure": "#121212",
+        "light/neutral": "#121212",
+        "dark/neutral": "#121212"
       }
     },
     {
@@ -11503,10 +12644,10 @@
         "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
-        "light/azure": "#b37622",
-        "dark/azure": "#f7c44d",
-        "light/neutral": "#b37622",
-        "dark/neutral": "#f7c44d"
+        "light/azure": "#623a1a",
+        "dark/azure": "#fff0c6",
+        "light/neutral": "#623a1a",
+        "dark/neutral": "#fff0c6"
       }
     },
     {
@@ -11714,6 +12855,7 @@
         "packages/tokens/src/component-tokens/badge.css",
         "packages/tokens/src/component-tokens/box.css",
         "packages/tokens/src/component-tokens/button.css",
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/input.css",
         "packages/tokens/src/component-tokens/menu.css",
         "packages/tokens/src/component-tokens/tag.css",
@@ -11897,7 +13039,8 @@
       "consumers": [
         "packages/tokens/src/component-tokens/button.css",
         "packages/tokens/src/component-tokens/tag.css",
-        "packages/tokens/src/prototype/status.css"
+        "packages/tokens/src/prototype/status.css",
+        "packages/vue/src/components/tag/style.css"
       ],
       "resolved": {
         "light/azure": "#623a1a",
@@ -11990,7 +13133,9 @@
       "layer": "primitives",
       "reachableFromEntry": true,
       "publicOverride": "primitives",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
       "resolved": {
         "light/azure": "480px",
         "dark/azure": "480px",
@@ -12008,7 +13153,8 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
-        "apps/docs/.vitepress/theme/custom.css"
+        "apps/docs/.vitepress/theme/custom.css",
+        "packages/tokens/src/component-tokens/dialog.css"
       ],
       "resolved": {
         "light/azure": "320px",
@@ -12027,6 +13173,7 @@
       "reachableFromEntry": true,
       "publicOverride": "primitives",
       "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css",
         "packages/tokens/src/component-tokens/menu.css",
         "packages/tokens/src/prototype/form.css"
       ],
@@ -12046,7 +13193,9 @@
       "layer": "primitives",
       "reachableFromEntry": true,
       "publicOverride": "primitives",
-      "consumers": [],
+      "consumers": [
+        "packages/tokens/src/component-tokens/dialog.css"
+      ],
       "resolved": {
         "light/azure": "640px",
         "dark/azure": "640px",
